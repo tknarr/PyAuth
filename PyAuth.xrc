@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<resource class="wxMenuItem">
+  <object class="wxFrame" subclass="appFrame">
+    <object class="wxMenuBar">
+      <object class="wxMenu">
+        <label>File</label>
+        <object class="wxMenuItem">
+          <label>New</label>
+          <bitmap stock_id="wxART_NEW"/>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenuItem">
+          <label>Quit</label>
+          <bitmap stock_id="wxART_QUIT"/>
+        </object>
+      </object>
+      <object class="wxMenu">
+        <label>Edit</label>
+        <object class="wxMenuItem">
+          <label>Copy</label>
+          <bitmap stock_id="wxART_COPY"/>
+        </object>
+        <object class="wxMenuItem">
+          <label>Modify</label>
+        </object>
+        <object class="wxMenuItem">
+          <label>Delete</label>
+          <bitmap stock_id="wxART_DELETE"/>
+        </object>
+        <object class="separator"/>
+        <object class="wxMenuItem">
+          <label>Move Up</label>
+          <bitmap stock_id="wxART_GO_UP"/>
+        </object>
+        <object class="wxMenuItem">
+          <label>Move Down</label>
+          <bitmap stock_id="wxART_GO_DOWN"/>
+        </object>
+      </object>
+      <object class="wxMenu">
+        <object class="wxMenuItem">
+          <label>Timers</label>
+          <checkable>1</checkable>
+          <checked>1</checked>
+        </object>
+        <object class="wxMenuItem">
+          <label>All Codes</label>
+          <checkable>1</checkable>
+          <checked>1</checked>
+        </object>
+        <label>View</label>
+      </object>
+      <object class="wxMenu">
+        <label>Help</label>
+        <object class="wxMenuItem">
+          <label>Contents</label>
+          <bitmap stock_id="wxART_HELP_BOOK"/>
+        </object>
+        <object class="wxMenuItem">
+          <label>About</label>
+        </object>
+      </object>
+    </object>
+    <object class="wxScrolledWindow">
+      <object class="wxBoxSizer">
+        <orient>wxVERTICAL</orient>
+        <object class="sizeritem">
+          <object class="wxBoxSizer" subclass="authEntrySizer">
+            <object class="sizeritem">
+              <object class="wxBoxSizer">
+                <orient>wxVERTICAL</orient>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                    <label>LABEL</label>
+                  </object>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                    <label>LABEL</label>
+                  </object>
+                </object>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText" subclass="authCodeText">
+                <label>LABEL</label>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <object class="wxGauge" subclass="authTimerGauge"/>
+            </object>
+            <orient>wxHORIZONTAL</orient>
+          </object>
+        </object>
+      </object>
+    </object>
+  </object>
+</resource>
