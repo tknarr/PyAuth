@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource>
-  <object class="wxFrame" subclass="appFrame" name="main_frame">
+  <object class="wxFrame" name="main_frame" subclass="appFrame">
     <object class="wxMenuBar" name="menu_bar">
       <object class="wxMenu">
         <label>File</label>
@@ -63,7 +63,7 @@
     <object class="wxScrolledWindow" name="codes_window">
       <object class="wxBoxSizer">
         <object class="sizeritem">
-          <object class="wxBoxSizer" subclass="authEntrySizer" name="auth_entry">
+          <object class="wxBoxSizer" name="auth_entry" subclass="authEntrySizer">
             <object class="sizeritem">
               <object class="wxBoxSizer">
                 <object class="sizeritem">
@@ -106,7 +106,7 @@
               <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
             <object class="sizeritem">
-              <object class="wxStaticText" subclass="authCodeText" name="code_text">
+              <object class="wxStaticText" name="code_text" subclass="authCodeText">
                 <label>CODE</label>
                 <font>
                   <size>24</size>
@@ -123,7 +123,7 @@
               <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
             <object class="sizeritem">
-              <object class="wxGauge" subclass="authTimerGauge" name="timer" />
+              <object class="wxGauge" name="timer" subclass="authTimerGauge"/>
               <option>1</option>
               <flag>wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
