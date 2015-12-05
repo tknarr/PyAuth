@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource class="wxMenuItem">
-  <object class="wxFrame" subclass="appFrame">
+<resource>
+  <object class="wxFrame" subclass="appFrame" name="main_frame">
     <object class="wxMenuBar" name="menu_bar">
       <object class="wxMenu">
         <label>File</label>
@@ -18,7 +18,6 @@
       </object>
       <object class="wxMenu">
         <label>Edit</label>
-        
         <object class="wxMenuItem">
           <label>&amp;Edit</label>
         </object>
@@ -64,11 +63,11 @@
     <object class="wxScrolledWindow" name="codes_window">
       <object class="wxBoxSizer">
         <object class="sizeritem">
-          <object class="wxBoxSizer" subclass="authEntrySizer">
+          <object class="wxBoxSizer" subclass="authEntrySizer" name="auth_entry">
             <object class="sizeritem">
               <object class="wxBoxSizer">
                 <object class="sizeritem">
-                  <object class="wxStaticText">
+                  <object class="wxStaticText" name="provider_text">
                     <label>PROVIDER</label>
                     <font>
                       <size>12</size>
@@ -85,7 +84,7 @@
                   <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
                 </object>
                 <object class="sizeritem">
-                  <object class="wxStaticText">
+                  <object class="wxStaticText" name="account_text">
                     <label>ACCOUNT</label>
                     <font>
                       <size>12</size>
@@ -107,7 +106,7 @@
               <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
             <object class="sizeritem">
-              <object class="wxStaticText" subclass="authCodeText">
+              <object class="wxStaticText" subclass="authCodeText" name="code_text">
                 <label>CODE</label>
                 <font>
                   <size>24</size>
@@ -124,7 +123,7 @@
               <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
             <object class="sizeritem">
-              <object class="wxGauge" subclass="authTimerGauge"/>
+              <object class="wxGauge" subclass="authTimerGauge" name="timer" />
               <option>1</option>
               <flag>wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
