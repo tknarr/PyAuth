@@ -9,6 +9,8 @@ class AuthFrame( wx.Frame ):
     def __init__( self ):
         wx.Frame.__init__( self, parent=None, id=wx.ID_ANY, title=_("PyAuth") )
 
+        # TODO hook up window close event
+
         # Create and populate main menu bar, add to frame
         menu_bar = create_menubar()
         self.SetMenuBar( menu_bar )
