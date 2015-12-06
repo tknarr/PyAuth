@@ -6,26 +6,19 @@
 #     database.xml - authorization secrets storage
 
 import wx
+import AuthFrame
 
-class PyAuthApp(wx.App):
+class PyAuthApp( wx.App ):
 
     
-    def OnInit(self):
-        # TODO Load item data from secrets storage
-
-        init_frame(self);
-
-        return True;
-
-
-    def init_frame(self):
-        # TODO Create main frame, menu bar and item container
-
-        # TODO Add existing items to item container, or add a blank item if no existing items
-        
-        self.frame.Show();
+    def OnInit( self ):
+        # TODO Init singleton authorization secrets storage
+        frame = AuthFrame()
+        self.SetTopWindow( frame )
+        frame.Show()
+        return True
 
 
 if __name__ == '__main__':
-    app = PyAuthApp(False);
+    app = PyAuthApp( False )
     app.MainLoop()
