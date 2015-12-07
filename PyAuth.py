@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # ${HOME}/.PyAuth/ - configuration directory
@@ -6,7 +6,7 @@
 #     database.xml - authorization secrets storage
 
 import wx
-import AuthFrame
+from AuthFrame import AuthFrame
 
 class PyAuthApp( wx.App ):
 
