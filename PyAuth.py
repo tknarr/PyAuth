@@ -8,7 +8,7 @@
 import sys
 import wx
 from wx import xrc
-from AuthFrame import AuthFrame
+import AuthFrame
 
 class PyAuthApp( wx.App ):
 
@@ -24,7 +24,7 @@ class PyAuthApp( wx.App ):
         self.frame.Show()
         return True
 
-    def res():
+    def res( self ):
         # Make XRC resources available to other components
         return self.xrc_res
 

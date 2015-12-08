@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource>
-  <object class="wxFrame" name="main_frame" subclass="AuthFrame">
+  <object class="wxFrame" name="main_frame" subclass="AuthFrame.AuthFrame">
     <object class="wxMenuBar" name="menu_bar">
       <object class="wxMenu">
         <label>File</label>
@@ -62,10 +62,6 @@
     </object>
     <object class="wxScrolledWindow" name="codes_window">
       <object class="wxBoxSizer" name="codes_sizer">
-        <object class="sizeritem">
-          <flag>wxALL|wxALIGN_LEFT</flag>
-          <border>2</border>
-        </object>
         <orient>wxVERTICAL</orient>
       </object>
       <style>wxVSCROLL</style>
