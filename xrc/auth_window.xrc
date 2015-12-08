@@ -71,7 +71,7 @@
       <style>wxVSCROLL</style>
     </object>
   </object>
-  <object class="wxPanel" name="entry_panel">
+  <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel">
     <object class="wxBoxSizer" name="auth_entry">
       <object class="sizeritem">
         <object class="wxBoxSizer">

@@ -2,6 +2,6 @@
 
 import wx
 
-class AuthTimerGuage:
+class AuthTimerGuage( wx.Gauge ):
 
     # TODO Timer bar, derives from wx class

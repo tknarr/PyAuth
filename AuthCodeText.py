@@ -2,6 +2,6 @@
 
 import wx
 
-class AuthCodeText:
+class AuthCodeText( wx.StaticText ):
 
-    # TODO Auth code text class, derives from wx class
+    # TODO Auth code text class
