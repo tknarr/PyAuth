@@ -67,7 +67,7 @@
       <style>wxVSCROLL</style>
     </object>
   </object>
-  <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel">
+  <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
     <object class="wxBoxSizer" name="auth_entry">
       <object class="sizeritem">
         <object class="wxBoxSizer">
@@ -111,7 +111,7 @@
         <flag>wxALIGN_LEFT</flag>
       </object>
       <object class="sizeritem">
-        <object class="wxStaticText" name="code_text" subclass="AuthCodeText">
+        <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
           <label>CODE</label>
           <font>
             <size>32</size>
@@ -128,7 +128,7 @@
         <flag>wxALIGN_CENTRE</flag>
       </object>
       <object class="sizeritem">
-        <object class="wxGauge" name="timer" subclass="AuthTimerGauge">
+        <object class="wxGauge" name="timer" subclass="AuthTimerGauge.AuthTimerGauge">
           <range>30</range>
           <value>30</value>
         </object>

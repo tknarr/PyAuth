@@ -17,16 +17,12 @@ class PyAuthApp( wx.App ):
 
         # Load XRC resources
         self.xrc_path = sys.path[0] + "/xrc/"
-        self.xrc_res = xrc.XmlResource( self.xrc_path + "auth_window.xrc" )
+        self.res = xrc.XmlResource( self.xrc_path + "auth_window.xrc" )
 
-        self.frame = self.xrc_res.LoadFrame( None, 'main_frame' )
+        self.frame = self.res.LoadFrame( None, 'main_frame' )
         self.SetTopWindow( self.frame )
         self.frame.Show()
         return True
-
-    def res( self ):
-        # Make XRC resources available to other components
-        return self.xrc_res
 
 
 if __name__ == '__main__':
