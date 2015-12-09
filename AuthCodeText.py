@@ -4,4 +4,19 @@ import wx
 
 class AuthCodeText( wx.StaticText ):
 
-    # TODO Auth code text class
+    ##_first_event_type = wx.EVT_WINDOW_CREATE
+    _first_event_type = wx.EVT_SIZE
+
+    def __init__( self ):
+        pre = wx.PreStaticText()
+        self.PostCreate( pre )
+        self.Bind( self._first_event_type, self.OnCreate )
+
+
+    def OnCreate( self, event ):
+        self.Unbind( self._first_event_type )
+
+        self.Refresh()
+
+                
+     # TODO Auth code text class

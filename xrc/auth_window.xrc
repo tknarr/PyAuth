@@ -61,7 +61,7 @@
       </object>
     </object>
     <object class="wxScrolledWindow" name="codes_window">
-      <object class="wxBoxSizer" name="codes_sizer">
+      <object class="wxBoxSizer">
         <orient>wxVERTICAL</orient>
       </object>
       <style>wxVSCROLL</style>
@@ -86,7 +86,7 @@
               <style>wxALIGN_LEFT</style>
             </object>
             <option>0</option>
-            <flag>wxALIGN_LEFT</flag>
+            <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
           </object>
           <object class="sizeritem">
             <object class="wxStaticText" name="account_text">
@@ -103,16 +103,16 @@
               <style>wxALIGN_LEFT</style>
             </object>
             <option>0</option>
-            <flag>wxALIGN_LEFT</flag>
+            <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
           </object>
           <orient>wxVERTICAL</orient>
         </object>
         <option>0</option>
-        <flag>wxALIGN_LEFT</flag>
+        <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
       </object>
       <object class="sizeritem">
         <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
-          <label>CODE</label>
+          <label>000000</label>
           <font>
             <size>32</size>
             <style>normal</style>
@@ -129,6 +129,7 @@
       </object>
       <object class="sizeritem">
         <object class="wxGauge" name="timer" subclass="AuthTimerGauge.AuthTimerGauge">
+          <size>30,15</size>
           <range>30</range>
           <value>30</value>
         </object>
@@ -137,6 +138,6 @@
       </object>
       <orient>wxHORIZONTAL</orient>
     </object>
-    <style>wxBORDER_RAISED</style>
+    <style>wxBORDER_SUNKEN</style>
   </object>
 </resource>

@@ -2,13 +2,13 @@
 
 import wx
 
-class AuthEntryPanel( wx.Panel ):
+class AuthTimerGauge( wx.Gauge ):
 
     ##_first_event_type = wx.EVT_WINDOW_CREATE
     _first_event_type = wx.EVT_SIZE
 
     def __init__( self ):
-        pre = wx.PrePanel()
+        pre = wx.PreGauge()
         self.PostCreate( pre )
         self.Bind( self._first_event_type, self.OnCreate )
 
@@ -18,5 +18,5 @@ class AuthEntryPanel( wx.Panel ):
 
         self.Refresh()
 
-
-    # TODO Auth code panel class
+        
+    # TODO Timer bar, derives from wx class
