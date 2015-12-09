@@ -57,8 +57,8 @@ class AuthFrame( wx.Frame ):
         # TODO Populate container for real
 
         # Create dummy entries
-        for n in range( 0, 12 ):
-            item = self.create_item( n, "Provider%s" % str(n), "Account%s" % str(n) )
+        for n in range( 1, 13 ):
+            item = self.create_item( n, "Provider %s" % str(n), "Account %s" % str(n) )
 
             #Calculate max entry panel height and width accounting for the border
             item_size = item.GetSize()
@@ -78,7 +78,8 @@ class AuthFrame( wx.Frame ):
         item = self.res.LoadPanel( self.auth_window, 'entry_panel' )
         item.SetName( 'entry_panel_%s' % n )
 
-        # TODO Load provider, account and dummy code
+        item.SetProvider( provider )
+        item.SetAccount( account )
 
         # Set minimum size correctly
         s = item.GetSize()

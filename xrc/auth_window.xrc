@@ -112,7 +112,7 @@
       </object>
       <object class="sizeritem">
         <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
-          <label>000000</label>
+          <label> 000000 </label>
           <font>
             <size>32</size>
             <style>normal</style>

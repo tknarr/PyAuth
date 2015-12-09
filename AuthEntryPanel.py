@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import wx
+from wx import xrc
 
 class AuthEntryPanel( wx.Panel ):
 
@@ -11,16 +12,31 @@ class AuthEntryPanel( wx.Panel ):
         self.PostCreate( pre )
         self.Bind( self._first_event_type, self.OnCreate )
 
+        self.provider = ""
+        self.account = ""
+        self.code = " 000000 "
+
 
     def OnCreate( self, event ):
+        print "AuthEntryPanel::OnCreate"
         self.Unbind( self._first_event_type )
 
-        self.provider_ctrl = None
-        self.account_ctrl = None
-        self.code_ctrl = None
-        self.timer_ctrl = None
-        
-        self.Refresh()
+        self.provider_ctrl = xrc.XRCCTRL( self, "provider_text" )
+        self.account_ctrl = xrc.XRCCTRL( self, "account_text" )
+        self.code_ctrl = xrc.XRCCTRL( self, "code_text" )
+        self.timer_ctrl = xrc.XRCCTRL( self, "timer" )
+
+        self.provider_ctrl.SetLabelText( self.provider )
+        self.account_ctrl.SetLabelText( self.account )
+        self.code_ctrl.SetLabelText( self.code )
 
 
-    # TODO Auth code panel class
+    def SetProvider( self, s ):
+        print "AuthEntryPanel::SetProvider"
+        self.provider = s
+
+    def SetAccount( self, s ):
+        self.account = s
+
+    def SetCode( self, s ):
+        self.code = s
