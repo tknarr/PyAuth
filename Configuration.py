@@ -6,7 +6,6 @@ class Configuration:
 
     # Config items:
     #   Last window position
-    #   Last window width
     #   Last pegged corner
     #   Peg to upper-left, upper-right, lower-left, lower-right corner
     #   Number of items shown
