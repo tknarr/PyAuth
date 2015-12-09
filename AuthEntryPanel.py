@@ -15,6 +15,11 @@ class AuthEntryPanel( wx.Panel ):
     def OnCreate( self, event ):
         self.Unbind( self._first_event_type )
 
+        self.provider_ctrl = None
+        self.account_ctrl = None
+        self.code_ctrl = None
+        self.timer_ctrl = None
+        
         self.Refresh()
 
 

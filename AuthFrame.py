@@ -17,31 +17,36 @@ class AuthFrame( wx.Frame ):
     def OnCreate( self, event ):
         self.Unbind( self._first_event_type )
 
+        self.scrollbar_width = 0
         self.visible_entries = 2
         self.max_entry_height = 0
         self.max_entry_width = 0
         self.res = wx.GetApp().res
+
         self.SetTitle( 'PyAuth' )
 
         # Locate and save references to important GUI elements
         self.auth_window = xrc.XRCCTRL( self, 'codes_window' )
         self.auth_container = self.auth_window.GetSizer()
-        self.entries = self.populate_container()
-        self.auth_window.SetScrollRate( 0, 1 )
+        self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.auth_window )
 
+        self.entries = self.populate_container()
+        self.auth_window.SetScrollRate( 0, self.max_entry_height )
+
+        # Start with auth entry window size
         window_size = self.auth_window.GetSize()
-        window_size.SetWidth( self.max_entry_width )
-        window_size.SetHeight( self.visible_entries * self.max_entry_height )
-        self.auth_window.SetVirtualSize( window_size )
+        # Account for the scrollbar in the width
+        window_size.SetWidth( self.max_entry_width + self.scrollbar_width )
+
+        # Min client size of auth entry window should be 1 entry wide by 1 entry high
         window_size.SetHeight( self.max_entry_height )
         self.auth_window.SetMinClientSize( window_size )
-        self.auth_window.FitInside()
 
+        # Frame should be 1 entry wide, 1 entry high min and visible number high current
         window_size.SetHeight( self.visible_entries * self.max_entry_height )
         self.SetClientSize( window_size )
         window_size.SetHeight( self.max_entry_height )
         self.SetMinClientSize( window_size )
-        self.FitInside()
 
         self.Refresh()
 
@@ -51,8 +56,9 @@ class AuthFrame( wx.Frame ):
 
         # TODO Populate container for real
 
-        for n in range( 0, 3 ):
-            item = self.create_item( n, "Provider", "Account" )
+        # Create dummy entries
+        for n in range( 0, 12 ):
+            item = self.create_item( n, "Provider%s" % str(n), "Account%s" % str(n) )
 
             #Calculate max entry panel height and width accounting for the border
             item_size = item.GetSize()
