@@ -2,7 +2,7 @@
 
 import wx
 from wx import xrc
-# TODO configuration
+import Configuration
 
 class AuthFrame( wx.Frame ):
 
@@ -17,7 +17,6 @@ class AuthFrame( wx.Frame ):
 
     def OnCreate( self, event ):
         self.Unbind( self._first_event_type )
-        print "AuthFrame::OnCreate"
 
         self.scrollbar_width = 0
         self.visible_entries = 2
@@ -26,6 +25,8 @@ class AuthFrame( wx.Frame ):
         self.res = wx.GetApp().res
 
         self.SetTitle( 'PyAuth' )
+        # TODO Restore last window size
+        # TODO Restore last window position
 
         # Locate and save references to important GUI elements
         self.auth_window = xrc.XRCCTRL( self, 'codes_window' )
@@ -35,8 +36,24 @@ class AuthFrame( wx.Frame ):
         self.entries = self.populate_container()
         self.auth_window.SetScrollRate( 0, self.max_entry_height )
 
-        # TODO Below needs done after children are done being created
-        
+        self.AdjustWindowSizes()
+        self.Refresh()
+
+
+    def UpdateEntrySize( self, size ):
+        changed = False
+        if size.GetHeight() + 4 > self.max_entry_height:
+            self.max_entry_height = size.GetHeight() + 4
+            changed = True
+        if size.GetWidth() + 4 > self.max_entry_width:
+            self.max_entry_width = size.GetWidth() + 4
+            changed = True
+        if changed:
+            self.AdjustWindowSizes()
+            self.Refresh()
+
+
+    def AdjustWindowSizes( self ):
         # Start with auth entry window size
         window_size = self.auth_window.GetSize()
         # Account for the scrollbar in the width
@@ -51,9 +68,7 @@ class AuthFrame( wx.Frame ):
         self.SetClientSize( window_size )
         window_size.SetHeight( self.max_entry_height )
         self.SetMinClientSize( window_size )
-
-        self.Refresh()
-
+            
 
     def populate_container( self ):
         entry_count = 0

@@ -19,7 +19,6 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def OnCreate( self, event ):
-        print "AuthEntryPanel::OnCreate"
         self.Unbind( self._first_event_type )
 
         self.provider_ctrl = xrc.XRCCTRL( self, "provider_text" )
@@ -37,7 +36,6 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def SetProvider( self, s ):
-        print "AuthEntryPanel::SetProvider"
         self.provider = s
 
     def SetAccount( self, s ):
