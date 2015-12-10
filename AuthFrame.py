@@ -26,7 +26,9 @@ class AuthFrame( wx.Frame ):
 
         self.SetTitle( 'PyAuth' )
         # TODO Restore last window size
-        # TODO Restore last window position
+        wp = Configuration.GetLastWindowPosition()
+        if wp != None:
+            self.SetPosition( wp )
 
         # Locate and save references to important GUI elements
         self.auth_window = xrc.XRCCTRL( self, 'codes_window' )
@@ -77,7 +79,7 @@ class AuthFrame( wx.Frame ):
     def populate_container( self ):
         entry_count = 0
 
-        # TODO Populate container for real
+        # TODO Populate container from authentication store
 
         # Create dummy entries
         for n in range( 1, 13 ):
@@ -99,8 +101,8 @@ class AuthFrame( wx.Frame ):
     def create_item( self, n, provider, account ):
         # Load new copy of item from XRC and set it's real name
         item = self.res.LoadPanel( self.auth_window, 'entry_panel' )
-        item.SetName( 'entry_panel_%s' % n )
 
+        item.SetIndex( n )
         item.SetProvider( provider )
         item.SetAccount( account )
 

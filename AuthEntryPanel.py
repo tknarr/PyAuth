@@ -11,6 +11,7 @@ class AuthEntryPanel( wx.Panel ):
         pre = wx.PrePanel()
         self.PostCreate( pre )
 
+        self.index = 0
         self.provider = ""
         self.account = ""
         self.code = " 000000 "
@@ -37,7 +38,10 @@ class AuthEntryPanel( wx.Panel ):
         if p != None:
             p.UpdateEntrySize( sx )
 
-
+    def SetIndex( self, i ):
+        self.index = i
+        self.SetName( "entry_panel_%s" % str(i) )
+            
     def SetProvider( self, s ):
         self.provider = s
 
@@ -49,6 +53,5 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def AdjustSize( self, sx ):
-        print self.GetName() + ": " + str(sx)
         self.SetSize( sx )
         self.SetMinSize( sx )

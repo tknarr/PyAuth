@@ -22,11 +22,9 @@ def GetAppConfigName():
 def GetLastWindowSize():
     w = wx.Config.Get().ReadInt( "/window/last_width", -1 )
     h = wx.Config.Get().ReadInt( "/window/last_height", -1 )
-    ws = wx.Size()
-    if w > 0:
-        ws.SetWidth( w )
-    if h > 0:
-        ws.SetHeight( h )
+    ws = None
+    if w > 0 and h > 0:
+        ws = wx.Size( w, h )
     return ws
 
 def SetLastWindowSize( ws ):
@@ -35,7 +33,19 @@ def SetLastWindowSize( ws ):
     if wx.GetHeight() > 0:
         wx.Config.Get().WriteInt( "/window/last_height", ws.GetHeight() )
 
-# TODO Last window position
+def GetLastWindowPosition():
+    x = wx.Config.Get().ReadInt( "/window/last_x", -1 )
+    y = wx.Config.Get().ReadInt( "/window/last_y", -1 )
+    wp = None
+    if x >= 0 and y >= 0:
+        wp = wx.Point( x, y )
+    return wp
+
+def SetLastWindowPosition( wp ):
+    if wp.x >= 0:
+        wx.Config.Get().WriteInt( "/window/last_x", wp.x )
+    if wp.y >= 0:
+        wx.Config.Get().WriteInt( "/window/last_x", wp.y )
 
 def GetPeggedCorner():
     return wx.Config.Get().Read( "/window/pegged_corner", "XX" )
