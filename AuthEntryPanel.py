@@ -33,6 +33,9 @@ class AuthEntryPanel( wx.Panel ):
         sx = self.GetBestSize()
         self.SetSize( sx )
         self.SetMinSize( sx )
+        p = self.GetGrandParent()
+        if p != None:
+            p.UpdateEntrySize( sx )
 
 
     def SetProvider( self, s ):
@@ -46,5 +49,6 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def AdjustSize( self, sx ):
+        print self.GetName() + ": " + str(sx)
         self.SetSize( sx )
         self.SetMinSize( sx )

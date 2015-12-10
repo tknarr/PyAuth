@@ -107,6 +107,7 @@
           </object>
           <orient>wxVERTICAL</orient>
         </object>
+        <option>1</option>
         <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
       </object>
       <object class="sizeritem">

@@ -34,7 +34,7 @@ class AuthFrame( wx.Frame ):
         self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.auth_window )
 
         self.entries = self.populate_container()
-        self.auth_window.SetScrollRate( 0, self.max_entry_height )
+        self.auth_window.SetScrollRate( 0, self.max_entry_height + 4 )
 
         self.AdjustWindowSizes()
         self.Refresh()
@@ -42,14 +42,18 @@ class AuthFrame( wx.Frame ):
 
     def UpdateEntrySize( self, size ):
         changed = False
-        if size.GetHeight() + 4 > self.max_entry_height:
-            self.max_entry_height = size.GetHeight() + 4
+        if size.GetHeight() > self.max_entry_height:
+            self.max_entry_height = size.GetHeight()
             changed = True
-        if size.GetWidth() + 4 > self.max_entry_width:
-            self.max_entry_width = size.GetWidth() + 4
+        if size.GetWidth() > self.max_entry_width:
+            self.max_entry_width = size.GetWidth()
             changed = True
         if changed:
             self.AdjustWindowSizes()
+            sx = wx.Size( self.max_entry_width, self.max_entry_height )
+            children = self.auth_window.GetChildren()
+            for panel in children:
+                panel.AdjustSize( sx )
             self.Refresh()
 
 
@@ -57,16 +61,16 @@ class AuthFrame( wx.Frame ):
         # Start with auth entry window size
         window_size = self.auth_window.GetSize()
         # Account for the scrollbar in the width
-        window_size.SetWidth( self.max_entry_width + self.scrollbar_width )
+        window_size.SetWidth( self.max_entry_width + 4 + self.scrollbar_width )
 
         # Min client size of auth entry window should be 1 entry wide by 1 entry high
-        window_size.SetHeight( self.max_entry_height )
+        window_size.SetHeight( self.max_entry_height + 4 )
         self.auth_window.SetMinClientSize( window_size )
 
         # Frame should be 1 entry wide, 1 entry high min and visible number high current
-        window_size.SetHeight( self.visible_entries * self.max_entry_height )
+        window_size.SetHeight( self.visible_entries * ( self.max_entry_height + 4 ) )
         self.SetClientSize( window_size )
-        window_size.SetHeight( self.max_entry_height )
+        window_size.SetHeight( self.max_entry_height + 4 )
         self.SetMinClientSize( window_size )
             
 
@@ -81,10 +85,10 @@ class AuthFrame( wx.Frame ):
 
             #Calculate max entry panel height and width accounting for the border
             item_size = item.GetSize()
-            if item_size.GetHeight() + 4 > self.max_entry_height:
-                self.max_entry_height = item_size.GetHeight() + 4
-            if item_size.GetWidth() + 4 > self.max_entry_width:
-                self.max_entry_width = item_size.GetWidth() + 4
+            if item_size.GetHeight() > self.max_entry_height:
+                self.max_entry_height = item_size.GetHeight()
+            if item_size.GetWidth() > self.max_entry_width:
+                self.max_entry_width = item_size.GetWidth()
 
             self.auth_container.Add( item, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 2 )
             entry_count += 1
