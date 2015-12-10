@@ -9,6 +9,7 @@ class AuthCodeText( wx.StaticText ):
     def __init__( self ):
         pre = wx.PreStaticText()
         self.PostCreate( pre )
+
         self.Bind( self._first_event_type, self.OnCreate )
 
 

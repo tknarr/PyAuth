@@ -9,6 +9,7 @@ class AuthTimerGauge( wx.Gauge ):
     def __init__( self ):
         pre = wx.PreGauge()
         self.PostCreate( pre )
+
         self.Bind( self._first_event_type, self.OnCreate )
 
 

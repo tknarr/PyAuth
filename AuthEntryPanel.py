@@ -10,11 +10,12 @@ class AuthEntryPanel( wx.Panel ):
     def __init__( self ):
         pre = wx.PrePanel()
         self.PostCreate( pre )
-        self.Bind( self._first_event_type, self.OnCreate )
 
         self.provider = ""
         self.account = ""
         self.code = " 000000 "
+
+        self.Bind( self._first_event_type, self.OnCreate )
 
 
     def OnCreate( self, event ):
@@ -30,6 +31,10 @@ class AuthEntryPanel( wx.Panel ):
         self.account_ctrl.SetLabelText( self.account )
         self.code_ctrl.SetLabelText( self.code )
 
+        sx = self.GetBestSize()
+        self.SetSize( sx )
+        self.SetMinSize( sx )
+
 
     def SetProvider( self, s ):
         print "AuthEntryPanel::SetProvider"
@@ -40,3 +45,8 @@ class AuthEntryPanel( wx.Panel ):
 
     def SetCode( self, s ):
         self.code = s
+
+
+    def AdjustSize( self, sx ):
+        self.SetSize( sx )
+        self.SetMinSize( sx )

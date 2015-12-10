@@ -11,11 +11,13 @@ class AuthFrame( wx.Frame ):
     def __init__( self ):
         pre = wx.PreFrame()
         self.PostCreate( pre )
+
         self.Bind( self._first_event_type, self.OnCreate )
 
 
     def OnCreate( self, event ):
         self.Unbind( self._first_event_type )
+        print "AuthFrame::OnCreate"
 
         self.scrollbar_width = 0
         self.visible_entries = 2
@@ -33,6 +35,8 @@ class AuthFrame( wx.Frame ):
         self.entries = self.populate_container()
         self.auth_window.SetScrollRate( 0, self.max_entry_height )
 
+        # TODO Below needs done after children are done being created
+        
         # Start with auth entry window size
         window_size = self.auth_window.GetSize()
         # Account for the scrollbar in the width

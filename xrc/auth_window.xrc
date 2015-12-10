@@ -107,7 +107,6 @@
           </object>
           <orient>wxVERTICAL</orient>
         </object>
-        <option>0</option>
         <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
       </object>
       <object class="sizeritem">
@@ -133,7 +132,7 @@
           <range>30</range>
           <value>30</value>
         </object>
-        <option>1</option>
+        <option>0</option>
         <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
       </object>
       <orient>wxHORIZONTAL</orient>
