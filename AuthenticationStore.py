@@ -100,12 +100,23 @@ class AuthenticationStore:
         return entry
 
 
-    def Delete( self, provider, account ):
+    def Delete( self, entry_group ):
         for i in range( len(self.entry_list)-1, -1, -1 ):
             entry = self.entry_list[i]
-            if entry.GetProvider == provider and entry.GetAccount == account:
+            if entry.GetGroup() == entry_group:
                 self.cfg.DeleteGroup( "/entries/%s" % entry.entry_group )
                 del self.entry_list[i]
+
+
+    def Update( self, entry_group, provider = None, account = None, secret = None ):
+        for entry in self.entry_list:
+            if entry.GetGroup() == entry_group:
+                if provider != None:
+                    entry.SetProvider( provider )
+                if account != None:
+                    entry.SetAccount( account )
+                if secret != None:
+                    entry.SetSecret( secret )
                 
     
 class AuthenticationEntry:

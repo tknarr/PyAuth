@@ -44,6 +44,9 @@ class AuthEntryPanel( wx.Panel ):
             p.UpdateEntrySize( sx )
 
 
+    def GetEntry( self ):
+        return self.entry
+
     def SetEntry( self, entry ):
         self.entry = entry
         self.SetName( "entry_panel_%s" % str(entry.entry_group) )
@@ -63,9 +66,7 @@ class AuthEntryPanel( wx.Panel ):
             if self.account_ctrl != None:
                 self.account_ctrl.SetLabelText( self.entry.account )
             if self.code_ctrl != None:
-                a = self.code_ctrl.GetSize()
                 self.code_ctrl.SetLabelText( self.code )
-                b = self.code_ctrl.GetSize()
 
 
     def AdjustSize( self, sx = None ):
