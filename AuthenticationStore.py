@@ -23,7 +23,6 @@ class AuthenticationStore:
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter
         #     a larger value for them than we've seen yet
-        oldpath = self.cfg.GetPath()
         self.cfg.SetPath( "/entries" )
         more, value, index = self.cfg.GetFirstGroup()
         while more:
@@ -41,7 +40,7 @@ class AuthenticationStore:
                 entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret )
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
-        self.cfg.SetPath( oldpath )
+        self.cfg.SetPath( "/" )
 
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()
@@ -58,14 +57,11 @@ class AuthenticationStore:
 
 
     def SaveEntry( self, cfg, entry ):
-        cfgpath = "/entries/%s" % entry.entry_group
-        oldpath = cfg.GetPath()
-        cfg.SetPath( cfgpath )
-        cfg.WriteInt( "sort_index", entry.sort_index )
-        cfg.Write( "provider", entry.provider )
-        cfg.Write( "account", entry.account )
-        cfg.Write( "secret", entry.secret )
-        cfg.SetPath( oldpath )
+        cfgpath = "/entries/%s/" % entry.entry_group
+        cfg.WriteInt( cfgpath + "sort_index", entry.sort_index )
+        cfg.Write( cfgpath + "provider", entry.provider )
+        cfg.Write( cfgpath + "account", entry.account )
+        cfg.Write( cfgpath + "secret", entry.secret )
 
 
     def Reindex( self ):
@@ -81,29 +77,37 @@ class AuthenticationStore:
     def Regroup( self ):
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
+        self.cfg.DeleteGroup( "/entries" )
         i = 1
         for e in self.entry_list:
-            # TODO remove group from config
             e.SetGroup( i )
             e.SetIndex( i )
-            # TODO save entry to config
+            self.SaveEntry( self.cfg, e )
             i += 1
         self.next_group = i
         self.next_index = i
 
 
     def Add( self, provider, account, secret ):
+        f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
+        elist = filter( f, self.entry_list )
+        if len(elist) > 0:
+            return None
         entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret )
         self.entry_list.append( entry )
         self.next_index += 1
         self.next_group += 1
         return entry
-        
-    # TODO methods: 
-    # update an entry
-    # delete an entry
 
 
+    def Delete( self, provider, account ):
+        for i in range( len(self.entry_list)-1, -1, -1 ):
+            entry = self.entry_list[i]
+            if entry.GetProvider == provider and entry.GetAccount == account:
+                self.cfg.DeleteGroup( "/entries/%s" % entry.entry_group )
+                del self.entry_list[i]
+                
+    
 class AuthenticationEntry:
 
     def __init__( self, group, index, provider = "", account = "", secret = "" ):
@@ -148,4 +152,4 @@ class AuthenticationEntry:
 
     def GenerateNextCode( self ):
         # TODO Generate next TOTP code
-        return "000000"
+        return "5"

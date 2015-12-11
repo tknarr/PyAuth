@@ -32,6 +32,11 @@ class AuthEntryPanel( wx.Panel ):
         self.code_ctrl = xrc.XRCCTRL( self, "code_text" )
         self.timer_ctrl = xrc.XRCCTRL( self, "timer" )
 
+        if self.code_ctrl != None:
+            self.code_ctrl.SetMinSize( self.code_ctrl.GetSize() )
+        if self.timer_ctrl != None:
+            self.timer_ctrl.SetMinSize( self.timer_ctrl.GetSize() )
+        
         self.UpdateContents()
         sx = self.AdjustSize()
         p = self.GetGrandParent()
@@ -58,7 +63,9 @@ class AuthEntryPanel( wx.Panel ):
             if self.account_ctrl != None:
                 self.account_ctrl.SetLabelText( self.entry.account )
             if self.code_ctrl != None:
+                a = self.code_ctrl.GetSize()
                 self.code_ctrl.SetLabelText( self.code )
+                b = self.code_ctrl.GetSize()
 
 
     def AdjustSize( self, sx = None ):
