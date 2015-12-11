@@ -8,6 +8,8 @@
 #   Last window size
 #   Last window position
 #   Peg to top-left, top-right, bottom-left, bottom-right corner (TL, TR, BL, BR, or XX for not pegged)
+#       The last window position is in screen coordinates when not pegged to a corner.
+#       When pegged, it's a delta from the pegged corner of the display to the same corner of the window.
 #   Number of items shown
 #   Last auth secrets file
 #   Show timers
@@ -15,23 +17,13 @@
 
 import wx
 
+
 def GetAppConfigName():
     # TODO Use .PyAuth or PyAuth depending on OS
     return ".PyAuth"
 
-def GetLastWindowSize():
-    w = wx.Config.Get().ReadInt( "/window/last_width", -1 )
-    h = wx.Config.Get().ReadInt( "/window/last_height", -1 )
-    ws = None
-    if w > 0 and h > 0:
-        ws = wx.Size( w, h )
-    return ws
-
-def SetLastWindowSize( ws ):
-    if ws.GetWidth() > 0:
-        wx.Config.Get().WriteInt( "/window/last_width", ws.GetWidth() )
-    if wx.GetHeight() > 0:
-        wx.Config.Get().WriteInt( "/window/last_height", ws.GetHeight() )
+def Save():
+    wx.Config.Get().Flush()
 
 def GetLastWindowPosition():
     x = wx.Config.Get().ReadInt( "/window/last_x", -1 )
@@ -41,21 +33,19 @@ def GetLastWindowPosition():
         wp = wx.Point( x, y )
     return wp
 
-def SetLastWindowPosition( wp ):
-    if wp.x >= 0:
-        wx.Config.Get().WriteInt( "/window/last_x", wp.x )
-    if wp.y >= 0:
-        wx.Config.Get().WriteInt( "/window/last_x", wp.y )
-
 def GetPeggedCorner():
     return wx.Config.Get().Read( "/window/pegged_corner", "XX" )
 
-def SetPeggedCorner( corner ):
-    s = corner.upper()
-    wx.Config.Get().Write( "/window_pegged_corner", s )
+def SetLastWindowPosition( wp, corner = "XX" ):
+    # TODO convert to pegged-relative if corner not "XX"
+    if wp.x >= 0:
+        wx.Config.Get().WriteInt( "/window/last_x", wp.x )
+    if wp.y >= 0:
+        wx.Config.Get().WriteInt( "/window/last_y", wp.y )
+    wx.Config.Get().Write( "/window/pegged_corner", corner.upper() )
 
 def GetNumberOfItemsShown():
-    return wx.Config.Get().ReadInt( "/window/items_shown", 1 )
+    return wx.Config.Get().ReadInt( "/window/items_shown", 2 )
 
 def SetNumberOfItemsShown( n ):
     wx.Config.Get().WriteInt( "/window/items_shown", n )
@@ -80,3 +70,12 @@ def GetDatabaseFilename():
 
 def GetDatabasePath():
     return GetDatabaseDirectory() + "/" + GetDatabaseFilename()
+
+
+def ToDisplayPosition( pegged_pos, window_size, corner ):
+    # TODO convert from pegged-relative position, window size and pegged corner to window position
+    return None
+
+def ToPeggedPosition( window_pos, window_size, corner ):
+    # TODO convert from window position, window size and pegged corner to pegged-relative position
+    return None

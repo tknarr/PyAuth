@@ -18,7 +18,7 @@ class PyAuthApp( wx.App ):
         cfg.SetRecordDefaults( True )
         wx.Config.Set( cfg )
         cfg = None
-        
+
         # Load XRC resources
         self.xrc_path = sys.path[0] + "/xrc/"
         self.res = xrc.XmlResource( self.xrc_path + "auth_window.xrc" )

@@ -2,6 +2,7 @@
 
 import wx
 from wx import xrc
+import AuthenticationStore
 
 class AuthEntryPanel( wx.Panel ):
 
@@ -12,9 +13,13 @@ class AuthEntryPanel( wx.Panel ):
         self.PostCreate( pre )
 
         self.index = 0
-        self.provider = ""
-        self.account = ""
         self.code = " 000000 "
+        self.entry = None
+
+        self.provider_ctrl = None
+        self.account_ctrl = None
+        self.code_ctrl = None
+        self.timer_ctrl = None
 
         self.Bind( self._first_event_type, self.OnCreate )
 
@@ -27,31 +32,38 @@ class AuthEntryPanel( wx.Panel ):
         self.code_ctrl = xrc.XRCCTRL( self, "code_text" )
         self.timer_ctrl = xrc.XRCCTRL( self, "timer" )
 
-        self.provider_ctrl.SetLabelText( self.provider )
-        self.account_ctrl.SetLabelText( self.account )
-        self.code_ctrl.SetLabelText( self.code )
-
-        sx = self.GetBestSize()
-        self.SetSize( sx )
-        self.SetMinSize( sx )
+        self.UpdateContents()
+        sx = self.AdjustSize()
         p = self.GetGrandParent()
         if p != None:
             p.UpdateEntrySize( sx )
 
-    def SetIndex( self, i ):
-        self.index = i
-        self.SetName( "entry_panel_%s" % str(i) )
-            
-    def SetProvider( self, s ):
-        self.provider = s
 
-    def SetAccount( self, s ):
-        self.account = s
+    def SetEntry( self, entry ):
+        self.entry = entry
+        self.SetName( "entry_panel_%s" % str(entry.entry_group) )
+        self.index = entry.sort_index
+        self.code = entry.GenerateNextCode()
+        self.UpdateContents()
+        sx = self.AdjustSize()
+        p = self.GetGrandParent()
+        if p != None:
+            p.UpdateEntrySize( sx )
 
-    def SetCode( self, s ):
-        self.code = s
+
+    def UpdateContents( self ):
+        if self.entry != None:
+            if self.provider_ctrl != None:
+                self.provider_ctrl.SetLabelText( self.entry.provider )
+            if self.account_ctrl != None:
+                self.account_ctrl.SetLabelText( self.entry.account )
+            if self.code_ctrl != None:
+                self.code_ctrl.SetLabelText( self.code )
 
 
-    def AdjustSize( self, sx ):
+    def AdjustSize( self, sx = None ):
+        if sx == None:
+            sx = self.GetBestSize()
         self.SetSize( sx )
         self.SetMinSize( sx )
+        return sx

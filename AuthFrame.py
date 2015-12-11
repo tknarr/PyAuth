@@ -3,6 +3,8 @@
 import wx
 from wx import xrc
 import Configuration
+import AuthenticationStore
+from AuthenticationStore import AuthenticationStore
 
 class AuthFrame( wx.Frame ):
 
@@ -19,13 +21,13 @@ class AuthFrame( wx.Frame ):
         self.Unbind( self._first_event_type )
 
         self.scrollbar_width = 0
-        self.visible_entries = 2
+        self.visible_entries = Configuration.GetNumberOfItemsShown()
         self.max_entry_height = 0
         self.max_entry_width = 0
         self.res = wx.GetApp().res
+        self.auth_store = AuthenticationStore( Configuration.GetDatabasePath() )
 
         self.SetTitle( 'PyAuth' )
-        # TODO Restore last window size
         wp = Configuration.GetLastWindowPosition()
         if wp != None:
             self.SetPosition( wp )
@@ -38,8 +40,22 @@ class AuthFrame( wx.Frame ):
         self.entries = self.populate_container()
         self.auth_window.SetScrollRate( 0, self.max_entry_height + 4 )
 
+        self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
+
         self.AdjustWindowSizes()
+        self.auth_container.Fit( self.auth_window )
         self.Refresh()
+
+
+    def OnCloseWindow( self, event ):
+        self.auth_store.Save()
+        wp = self.GetPosition()
+        Configuration.SetLastWindowPosition( wp )
+        ws = self.GetClientSize()
+        items = ( ws.GetHeight() + ( self.max_entry_height / 2 ) ) / ( self.max_entry_height + 4 )
+        Configuration.SetNumberOfItemsShown( items )
+        Configuration.Save()
+        self.Destroy()
 
 
     def UpdateEntrySize( self, size ):
@@ -68,22 +84,20 @@ class AuthFrame( wx.Frame ):
         # Min client size of auth entry window should be 1 entry wide by 1 entry high
         window_size.SetHeight( self.max_entry_height + 4 )
         self.auth_window.SetMinClientSize( window_size )
-
-        # Frame should be 1 entry wide, 1 entry high min and visible number high current
-        window_size.SetHeight( self.visible_entries * ( self.max_entry_height + 4 ) )
-        self.SetClientSize( window_size )
-        window_size.SetHeight( self.max_entry_height + 4 )
         self.SetMinClientSize( window_size )
+
+        # Frame client area should be 1 entry wide, 1 entry high min and visible number high current
+        window_size.SetHeight( self.visible_entries * ( self.max_entry_height + 4 ) )
+        self.auth_window.SetClientSize( window_size )
+        self.SetClientSize( window_size )
             
 
     def populate_container( self ):
         entry_count = 0
 
-        # TODO Populate container from authentication store
-
-        # Create dummy entries
-        for n in range( 1, 13 ):
-            item = self.create_item( n, "Provider %s" % str(n), "Account %s" % str(n) )
+        # Populate container from authentication store
+        for entry in self.auth_store.EntryList():
+            item = self.create_item( entry )
 
             #Calculate max entry panel height and width accounting for the border
             item_size = item.GetSize()
@@ -98,16 +112,8 @@ class AuthFrame( wx.Frame ):
         return entry_count
 
 
-    def create_item( self, n, provider, account ):
-        # Load new copy of item from XRC and set it's real name
+    def create_item( self, entry ):
+        # Load new copy of item from XRC
         item = self.res.LoadPanel( self.auth_window, 'entry_panel' )
-
-        item.SetIndex( n )
-        item.SetProvider( provider )
-        item.SetAccount( account )
-
-        # Set minimum size correctly
-        s = item.GetSize()
-        item.SetMinSize( s )
-
+        item.SetEntry( entry )
         return item
