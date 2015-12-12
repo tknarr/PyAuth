@@ -14,6 +14,8 @@ class AuthFrame( wx.Frame ):
         pre = wx.PreFrame()
         self.PostCreate( pre )
 
+        self.entries = 0
+        
         self.Bind( self._first_event_type, self.OnCreate )
 
 
@@ -43,6 +45,10 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
 
         self.AdjustWindowSizes()
+        sx = wx.Size( self.max_entry_width, self.max_entry_height )
+        children = self.auth_window.GetChildren()
+        for panel in children:
+            panel.AdjustSize( sx )
         self.auth_container.Fit( self.auth_window )
         self.Refresh()
 
@@ -59,7 +65,7 @@ class AuthFrame( wx.Frame ):
 
 
     def UpdateEntrySize( self, size ):
-        changed = False
+        changed = True
         if size.GetHeight() > self.max_entry_height:
             self.max_entry_height = size.GetHeight()
             changed = True
@@ -72,7 +78,8 @@ class AuthFrame( wx.Frame ):
             children = self.auth_window.GetChildren()
             for panel in children:
                 panel.AdjustSize( sx )
-            self.Refresh()
+        self.auth_container.Fit( self.auth_window )
+        self.Refresh()
 
 
     def AdjustWindowSizes( self ):
@@ -90,7 +97,7 @@ class AuthFrame( wx.Frame ):
         window_size.SetHeight( self.visible_entries * ( self.max_entry_height + 4 ) )
         self.auth_window.SetClientSize( window_size )
         self.SetClientSize( window_size )
-            
+
 
     def populate_container( self ):
         entry_count = 0

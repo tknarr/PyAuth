@@ -1,16 +1,16 @@
 <?xml version="1.0" ?>
-<resource>
+<resource class="wxPanel">
   <object class="wxFrame" name="main_frame" subclass="AuthFrame.AuthFrame">
     <object class="wxMenuBar" name="menu_bar">
       <object class="wxMenu">
         <label>File</label>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="NEW">
           <label>&amp;New</label>
           <bitmap stock_id="wxART_NEW"/>
           <accel>Ctrl-N</accel>
         </object>
         <object class="separator"/>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="QUIT">
           <label>&amp;Quit</label>
           <bitmap stock_id="wxART_QUIT"/>
           <accel>Ctrl-Q</accel>
@@ -18,31 +18,31 @@
       </object>
       <object class="wxMenu">
         <label>Edit</label>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="EDIT">
           <label>&amp;Edit</label>
         </object>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="DELETE">
           <label>&amp;Delete</label>
           <bitmap stock_id="wxART_DELETE"/>
           <accel>Del</accel>
         </object>
         <object class="separator"/>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="MOVE_UP">
           <label>Move Up</label>
           <bitmap stock_id="wxART_GO_UP"/>
         </object>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="MOVE_DOWN">
           <label>Move Down</label>
           <bitmap stock_id="wxART_GO_DOWN"/>
         </object>
       </object>
       <object class="wxMenu">
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="SHOW_TIMERS">
           <label>&amp;Timers</label>
           <checkable>1</checkable>
           <checked>1</checked>
         </object>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="SHOW_ALL_CODES">
           <label>All &amp;Codes</label>
           <checkable>1</checkable>
           <checked>1</checked>
@@ -51,11 +51,11 @@
       </object>
       <object class="wxMenu">
         <label>Help</label>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="HELP">
           <label>Contents</label>
           <bitmap stock_id="wxART_HELP_BOOK"/>
         </object>
-        <object class="wxMenuItem">
+        <object class="wxMenuItem" name="ABOUT">
           <label>About</label>
         </object>
       </object>
@@ -66,66 +66,83 @@
       </object>
       <style>wxVSCROLL</style>
     </object>
+    <title>PyAuth</title>
   </object>
   <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
     <object class="wxBoxSizer" name="auth_entry">
       <object class="sizeritem">
-        <object class="wxBoxSizer">
-          <object class="sizeritem">
-            <object class="wxStaticText" name="provider_text">
-              <label>PROVIDER</label>
-              <font>
-                <size>12</size>
-                <style>normal</style>
-                <weight>bold</weight>
-                <underlined>0</underlined>
-                <family>swiss</family>
-                <face>Sans</face>
-                <encoding>UTF-8</encoding>
-              </font>
-              <style>wxALIGN_LEFT</style>
+        <object class="wxPanel" name="label_panel">
+          <object class="wxBoxSizer">
+            <object class="sizeritem">
+              <object class="wxStaticText" name="provider_text">
+                <label>PROVIDER</label>
+                <font>
+                  <size>12</size>
+                  <style>normal</style>
+                  <weight>bold</weight>
+                  <underlined>0</underlined>
+                  <family>swiss</family>
+                  <face>Sans</face>
+                  <encoding>UTF-8</encoding>
+                </font>
+                <style>wxALIGN_LEFT</style>
+              </object>
+              <option>1</option>
+              <flag>wxLEFT|wxRIGHT</flag>
+              <border>2</border>
             </object>
-            <option>0</option>
-            <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
-          </object>
-          <object class="sizeritem">
-            <object class="wxStaticText" name="account_text">
-              <label>ACCOUNT</label>
-              <font>
-                <size>12</size>
-                <style>normal</style>
-                <weight>normal</weight>
-                <underlined>0</underlined>
-                <family>swiss</family>
-                <face>Sans</face>
-                <encoding>UTF-8</encoding>
-              </font>
-              <style>wxALIGN_LEFT</style>
+            <object class="sizeritem">
+              <object class="wxStaticText" name="account_text">
+                <label>ACCOUNT</label>
+                <font>
+                  <size>12</size>
+                  <style>normal</style>
+                  <weight>normal</weight>
+                  <underlined>0</underlined>
+                  <family>swiss</family>
+                  <face>Sans</face>
+                  <encoding>UTF-8</encoding>
+                </font>
+                <style>wxALIGN_LEFT</style>
+              </object>
+              <option>1</option>
+              <flag>wxLEFT|wxRIGHT</flag>
+              <border>2</border>
             </object>
-            <option>0</option>
-            <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+            <orient>wxVERTICAL</orient>
           </object>
-          <orient>wxVERTICAL</orient>
+          <bg>#90EE90</bg>
         </object>
         <option>1</option>
-        <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+        <flag>wxEXPAND</flag>
       </object>
       <object class="sizeritem">
-        <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
-          <label> 000000 </label>
-          <font>
-            <size>32</size>
-            <style>normal</style>
-            <weight>normal</weight>
-            <underlined>0</underlined>
-            <family>swiss</family>
-            <face>Sans</face>
-            <encoding>UTF-8</encoding>
-          </font>
-          <style>wxALIGN_CENTRE|wxST_NO_AUTORESIZE</style>
+        <object class="wxPanel" name="code_panel">
+          <object class="wxBoxSizer">
+            <object class="sizeritem">
+              <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
+                <label>000000</label>
+                <font>
+                  <size>32</size>
+                  <style>normal</style>
+                  <weight>normal</weight>
+                  <underlined>0</underlined>
+                  <family>swiss</family>
+                  <face>Sans</face>
+                  <encoding>UTF-8</encoding>
+                </font>
+                <style>wxST_NO_AUTORESIZE</style>
+              </object>
+              <option>1</option>
+              <flag>wxALIGN_CENTRE_HORIZONTAL|wxFIXED_MINSIZE</flag>
+            </object>
+            <orient>wxHORIZONTAL</orient>
+          </object>
+          <bg>#ADD8E6</bg>
         </object>
         <option>0</option>
-        <flag>wxALIGN_CENTRE|wxFIXED_MINSIZE</flag>
+        <flag>wxLEFT|wxRIGHT|wxFIXED_MINSIZE</flag>
+        <border>2</border>
       </object>
       <object class="sizeritem">
         <object class="wxGauge" name="timer" subclass="AuthTimerGauge.AuthTimerGauge">
@@ -134,7 +151,8 @@
           <value>30</value>
         </object>
         <option>0</option>
-        <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
+        <border>2</border>
       </object>
       <orient>wxHORIZONTAL</orient>
     </object>
