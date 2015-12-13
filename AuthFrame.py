@@ -2,8 +2,8 @@
 
 import wx
 import Configuration
-import AuthenticationStore
-from AuthenticationStore import AuthenticationStore
+from AuthenticationStore import AuthenticationStore, AuthenticationEntry
+from AuthEntryPanel import AuthEntryPanel
 
 class AuthFrame( wx.Frame ):
 
@@ -28,12 +28,15 @@ class AuthFrame( wx.Frame ):
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabasePath() )
 
-        # Create children
+        # Create child windows
         self.SetMenuBar( self.build_menus() )
         self.entry_window = wx.ScrolledWindow( self, wx.ID_ANY, style = wx.VSCROLL, name = "entry_window" )
         self.entry_window.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
-
+        # Get scrollbar width so we can account for it in window sizing
         self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.entry_window )
+
+        # Create our entry item panels and put them in the scrollable window
+        # Remember to adjust our own window sizes to match what's needed to fit the largest entry
         self.entry_panels = self.populate_container
         self.current_entries = len(self.entry_panels)
         self.AdjustWindowSizes()
@@ -72,43 +75,43 @@ class AuthFrame( wx.Frame ):
 
 
     def OnMenuNewEntry( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "New Entry"
 
     def OnMenuQuit( self, event ):
         self.Close()
 
     def OnMenuEditEntry( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Edit Entry"
 
     def OnMenuDeleteEntry( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Delete Entry"
 
     def OnMenuMoveUp( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Move Up"
 
     def OnMenuMoveDown( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Move Down"
 
     def OnMenuShowTimers( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Show Timers"
 
     def OnMenuShowAllCodes( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Show All Codes"
 
     def OnMenuHelpContents( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "Help Contents"
 
     def OnMenuAbout( self, event ):
-        # TODO
-        return None
+        # TODO menu handler
+        print "About"
 
 
     def CalcItemsShown( self, ws ):
@@ -158,9 +161,8 @@ class AuthFrame( wx.Frame ):
 
 
     def create_item( self, entry ):
-        # TODO Create entry panel
-        ## item = self.res.LoadPanel( self.entry_window, 'entry_panel' )
-        item.SetEntry( entry )
+        # Create entry panel
+        item = AuthEntryPanel( self, wx.ID_ANY ) # TODO entry panel parameters: provider, account, entry
         return item
 
 
