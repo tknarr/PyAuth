@@ -11,6 +11,9 @@ class AuthFrame( wx.Frame ):
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr ):
         wx.Frame.__init__( self, parent, id, title, pos, size, style, name )
 
+        self.ID_SHOW_TIMERS = self.NewControlId()
+        self.ID_SHOW_ALL_CODES = self.NewControlId()
+        
         self.entry_window = None
         self.entry_panels = []
         self.current_entries = 0
@@ -40,9 +43,19 @@ class AuthFrame( wx.Frame ):
             flags = wx.SizerFlags().Border( wx.ALL, self.entry_border ).Left().CenterVertical()
             auth_container.Add( item, flags )
 
-        # Event handlers
+        # Window event handlers
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
-        # TODO Menu event handlers
+        # Menu event handlers
+        wx.EVT_MENU( self, wx.ID_NEW, self.OnMenuNewEntry )
+        wx.EVT_MENU( self, wx.ID_EXIT, self.OnMenuQuit )
+        wx.EVT_MENU( self, wx.ID_EDIT, self.OnMenuEditEntry )
+        wx.EVT_MENU( self, wx.ID_DELETE, self.OnMenuDeleteEntry )
+        wx.EVT_MENU( self, wx.ID_UP, self.OnMenuMoveUp )
+        wx.EVT_MENU( self, wx.ID_DOWN, self.OnMenuMoveDown )
+        wx.EVT_MENU( self, self.ID_SHOW_TIMERS, self.OnMenuShowTimers )
+        wx.EVT_MENU( self, self.ID_SHOW_ALL_CODES, self.OnMenuShowAllCodes )
+        wx.EVT_MENU( self, wx.ID_HELP, self.OnMenuHelpContents )
+        wx.EVT_MENU( self, wx.ID_ABOUT, self.OnMenuAbout )
 
         # TODO Fit/Layout as needed
         
@@ -56,6 +69,46 @@ class AuthFrame( wx.Frame ):
         Configuration.SetNumberOfItemsShown( items )
         Configuration.Save()
         self.Destroy()
+
+
+    def OnMenuNewEntry( self, event ):
+        # TODO
+        return None
+
+    def OnMenuQuit( self, event ):
+        self.Close()
+
+    def OnMenuEditEntry( self, event ):
+        # TODO
+        return None
+
+    def OnMenuDeleteEntry( self, event ):
+        # TODO
+        return None
+
+    def OnMenuMoveUp( self, event ):
+        # TODO
+        return None
+
+    def OnMenuMoveDown( self, event ):
+        # TODO
+        return None
+
+    def OnMenuShowTimers( self, event ):
+        # TODO
+        return None
+
+    def OnMenuShowAllCodes( self, event ):
+        # TODO
+        return None
+
+    def OnMenuHelpContents( self, event ):
+        # TODO
+        return None
+
+    def OnMenuAbout( self, event ):
+        # TODO
+        return None
 
 
     def CalcItemsShown( self, ws ):
@@ -118,8 +171,29 @@ class AuthFrame( wx.Frame ):
         edit_menu = wx.Menu()
         view_menu = wx.Menu()
         help_menu = wx.Menu()
+
+        # File menu
+        file_menu.Append( wx.ID_NEW, "&New", "Create a new authentication entry" )
+        file_menu.Append( wx.ID_EXIT, "&Quit", "Exit the program" )
+
+        # Edit menu
+        edit_menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected authentication entry" )
+        edit_menu.Append( wx.ID_DELETE, "Delete", "Delete the selected authentication entry" )
+        edit_menu.AppendSeparator()
+        edit_menu.Append( wx.ID_UP, "&Up", "Move selected authentication entry up one position" )
+        edit_menu.Append( wx.ID_DOWN, "&Down", "Move selected authentication entry down one position" )
+
+        # View menu
+        timers = wx.MenuItem( view_menu, self.ID_SHOW_TIMERS, "Show &Timers", wx.ITEM_CHECK )
+        timers.Check()
+        view_menu.AppendItem( timers )
+        all_codes = wx.MenuItem( view_menu, self.ID_SHOW_ALL_CODES, "Show All &Codes", wx.ITEM_CHECK )
+        all_codes.Check()
+        view_menu.AppendItem( all_codes )
         
-        # TODO Build menus
+        # Help menu
+        help_menu.Append( wx.ID_HELP, "&Help contents", "Help contents" )
+        help_menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
 
         menu_bar.Append( file_menu, "&File" )
         menu_bar.Append( edit_menu, "&Edit" )
