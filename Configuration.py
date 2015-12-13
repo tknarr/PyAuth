@@ -28,6 +28,15 @@ def Save():
 def GetLastWindowPosition():
     x = wx.Config.Get().ReadInt( "/window/last_x", -1 )
     y = wx.Config.Get().ReadInt( "/window/last_y", -1 )
+    # TODO Convert from pegged-relative to screen position, needs window size to calculate
+    wp = None
+    if x >= 0 and y >= 0:
+        wp = wx.Point( x, y )
+    return wp
+
+def GetPeggedCornerPosition():
+    x = wx.Config.Get().ReadInt( "/window/last_x", -1 )
+    y = wx.Config.Get().ReadInt( "/window/last_y", -1 )
     wp = None
     if x >= 0 and y >= 0:
         wp = wx.Point( x, y )
@@ -37,7 +46,7 @@ def GetPeggedCorner():
     return wx.Config.Get().Read( "/window/pegged_corner", "XX" )
 
 def SetLastWindowPosition( wp, corner = "XX" ):
-    # TODO convert to pegged-relative if corner not "XX"
+    # TODO Convert to pegged-relative if corner not XX or TL, needs window size to calculate
     if wp.x >= 0:
         wx.Config.Get().WriteInt( "/window/last_x", wp.x )
     if wp.y >= 0:
@@ -70,12 +79,3 @@ def GetDatabaseFilename():
 
 def GetDatabasePath():
     return GetDatabaseDirectory() + "/" + GetDatabaseFilename()
-
-
-def ToDisplayPosition( pegged_pos, window_size, corner ):
-    # TODO convert from pegged-relative position, window size and pegged corner to window position
-    return None
-
-def ToPeggedPosition( window_pos, window_size, corner ):
-    # TODO convert from window position, window size and pegged corner to pegged-relative position
-    return None
