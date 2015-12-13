@@ -16,6 +16,7 @@ class AuthenticationStore:
     def __init__( self, filename ):
         self.cfg = wx.FileConfig( localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE )
+        self.cfg.SetUmask( 0077 )
         self.entry_list = []
         self.next_group = 1
         self.next_index = 1
