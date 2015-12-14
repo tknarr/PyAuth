@@ -37,14 +37,16 @@ class AuthFrame( wx.Frame ):
 
         # Create our entry item panels and put them in the scrollable window
         # Remember to adjust our own window sizes to match what's needed to fit the largest entry
-        self.entry_panels = self.populate_container
+        self.entry_panels = []
+        for entry in self.auth_store.EntryList():
+            item = self.create_item( entry )
+            self.entry_panels.append( item )
         self.current_entries = len( self.entry_panels )
-        self.AdjustWindowSizes()
         auth_container = self.entry_window.GetSizer()
         for item in self.entry_panels:
-            item.SetLabelPanelWidth( self.label_width )
             flags = wx.SizerFlags().Border( wx.ALL, self.entry_border ).Left().CenterVertical()
             auth_container.Add( item, flags )
+        self.AdjustPanelSizes() # This will call AdjustWindowSizes() for us
 
         # Window event handlers
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
@@ -140,22 +142,10 @@ class AuthFrame( wx.Frame ):
         self.SetMinClientSize( min_size )
 
 
-    def UpdateLabelPanelWidth( self, label_width ):
-        if label_width > self.label_width:
-            self.entry_width += label_width - self.label_width
-            self.label_width = label_width
-            for item in self.entry_panels:
-                item.SetLabelPanelWidth( self.label_width )
-            self.AdjustWindowSizes()
-            self.SendSizeEvent()
-        
-
-    def populate_container( self ):
-        # Populate container from authentication store
-        l = []
-        for entry in self.auth_store.EntryList():
-            item = self.create_item( entry )
-
+    def AdjustPanelSizes( self ):
+        self.entry_width = 0
+        self.entry_height = 0
+        for entry in self.entry_panels:
             # Update max entry panel sizes
             item_size = item.GetSize()
             if item_size.GetHeight() > self.entry_height:
@@ -164,11 +154,16 @@ class AuthFrame( wx.Frame ):
                 self.entry_width = item_size.GetWidth()
             if item.GetLabelWidth() > self.label_width:
                 self.label_width = item.GetLabelWidth()
+        ps = wx.Size( ( self.entry_width, self.entry_height ) )
+        for entry in self.entry_panels:
+            entry.SetPanelSize( ps, self.label_width )
+        self.AdjustWindowSizes()
+                
 
-            l.append( item )
-
-        return l
-
+    def UpdatePanelSize( self ):
+        self.AdjustPanelSizes()
+        self.SendSizeEvent()
+        
 
     def create_item( self, entry ):
         # Create entry panel

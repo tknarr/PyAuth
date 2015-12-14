@@ -8,8 +8,7 @@ class AuthEntryPanel( wx.Panel ):
     _first_event_type = wx.EVT_WINDOW_CREATE
 
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.DefaultSize,
-                  style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, label_panel_width = 0,
-                  auth_entry = None ):
+                  style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, auth_entry = None ):
         wx.Panel.__init__( self, parent, id, pos, size, style, name )
         self.SetSizer( wx.BoxSizer( wx.HORIZONTAL ) )
 
@@ -40,7 +39,7 @@ class AuthEntryPanel( wx.Panel ):
         flags = wx.SizerFlags().Align( wx.ALIGN_CENTER ).FixedMinSize()
         self.timer_panel.GetSizer().Add( self.timer_ctrl, flags )
 
-        self.label_panel_width = label_panel_width
+        self.label_panel_width = 0
         if auth_entry != None:
             self.SetEntry( auth_entry )
         else:
@@ -69,6 +68,14 @@ class AuthEntryPanel( wx.Panel ):
         self.label_panel.SetMinSize( lpsize )
 
 
+    def SetPanelSize( self, panel_size, label_panel_width = 0 ):
+        if label_panel_width > 0:
+            self.SetLabelPanelWidth( label_panel_width )
+        self.SetSize( panel_size )
+        self.SetMinSize( panel_size )
+        self.GetSizer().Fit( self )
+
+
     def UpdateContents( self ):
         self.code_ctrl.SetLabelText( self.code )
         self.provider_ctrl.SetLabelText( self.entry.GetProvider() )
@@ -80,8 +87,7 @@ class AuthEntryPanel( wx.Panel ):
         asize = account_ctrl.GetSize()
         if asize.GetWidth() > new_width:
             new_width = asize.GetWidth()
-        if new_width > self.label_panel_width:
-            self.SetLabelPanelWidth( new_width )
-            gp = self.GetGrandParent()
-            if gp != None:
-                gp.UpdateLabelWidth( self.label_panel_width )
+        self.SetLabelPanelWidth( new_width )
+        gp = self.GetGrandParent()
+        if gp != None:
+            gp.UpdatePanelSize()
