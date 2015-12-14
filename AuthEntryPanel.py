@@ -1,59 +1,50 @@
 # -*- coding: utf-8 -*-
 
 import wx
-from wx import xrc
-import AuthenticationStore
+from AuthenticationStore import AuthenticationEntry
 
 class AuthEntryPanel( wx.Panel ):
 
     _first_event_type = wx.EVT_WINDOW_CREATE
 
-    def __init__( self ):
-        pre = wx.PrePanel()
-        self.PostCreate( pre )
+    def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.DefaultSize,
+                  style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, label_panel_width = 0,
+                  auth_entry = None ):
+        wx.Panel.__init__( self, parent, id, pos, size, style, name )
+        self.SetSizer( wx.BoxSizer( wx.HORIZONTAL ) )
 
-        self.index = 0
-        self.code = "000000"
-        self.entry = None
+        # Build child windows
+        self.label_panel = wx.Panel( self, name = "label_panel" )
+        self.label_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
+        self.provider_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, "", name = "provider_ctrl" )
+        self.account_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, "", name = "account_ctrl" )
+        self.label_panel.GetSizer().Add( provider_ctrl )
+        self.label_panel.GetSizer().Add( account_ctrl )
 
-        self.have_controls = False
-        self.label_panel = None
-        self.provider_ctrl = None
-        self.account_ctrl = None
-        self.code_panel = None
-        self.code_ctrl = None
-        self.timer_ctrl = None
-
-        self.code_minsize = wx.Size()
-
-        self.Bind( self._first_event_type, self.OnCreate )
-
-
-    def OnCreate( self, event ):
-        self.Unbind( self._first_event_type )
-
-        self.label_panel = xrc.XRCCTRL( self, "label_panel" )
-        self.provider_ctrl = xrc.XRCCTRL( self, "provider_text" )
-        self.account_ctrl = xrc.XRCCTRL( self, "account_text" )
-        self.code_panel = xrc.XRCCTRL( self, "code_panel" )
-        self.code_ctrl = xrc.XRCCTRL( self, "code_text" )
-        self.timer_ctrl = xrc.XRCCTRL( self, "timer" )
-        self.have_controls = True
-
-        tx = self.code_ctrl.GetTextExtent( " 000000 " )
+        self.code_panel = wx.Panel( self, name = "code_panel" )
+        self.code_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
+        self.code_ctrl = wx.StaticText( self.code_panel, wx.ID_ANY, "", name = "code_ctrl",
+                                        style = wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE )
+        tx = self.code_ctrl.GetTextExtent( " 000000 " ) # Max-size code plus a bit of padding
         self.code_minsize = wx.Size( tx[0], tx[1] )
-        self.code_ctrl.SetMinSize( tx )
-        self.code_ctrl.SetSize( tx )
-        self.code_panel.SetMinSize( tx )
-        self.code_panel.SetSize( tx )
+        self.code_ctrl.SetSize( self.code_minsize )
+        self.code_ctrl.SetMinSize( self.code_minsize )
+        flags = wx.SizerFlags().Align( wx.ALIGN_CENTER ).FixedMinSize()
+        self.code_panel.GetSizer().Add( code_ctrl, flags )
+
+        self.timer_panel = wx.Panel( self, name = "timer_panel" )
+        self.timer_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
+        self.timer_ctrl = wx.Gauge( self.timer_panel, wx.ID_ANY, 30, name="timer_ctrl",
+                                    style = wx.GA_HORIZONTAL )
         self.timer_ctrl.SetMinSize( self.timer_ctrl.GetSize() )
-        
-        self.UpdateContents()
-        sx = self.AdjustSize()
-        p = self.GetGrandParent()
-        if p != None:
-            p.UpdateEntrySize( sx )
-        self.Refresh()
+        flags = wx.SizerFlags().Align( wx.ALIGN_CENTER ).FixedMinSize()
+        self.timer_panel.GetSizer().Add( self.timer_ctrl, flags )
+
+        self.label_panel_width = label_panel_width
+        if auth_entry != None:
+            self.SetEntry( auth_entry )
+        else:
+            self.SetEntry( AuthenticationStore.AuthenticationEntry( 0, 0 ) )
 
 
     def GetEntry( self ):
@@ -61,36 +52,36 @@ class AuthEntryPanel( wx.Panel ):
 
     def SetEntry( self, entry ):
         self.entry = entry
-        self.SetName( "entry_panel_%s" % str(entry.entry_group) )
-        self.index = entry.sort_index
+        self.SetName( "entry_panel_%s" % self.entry.GetGroup() )
+        self.index = self.entry.GetSortIndex()
         self.code = entry.GenerateNextCode()
         self.UpdateContents()
-        sx = self.AdjustSize()
-        p = self.GetGrandParent()
-        if p != None:
-            p.UpdateEntrySize( sx )
-        self.Refresh()
+
+
+    def GetLabelPanelWidth( self ):
+        return self.label_panel_width
+
+    def SetLabelPanelWidth( self, label_panel_width ):
+        self.label_panel_width = label_panel_width
+        lpsize self.label_panel.GetSize()
+        lpsize.SetWidth( self.label_panel_width )
+        self.label_panel.SetSize( lpsize )
+        self.label_panel.SetMinSize( lpsize )
 
 
     def UpdateContents( self ):
-        if self.entry != None and self.have_controls:
-            self.provider_ctrl.SetLabelText( self.entry.provider )
-            self.account_ctrl.SetLabelText( self.entry.account )
-            self.code_ctrl.SetLabelText( self.code )
-
-
-    def AdjustSize( self, sx = None ):
-        if sx == None:
-            sx = self.GetBestSize()
-        self.SetSize( sx )
-        self.SetMinSize( sx )
-        if self.have_controls:
-            csx = self.code_ctrl.GetSize()
-            if csx.GetWidth() < self.code_minsize.GetWidth() or csx.GetHeight() < self.code_minsize.GetHeight():
-                self.code_ctrl.SetSize( self.code_minsize )
-                self.code_panel.SetSize( self.code_minsize )
-            self.code_panel.GetSizer().Fit( self.code_panel )
-            self.label_panel.GetSizer().Fit( self.label_panel )
-        self.GetSizer().Fit( self )
-        self.Refresh()
-        return sx
+        self.code_ctrl.SetLabelText( self.code )
+        self.provider_ctrl.SetLabelText( self.entry.GetProvider() )
+        self.account_ctrl.SetLabelText( self.entry.GetAccount() )
+        self.provider_ctrl.SetMinSize( self.provider_ctrl.GetSize() )
+        self.account_ctrl.SetMinSize( self.account_ctrl.GetSize() )
+        psize = provider_ctrl.GetSize()
+        new_width = psize.GetWidth()
+        asize = account_ctrl.GetSize()
+        if asize.GetWidth() > new_width:
+            new_width = asize.GetWidth()
+        if new_width > self.label_panel_width:
+            self.SetLabelPanelWidth( new_width )
+            gp = self.GetGrandParent()
+            if gp != None:
+                gp.UpdateLabelWidth( self.label_panel_width )

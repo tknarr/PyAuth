@@ -38,11 +38,11 @@ class AuthFrame( wx.Frame ):
         # Create our entry item panels and put them in the scrollable window
         # Remember to adjust our own window sizes to match what's needed to fit the largest entry
         self.entry_panels = self.populate_container
-        self.current_entries = len(self.entry_panels)
+        self.current_entries = len( self.entry_panels )
         self.AdjustWindowSizes()
         auth_container = self.entry_window.GetSizer()
         for item in self.entry_panels:
-            item.AdjustSizes( self.entry_width, self.entry_height, self.label_width )
+            item.SetLabelPanelWidth( self.label_width )
             flags = wx.SizerFlags().Border( wx.ALL, self.entry_border ).Left().CenterVertical()
             auth_container.Add( item, flags )
 
@@ -138,6 +138,16 @@ class AuthFrame( wx.Frame ):
         min_size.SetHeight( self.entry_height + 2 * self.entry_border )
         self.entry_window.SetMinSize( min_size )
         self.SetMinClientSize( min_size )
+
+
+    def UpdateLabelPanelWidth( self, label_width ):
+        if label_width > self.label_width:
+            self.entry_width += label_width - self.label_width
+            self.label_width = label_width
+            for item in self.entry_panels:
+                item.SetLabelPanelWidth( self.label_width )
+            self.AdjustWindowSizes()
+            self.SendSizeEvent()
         
 
     def populate_container( self ):
@@ -162,7 +172,7 @@ class AuthFrame( wx.Frame ):
 
     def create_item( self, entry ):
         # Create entry panel
-        item = AuthEntryPanel( self, wx.ID_ANY ) # TODO entry panel parameters: provider, account, entry
+        item = AuthEntryPanel( self, wx.ID_ANY, auth_entry = entry )
         return item
 
 

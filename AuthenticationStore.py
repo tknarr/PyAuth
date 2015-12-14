@@ -92,7 +92,7 @@ class AuthenticationStore:
     def Add( self, provider, account, secret ):
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
         elist = filter( f, self.entry_list )
-        if len(elist) > 0:
+        if len( elist ) > 0:
             return None
         entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret )
         self.entry_list.append( entry )
@@ -102,7 +102,7 @@ class AuthenticationStore:
 
 
     def Delete( self, entry_group ):
-        for i in range( len(self.entry_list)-1, -1, -1 ):
+        for i in range( len( self.entry_list ) - 1, -1, -1 ):
             entry = self.entry_list[i]
             if entry.GetGroup() == entry_group:
                 self.cfg.DeleteGroup( "/entries/%s" % entry.entry_group )
