@@ -5,6 +5,8 @@ Dialogs:
     Update entry
     About
 Basic functionality:
+    Add/update/delete entries
+    Move entries up/down
     TOTP code generation
     Timer countdown
     Show/hide timers
