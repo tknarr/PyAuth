@@ -39,13 +39,12 @@ class AuthFrame( wx.Frame ):
         # Remember to adjust our own window sizes to match what's needed to fit the largest entry
         self.entry_panels = []
         for entry in self.auth_store.EntryList():
-            item = self.create_item( entry )
+            item = self.create_panel( entry )
             self.entry_panels.append( item )
         self.current_entries = len( self.entry_panels )
         auth_container = self.entry_window.GetSizer()
         for item in self.entry_panels:
-            flags = wx.SizerFlags().Border( wx.ALL, self.entry_border ).Left().CenterVertical()
-            auth_container.Add( item, flags )
+            auth_container.Add( item, flag = wx.ALL | wx.ALIGN_CENTER_VERTICAL, border = 2 )
         self.AdjustPanelSizes() # This will call AdjustWindowSizes() for us
 
         # Window event handlers
@@ -147,14 +146,14 @@ class AuthFrame( wx.Frame ):
         self.entry_height = 0
         for entry in self.entry_panels:
             # Update max entry panel sizes
-            item_size = item.GetSize()
-            if item_size.GetHeight() > self.entry_height:
-                self.entry_height = item_size.GetHeight()
-            if item_size.GetWidth() > self.entry_width:
-                self.entry_width = item_size.GetWidth()
-            if item.GetLabelWidth() > self.label_width:
-                self.label_width = item.GetLabelWidth()
-        ps = wx.Size( ( self.entry_width, self.entry_height ) )
+            entry_size = entry.GetSize()
+            if entry_size.GetHeight() > self.entry_height:
+                self.entry_height = entry_size.GetHeight()
+            if entry_size.GetWidth() > self.entry_width:
+                self.entry_width = entry_size.GetWidth()
+            if entry.GetLabelPanelWidth() > self.label_width:
+                self.label_width = entry.GetLabelPanelWidth()
+        ps = wx.Size( self.entry_width, self.entry_height )
         for entry in self.entry_panels:
             entry.SetPanelSize( ps, self.label_width )
         self.AdjustWindowSizes()
@@ -165,10 +164,10 @@ class AuthFrame( wx.Frame ):
         self.SendSizeEvent()
         
 
-    def create_item( self, entry ):
+    def create_panel( self, entry ):
         # Create entry panel
-        item = AuthEntryPanel( self, wx.ID_ANY, auth_entry = entry )
-        return item
+        panel = AuthEntryPanel( self, wx.ID_ANY, auth_entry = entry )
+        return panel
 
 
     def build_menus( self ):
@@ -191,11 +190,14 @@ class AuthFrame( wx.Frame ):
         edit_menu.Append( wx.ID_DOWN, "&Down", "Move selected authentication entry down one position" )
 
         # View menu
-        timers = wx.MenuItem( view_menu, self.ID_SHOW_TIMERS, "Show &Timers", wx.ITEM_CHECK )
-        timers.Check()
+        timers = wx.MenuItem( view_menu, self.ID_SHOW_TIMERS, "Show &Timers", "Show timers",
+                              kind = wx.ITEM_CHECK )
+        ## timers.Check( True )
         view_menu.AppendItem( timers )
-        all_codes = wx.MenuItem( view_menu, self.ID_SHOW_ALL_CODES, "Show All &Codes", wx.ITEM_CHECK )
-        all_codes.Check()
+        all_codes = wx.MenuItem( view_menu, self.ID_SHOW_ALL_CODES, "Show All &Codes",
+                                 "Show codes for all entries",
+                                 kind = wx.ITEM_CHECK )
+        ## all_codes.Check( True )
         view_menu.AppendItem( all_codes )
         
         # Help menu

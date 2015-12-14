@@ -17,8 +17,8 @@ class AuthEntryPanel( wx.Panel ):
         self.label_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         self.provider_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, "", name = "provider_ctrl" )
         self.account_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, "", name = "account_ctrl" )
-        self.label_panel.GetSizer().Add( provider_ctrl )
-        self.label_panel.GetSizer().Add( account_ctrl )
+        self.label_panel.GetSizer().Add( self.provider_ctrl )
+        self.label_panel.GetSizer().Add( self.account_ctrl )
 
         self.code_panel = wx.Panel( self, name = "code_panel" )
         self.code_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
@@ -28,16 +28,14 @@ class AuthEntryPanel( wx.Panel ):
         self.code_minsize = wx.Size( tx[0], tx[1] )
         self.code_ctrl.SetSize( self.code_minsize )
         self.code_ctrl.SetMinSize( self.code_minsize )
-        flags = wx.SizerFlags().Align( wx.ALIGN_CENTER ).FixedMinSize()
-        self.code_panel.GetSizer().Add( code_ctrl, flags )
+        self.code_panel.GetSizer().Add( self.code_ctrl, flag = wx.ALIGN_CENTER | wx.FIXED_MINSIZE )
 
         self.timer_panel = wx.Panel( self, name = "timer_panel" )
         self.timer_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         self.timer_ctrl = wx.Gauge( self.timer_panel, wx.ID_ANY, 30, name="timer_ctrl",
                                     style = wx.GA_HORIZONTAL )
         self.timer_ctrl.SetMinSize( self.timer_ctrl.GetSize() )
-        flags = wx.SizerFlags().Align( wx.ALIGN_CENTER ).FixedMinSize()
-        self.timer_panel.GetSizer().Add( self.timer_ctrl, flags )
+        self.timer_panel.GetSizer().Add( self.timer_ctrl, flag = wx.ALIGN_CENTER | wx.FIXED_MINSIZE  )
 
         self.label_panel_width = 0
         if auth_entry != None:
@@ -62,7 +60,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def SetLabelPanelWidth( self, label_panel_width ):
         self.label_panel_width = label_panel_width
-        lpsize self.label_panel.GetSize()
+        lpsize = self.label_panel.GetSize()
         lpsize.SetWidth( self.label_panel_width )
         self.label_panel.SetSize( lpsize )
         self.label_panel.SetMinSize( lpsize )
@@ -82,9 +80,9 @@ class AuthEntryPanel( wx.Panel ):
         self.account_ctrl.SetLabelText( self.entry.GetAccount() )
         self.provider_ctrl.SetMinSize( self.provider_ctrl.GetSize() )
         self.account_ctrl.SetMinSize( self.account_ctrl.GetSize() )
-        psize = provider_ctrl.GetSize()
+        psize = self.provider_ctrl.GetSize()
         new_width = psize.GetWidth()
-        asize = account_ctrl.GetSize()
+        asize = self.account_ctrl.GetSize()
         if asize.GetWidth() > new_width:
             new_width = asize.GetWidth()
         self.SetLabelPanelWidth( new_width )

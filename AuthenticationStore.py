@@ -16,7 +16,7 @@ class AuthenticationStore:
     def __init__( self, filename ):
         self.cfg = wx.FileConfig( "PyAuth", "Silverglass Technical", localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-        self.cfg.SetUmask( 0077 )
+        ## self.cfg.SetUmask( 0077 )
         self.entry_list = []
         self.next_group = 1
         self.next_index = 1
@@ -131,10 +131,10 @@ class AuthenticationEntry:
 
 
     def GetGroup( self ):
-        return self.group_number
+        return self.entry_group
 
     def SetGroup( self, g ):
-        self.group_number = g
+        self.entry_group = g
         
 
     def GetSortIndex( self ):

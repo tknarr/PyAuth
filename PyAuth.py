@@ -3,7 +3,7 @@
 
 import wx
 from AuthFrame import AuthFrame
-from Configuration import Configuration
+import Configuration
 
 class PyAuthApp( wx.App ):
 
@@ -13,6 +13,7 @@ class PyAuthApp( wx.App ):
                              style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfg.SetRecordDefaults( True )
         wx.Config.Set( cfg )
+        # TODO Make sure our config directory exists
 
         # Create main frame
         wpos = Configuration.GetLastWindowPosition()
