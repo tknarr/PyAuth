@@ -8,11 +8,9 @@ from Configuration import Configuration
 class PyAuthApp( wx.App ):
 
     def OnInit( self ):
-        # TODO Create user config directory if it doesn't exist
         # Set our configuration file up to be the default configuration source
-        cfg = wx.FileConfig( localFilename = wx.StandardPaths.Get().GetUserConfigDir() + "/" +
-                             Configuration.GetAppConfigName() + "/config.cfg",
-                             style = wx.CONFIG_USE_LOCAL_FILE )
+        cfg = wx.FileConfig( "PyAuth", "Silverglass Technical", localFilename = "pyauth.cfg",
+                             style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfg.SetRecordDefaults( True )
         wx.Config.Set( cfg )
 

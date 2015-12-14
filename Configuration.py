@@ -18,10 +18,6 @@
 import wx
 
 
-def GetAppConfigName():
-    # TODO Use .PyAuth or PyAuth depending on OS
-    return ".PyAuth"
-
 def Save():
     wx.Config.Get().Flush()
 
@@ -71,11 +67,5 @@ def GetShowAllCodes():
 def SetShowAllCodes( state ):
     wx.Config.Get().WriteBool( "/window/show_all_codes", state )
 
-def GetDatabaseDirectory():
-    return wx.Config.Get().Read( "/database/directory", wx.StandardPaths.Get().GetUserConfigDir() + "/.PyAuth" )
-
 def GetDatabaseFilename():
     return wx.Config.Get().Read( "/database/file_name", "database.cfg" )
-
-def GetDatabasePath():
-    return GetDatabaseDirectory() + "/" + GetDatabaseFilename()

@@ -26,7 +26,7 @@ class AuthFrame( wx.Frame ):
         # Internal values
         self.entry_border = 2
 
-        self.auth_store = AuthenticationStore( Configuration.GetDatabasePath() )
+        self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
         # Create child windows
         self.SetMenuBar( self.build_menus() )

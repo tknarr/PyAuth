@@ -14,8 +14,8 @@ import wx
 class AuthenticationStore:
 
     def __init__( self, filename ):
-        self.cfg = wx.FileConfig( localFilename = filename,
-                                  style = wx.CONFIG_USE_LOCAL_FILE )
+        self.cfg = wx.FileConfig( "PyAuth", "Silverglass Technical", localFilename = filename,
+                                  style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         self.cfg.SetUmask( 0077 )
         self.entry_list = []
         self.next_group = 1

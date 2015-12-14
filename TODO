@@ -1,0 +1,25 @@
+To-Do list:
+
+Dialogs:
+    New entry
+    Update entry
+    About
+Basic functionality:
+    TOTP code generation
+    Timer countdown
+    Show/hide timers
+    Show/hide all codes
+    Click to show/hide code when all codes hidden
+    Help system
+    Menu accelerators
+    Snap size to entry size when resizing window
+Enhancements:
+    Subclass authentication entry classes and panels
+    HOTP entries and code generation
+    Change databases
+    Read QR codes
+    Generate QR codes
+    Import/export databases:
+        WinAuth
+        JAuth
+        Google sqlite3
