@@ -70,6 +70,9 @@ class AuthFrame( wx.Frame ):
         Configuration.SetLastWindowPosition( wp )
         ws = self.GetClientSize()
         items = self.CalcItemsShown( ws )
+        # TODO Remove this limit later
+        if items > 12:
+            items = 12
         Configuration.SetNumberOfItemsShown( items )
         Configuration.Save()
         self.Destroy()
@@ -147,6 +150,7 @@ class AuthFrame( wx.Frame ):
         for entry in self.entry_panels:
             # Update max entry panel sizes
             entry_size = entry.GetSize()
+            entry_best_size = entry.GetBestSize()
             if entry_size.GetHeight() > self.entry_height:
                 self.entry_height = entry_size.GetHeight()
             if entry_size.GetWidth() > self.entry_width:
@@ -166,7 +170,7 @@ class AuthFrame( wx.Frame ):
 
     def create_panel( self, entry ):
         # Create entry panel
-        panel = AuthEntryPanel( self, wx.ID_ANY, auth_entry = entry )
+        panel = AuthEntryPanel( self, wx.ID_ANY, style = wx.BORDER_SUNKEN, auth_entry = entry )
         return panel
 
 

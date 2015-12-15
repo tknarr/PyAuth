@@ -11,18 +11,32 @@ class AuthEntryPanel( wx.Panel ):
                   style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, auth_entry = None ):
         wx.Panel.__init__( self, parent, id, pos, size, style, name )
         self.SetSizer( wx.BoxSizer( wx.HORIZONTAL ) )
+        font = wx.Font( 12, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL )
+        self.SetFont( font )
+
+        if auth_entry != None:
+            self.SetEntry( auth_entry )
+        else:
+            self.SetEntry( AuthenticationStore.AuthenticationEntry( 0, 0 ) )
 
         # Build child windows
         self.label_panel = wx.Panel( self, name = "label_panel" )
+        self.label_panel.SetBackgroundColour( wx.GREEN )
         self.label_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
-        self.provider_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, "", name = "provider_ctrl" )
-        self.account_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, "", name = "account_ctrl" )
+        self.provider_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, self.entry.GetProvider(),
+                                            name = "provider_ctrl" )
+        self.account_ctrl = wx.StaticText( self.label_panel, wx.ID_ANY, self.entry.GetAccount(),
+                                           name = "account_ctrl" )
         self.label_panel.GetSizer().Add( self.provider_ctrl )
         self.label_panel.GetSizer().Add( self.account_ctrl )
 
         self.code_panel = wx.Panel( self, name = "code_panel" )
+        self.code_panel.SetBackgroundColour( wx.CYAN )
+        font = wx.Font( 32, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL )
+        self.code_panel.SetFont( font )
         self.code_panel.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
-        self.code_ctrl = wx.StaticText( self.code_panel, wx.ID_ANY, "", name = "code_ctrl",
+        self.code_ctrl = wx.StaticText( self.code_panel, wx.ID_ANY, " 000000 ",
+                                        name = "code_ctrl",
                                         style = wx.ALIGN_CENTER_HORIZONTAL | wx.ST_NO_AUTORESIZE )
         tx = self.code_ctrl.GetTextExtent( " 000000 " ) # Max-size code plus a bit of padding
         self.code_minsize = wx.Size( tx[0], tx[1] )
@@ -37,11 +51,7 @@ class AuthEntryPanel( wx.Panel ):
         self.timer_ctrl.SetMinSize( self.timer_ctrl.GetSize() )
         self.timer_panel.GetSizer().Add( self.timer_ctrl, flag = wx.ALIGN_CENTER | wx.FIXED_MINSIZE  )
 
-        self.label_panel_width = 0
-        if auth_entry != None:
-            self.SetEntry( auth_entry )
-        else:
-            self.SetEntry( AuthenticationStore.AuthenticationEntry( 0, 0 ) )
+        self.label_panel_width = self.label_panel.GetSize().GetWidth()
 
 
     def GetEntry( self ):
@@ -52,7 +62,6 @@ class AuthEntryPanel( wx.Panel ):
         self.SetName( "entry_panel_%s" % self.entry.GetGroup() )
         self.index = self.entry.GetSortIndex()
         self.code = entry.GenerateNextCode()
-        self.UpdateContents()
 
 
     def GetLabelPanelWidth( self ):
@@ -71,7 +80,6 @@ class AuthEntryPanel( wx.Panel ):
             self.SetLabelPanelWidth( label_panel_width )
         self.SetSize( panel_size )
         self.SetMinSize( panel_size )
-        self.GetSizer().Fit( self )
 
 
     def UpdateContents( self ):
