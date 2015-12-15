@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+import stat
 import wx
 
 # The authentication store works in tandem with the authentication entry panels. Each
@@ -55,6 +57,14 @@ class AuthenticationStore:
     def Save( self ):
         for entry in self.entry_list:
             self.SaveEntry( self.cfg, entry )
+        self.cfg.Flush()
+        # Make sure our database of secrets is only accessible by us
+        cfgfile = wx.FileConfig.GetLocalFileName( "database.cfg", wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        try:
+            os.chmod( cfgfile, stat.IRUSR | stat.IWUSR )
+        except OSError as e:
+            print "Problem with database file " + cfgfile
+            print "Error code " + str( e.errno ) + ": " + e.strerror
 
 
     def SaveEntry( self, cfg, entry ):
