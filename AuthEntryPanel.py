@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import wx
+from wx import xrc as xrc
 from AuthenticationStore import AuthenticationEntry
 
 class AuthEntryPanel( wx.Panel ):
+    # TODO Convert to XRC
 
     _first_event_type = wx.EVT_WINDOW_CREATE
 

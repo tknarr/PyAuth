@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import wx
+from wx import xrc as xrc
 import Configuration
 from AuthenticationStore import AuthenticationStore, AuthenticationEntry
 from AuthEntryPanel import AuthEntryPanel
 
 class AuthFrame( wx.Frame ):
+    # TODO Convert to XRC
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr ):

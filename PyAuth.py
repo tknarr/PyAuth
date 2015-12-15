@@ -5,7 +5,6 @@ import os.path
 import wx
 from wx import xrc as xrc
 import Configuration
-from AuthFrame import AuthFrame
 
 class PyAuthApp( wx.App ):
 
