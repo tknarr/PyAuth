@@ -17,7 +17,6 @@
 
 import wx
 
-
 def Save():
     wx.Config.Get().Flush()
 

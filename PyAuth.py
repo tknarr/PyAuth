@@ -3,8 +3,9 @@
 
 import os.path
 import wx
-from AuthFrame import AuthFrame
+from wx import xrc as xrc
 import Configuration
+from AuthFrame import AuthFrame
 
 class PyAuthApp( wx.App ):
 
@@ -25,10 +26,16 @@ class PyAuthApp( wx.App ):
                 print "Error code " + str( e.errno ) + ": " + e.strerror
                 return False
 
+        # Load XRC resources
+        self.xrc_path = sys.path[0] + "/xrc/"
+        self.res = xrc.XmlResource( self.xrc_path + "auth_window.xrc" )
+        
         # Create main frame
-        wpos = Configuration.GetLastWindowPosition()
-        self.frame = AuthFrame( None, wx.ID_ANY, "PyAuth", pos = wpos, name = "main_frame" )
+        self.frame = self.res.LoadFrame( None, 'main_frame' )
         self.SetTopWindow( self.frame )
+        wpos = Configuration.GetLastWindowPosition()
+        if wpos != None:
+            self.frame.SetPosition( wpos )
         self.frame.Show()
         return True
 
