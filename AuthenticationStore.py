@@ -2,6 +2,7 @@
 
 import os
 import stat
+import random
 import wx
 
 # The authentication store works in tandem with the authentication entry panels. Each
@@ -18,7 +19,8 @@ class AuthenticationStore:
     def __init__( self, filename ):
         self.cfg = wx.FileConfig( "PyAuth", "Silverglass Technical", localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-        ## self.cfg.SetUmask( 0077 )
+        ## self.cfg.SetUmask( 0077 ) # Set permissions on the database file
+        random.seed() # TODO Remove after proper GenerateNextCode() implemented
         self.entry_list = []
         self.next_group = 1
         self.next_index = 1
@@ -174,4 +176,4 @@ class AuthenticationEntry:
 
     def GenerateNextCode( self ):
         # TODO Generate next TOTP code
-        return "5"
+        return str( random.randint( 100, 999999 ) )
