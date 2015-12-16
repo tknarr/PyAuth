@@ -66,7 +66,7 @@
     <title>PyAuth</title>
   </object>
   <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
-    <object class="wxBoxSizer" name="auth_entry">
+    <object class="wxBoxSizer">
       <object class="sizeritem">
         <object class="wxPanel" name="label_panel">
           <object class="wxBoxSizer">
@@ -93,7 +93,6 @@
       </object>
       <object class="sizeritem">
         <object class="wxPanel" name="code_panel">
-          
           <bg>#ADD8E6</bg>
           <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
             <label>000000</label>

@@ -28,24 +28,24 @@ class AuthenticationStore:
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter
         #     a larger value for them than we've seen yet
-        self.cfg.SetPath( "/entries" )
+        self.cfg.SetPath( '/entries' )
         more, value, index = self.cfg.GetFirstGroup()
         while more:
             entry_group = int( value )
             if entry_group > 0:
                 if entry_group > self.next_group:
                     self.next_group = entry_group
-                cfgpath = "%s/" % entry_group
-                sort_index = self.cfg.ReadInt( cfgpath + "sort_index" )
+                cfgpath = '%s/' % entry_group
+                sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
                 if sort_index > self.next_index:
                     self.next_index = sort_index
-                provider = self.cfg.Read( cfgpath + "provider" )
-                account = self.cfg.Read( cfgpath + "account" )
-                secret = self.cfg.Read( cfgpath + "secret" )
+                provider = self.cfg.Read( cfgpath + 'provider' )
+                account = self.cfg.Read( cfgpath + 'account' )
+                secret = self.cfg.Read( cfgpath + 'secret' )
                 entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret )
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
-        self.cfg.SetPath( "/" )
+        self.cfg.SetPath( '/' )
 
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()
@@ -61,7 +61,7 @@ class AuthenticationStore:
             self.SaveEntry( self.cfg, entry )
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
-        cfgfile = wx.FileConfig.GetLocalFileName( "database.cfg", wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         try:
             os.chmod( cfgfile, stat.IRUSR | stat.IWUSR )
         except OSError as e:
@@ -70,11 +70,11 @@ class AuthenticationStore:
 
 
     def SaveEntry( self, cfg, entry ):
-        cfgpath = "/entries/%s/" % entry.entry_group
-        cfg.WriteInt( cfgpath + "sort_index", entry.sort_index )
-        cfg.Write( cfgpath + "provider", entry.provider )
-        cfg.Write( cfgpath + "account", entry.account )
-        cfg.Write( cfgpath + "secret", entry.secret )
+        cfgpath = '/entries/%s/' % entry.entry_group
+        cfg.WriteInt( cfgpath + 'sort_index', entry.sort_index )
+        cfg.Write( cfgpath + 'provider', entry.provider )
+        cfg.Write( cfgpath + 'account', entry.account )
+        cfg.Write( cfgpath + 'secret', entry.secret )
 
 
     def Reindex( self ):
@@ -90,7 +90,7 @@ class AuthenticationStore:
     def Regroup( self ):
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
-        self.cfg.DeleteGroup( "/entries" )
+        self.cfg.DeleteGroup( '/entries' )
         i = 1
         for e in self.entry_list:
             e.SetGroup( i )
@@ -117,7 +117,7 @@ class AuthenticationStore:
         for i in range( len( self.entry_list ) - 1, -1, -1 ):
             entry = self.entry_list[i]
             if entry.GetGroup() == entry_group:
-                self.cfg.DeleteGroup( "/entries/%s" % entry.entry_group )
+                self.cfg.DeleteGroup( '/entries/%s' % entry.entry_group )
                 del self.entry_list[i]
 
 
@@ -134,7 +134,7 @@ class AuthenticationStore:
     
 class AuthenticationEntry:
 
-    def __init__( self, group, index, provider = "", account = "", secret = "" ):
+    def __init__( self, group, index, provider = '', account = '', secret = '' ):
         self.entry_group = group
         self.sort_index = index
         self.provider = provider
