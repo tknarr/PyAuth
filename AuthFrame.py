@@ -42,11 +42,11 @@ class AuthFrame( wx.Frame ):
             panel = self.res.LoadPanel( self, 'entry_panel' )
             panel.SetEntry( entry )
             self.entry_panels.append( panel )
-        auth_container = self.entries_window.GetSizer()
         for item in self.entry_panels:
-            auth_container.Add( item, flag = wx.ALL | wx.ALIGN_CENTER_VERTICAL, border = 2 )
+            self.entries_window.GetSizer().Add( item, flag = wx.ALL | wx.ALIGN_CENTER, border = 2 )
 
-        # TODO Fit/Layout
+        self.AdjustPanelSizes()
+        self.AdjustWindowSizes()
 
         # Window event handlers
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
@@ -133,23 +133,23 @@ class AuthFrame( wx.Frame ):
 
     def AdjustWindowSizes( self ):
         # Need to adjust this here, it depends on the entry height which may change
-        self.entry_window.SetScrollRate( 0, self.entry_size.GetHeight() + 2 * self.entry_border )
+        self.entries_window.SetScrollRate( 0, self.entry_size.GetHeight() + 2 * self.entry_border )
 
         # Frame size is 1 entry wide accounting for scrollbar, visible_entries high
         client_size = wx.DefaultSize
         client_size.SetWidth( self.entry_size.GetWidth() + 2 * self.entry_border + self.scrollbar_width )
         client_size.SetHeight( self.visible_entries * ( self.entry_size.GetHeight() + 2 * self.entry_border ) )
-        self.entry_window.SetSize( client_size )
+        self.entries_window.SetSize( client_size )
         self.SetClientSize( client_size )
 
         # Minimum size is 1 entry wide accounting for scrollbar, 1 entry high
         min_size = wx.DefaultSize
         min_size.SetWidth( self.entry_size.GetWidth() + 2 * self.entry_border + self.scrollbar_width )
         min_size.SetHeight( self.entry_size.GetHeight() + 2 * self.entry_border )
-        self.entry_window.SetMinSize( min_size )
+        self.entries_window.SetMinSize( min_size )
         self.SetMinClientSize( min_size )
 
-        # TODO Fit/Layout
+        self.entries_window.GetSizer().Fit( self.entries_window )
 
 
     def AdjustPanelSizes( self ):
@@ -168,8 +168,7 @@ class AuthFrame( wx.Frame ):
                 self.label_size.SetWidth( label_size.GetWidth() )
         for entry in self.entry_panels:
             entry.ResizePanel( self.entry_size, self.label_size )
-
-        # TODO Fit/Layout
+        self.entries_window.GetSizer().Fit( self.entries_window )
                 
 
     def UpdatePanelSize( self ):

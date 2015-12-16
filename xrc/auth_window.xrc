@@ -73,27 +73,46 @@
             <object class="sizeritem">
               <object class="wxStaticText" name="provider_text">
                 <label>PROVIDER</label>
-                <style>wxALIGN_LEFT</style>
+                <font>
+                  <size>12</size>
+                  <style>normal</style>
+                  <weight>bold</weight>
+                  <underlined>0</underlined>
+                  <family>swiss</family>
+                  <face>Sans</face>
+                  <encoding>UTF-8</encoding>
+                </font>
+                <style>wxALIGN_LEFT|wxST_NO_AUTORESIZE</style>
               </object>
-              <flag>wxLEFT|wxRIGHT</flag>
+              <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
               <border>2</border>
             </object>
             <object class="sizeritem">
               <object class="wxStaticText" name="account_text">
                 <label>ACCOUNT</label>
-                <style>wxALIGN_LEFT</style>
+                <font>
+                  <size>12</size>
+                  <style>normal</style>
+                  <weight>normal</weight>
+                  <underlined>0</underlined>
+                  <family>swiss</family>
+                  <face>Sans</face>
+                  <encoding>UTF-8</encoding>
+                </font>
+                <style>wxALIGN_LEFT|wxST_NO_AUTORESIZE</style>
               </object>
-              <flag>wxLEFT|wxRIGHT</flag>
+              <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
               <border>2</border>
             </object>
             <orient>wxVERTICAL</orient>
           </object>
           <bg>#90EE90</bg>
         </object>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+        <border>2</border>
       </object>
       <object class="sizeritem">
         <object class="wxPanel" name="code_panel">
-          <bg>#ADD8E6</bg>
           <object class="wxStaticText" name="code_text">
             <label>000000</label>
             <font>
@@ -105,11 +124,12 @@
               <face>Monospace</face>
               <encoding>UTF-8</encoding>
             </font>
-            <style>wxST_NO_AUTORESIZE</style>
+            <style>wxALIGN_CENTRE|wxST_NO_AUTORESIZE</style>
           </object>
+          <bg>#ADD8E6</bg>
         </object>
         <option>0</option>
-        <flag>wxLEFT|wxRIGHT|wxFIXED_MINSIZE</flag>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
         <border>2</border>
       </object>
       <object class="sizeritem">
@@ -121,7 +141,7 @@
           </object>
           <bg>#FFC0CB</bg>
         </object>
-        <flag>wxLEFT|wxRIGHT|wxFIXED_MINSIZE</flag>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE|wxFIXED_MINSIZE</flag>
         <border>2</border>
       </object>
       <orient>wxHORIZONTAL</orient>

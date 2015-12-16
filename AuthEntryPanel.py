@@ -18,6 +18,7 @@ class AuthEntryPanel( wx.Panel ):
         self.label_panel_size = wx.DefaultSize
         self.code_size = wx.DefaultSize
 
+        self.have_controls = False
         self.label_panel = None
         self.provider_text = None
         self.account_text = None
@@ -38,6 +39,7 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text = xrc.XRCCTRL( self, 'code_text' )
         self.timer_panel = xrc.XRCCTRL( self, 'timer_panel' )
         self.timer_gauge = xrc.XRCCTRL( self, 'timer' )
+        self.have_controls = True
 
         self.code_size = self.code_text.GetTextExtent( " 000000 " )
         self.code_text.SetSize( self.code_size )
@@ -72,15 +74,30 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def ResizePanel( self, panel_size, label_panel_size ):
-        self.label_panel_size = label_panel_size
-        self.label_panel.SetSize( self.label_panel_size )
-        self.label_panel.SetMinSize( self.label_panel_size )
-        # TODO Lay out label panel contents
+        if self.have_controls:
+            changed = False
+            
+            if label_panel_size != self.label_panel_size:
+                self.label_panel_size = label_panel_size
+                self.label_panel.SetSize( self.label_panel_size )
+                self.label_panel.SetMinSize( self.label_panel_size )
+                self.label_panel.GetSizer().Fit( self.label_panel )
+                changed = True
 
-        self.panel_size = panel_size
-        self.SetSize( self.panel_size )
-        self.SetMinSize( self.panel_size )
-        # TODO Lay out panel contents
+            if panel_size != self.panel_size:
+                self.panel_size = panel_size
+                self.SetSize( self.panel_size )
+                self.SetMinSize( self.panel_size )
+                self.GetSizer().Fit( self )
+                changed = True
+
+            if changed:
+                self.NotifyFrameOfSizeChange()
+
+    def NotifyFrameOfSizeChange( self ):
+        gp = self.GetGrandParent()
+        if gp != None:
+            gp.UpdatePanelSize()
 
 
     def ChangeContents( self ):
@@ -89,13 +106,11 @@ class AuthEntryPanel( wx.Panel ):
         self.provider_text.SetMinSize( self.provider_text.GetSize() )
         self.account_text.SetLabelText( self.entry.GetAccount() )
         self.account_text.SetMinSize( self.account_text.GetSize() )
-        # TODO Fit label panel to contents
-        # TODO Fit panel to contents
+        self.label_panel.GetSizer().Fit( self.label_panel )
+        self.GetSizer().Fit( self )
         self.label_panel_size = self.label_panel.GetSize()
         self.panel_size = self.GetSize()
 
     def UpdateContents( self ):
         self.ChangeContents()
-        gp = self.GetGrandParent()
-        if gp != None:
-            gp.UpdatePanelSize()
+        self.NotifyFrameOfSizeChange()
