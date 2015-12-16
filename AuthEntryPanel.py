@@ -16,6 +16,7 @@ class AuthEntryPanel( wx.Panel ):
         self.code = ''
         self.panel_size = wx.DefaultSize
         self.label_panel_size = wx.DefaultSize
+        self.code_size = wx.DefaultSize
 
         self.label_panel = None
         self.provider_text = None
@@ -38,6 +39,14 @@ class AuthEntryPanel( wx.Panel ):
         self.timer_panel = xrc.XRCCTRL( self, 'timer_panel' )
         self.timer_gauge = xrc.XRCCTRL( self, 'timer' )
 
+        self.code_size = self.code_text.GetTextExtent( " 000000 " )
+        self.code_text.SetSize( self.code_size )
+        self.code_text.SetMinSize( self.code_size )
+        self.code_panel.SetSize( self.code_size )
+        self.code_panel.SetMinSize( self.code_size )
+        
+        self.ChangeContents()
+
 
     def OnCreate( self, event ):
         self.Unbind( self._first_event_type )
@@ -52,13 +61,7 @@ class AuthEntryPanel( wx.Panel ):
         self.entry = entry
         self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
         self.index = self.entry.GetSortIndex()
-        self.UpdateCode()
-        self.ChangeContents()
-
-
-    def UpdateCode( self ):
-        self.code = entry.GenerateNextCode()
-        self.code_text.SetLabelText( self.code )
+        self.code = self.entry.GenerateNextCode()
 
 
     def GetPanelSize( self ):
@@ -81,6 +84,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def ChangeContents( self ):
+        self.code_text.SetLabelText( self.code )
         self.provider_text.SetLabelText( self.entry.GetProvider() )
         self.provider_text.SetMinSize( self.provider_text.GetSize() )
         self.account_text.SetLabelText( self.entry.GetAccount() )

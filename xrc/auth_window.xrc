@@ -94,7 +94,7 @@
       <object class="sizeritem">
         <object class="wxPanel" name="code_panel">
           <bg>#ADD8E6</bg>
-          <object class="wxStaticText" name="code_text" subclass="AuthCodeText.AuthCodeText">
+          <object class="wxStaticText" name="code_text">
             <label>000000</label>
             <font>
               <size>32</size>
@@ -114,7 +114,7 @@
       </object>
       <object class="sizeritem">
         <object class="wxPanel" name="timer_panel">
-          <object class="wxGauge" name="timer" subclass="AuthTimerGauge.AuthTimerGauge">
+          <object class="wxGauge" name="timer">
             <size>30,15</size>
             <range>30</range>
             <value>30</value>

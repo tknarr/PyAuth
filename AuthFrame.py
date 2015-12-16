@@ -11,7 +11,7 @@ class AuthFrame( wx.Frame ):
     _first_event_type = wx.EVT_WINDOW_CREATE
 
     def __init__( self ):
-        wx.PreFrame()
+        p = wx.PreFrame()
 
         self.res = wx.GetApp().res
         self.entries_window = None
@@ -52,16 +52,16 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
         # Menu event handlers
         menu_bar = xrc.XRCCTRL( self, 'menu_bar' )
-        self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     xrc.XRCID( menu_bar, 'NEW' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuQuit,         xrc.XRCID( menu_bar, 'QUIT' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    xrc.XRCID( menu_bar, 'EDIT' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  xrc.XRCID( menu_bar, 'DELETE' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       xrc.XRCID( menu_bar, 'MOVE_UP' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     xrc.XRCID( menu_bar, 'MOVE_DOWN' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   xrc.XRCID( menu_bar, 'SHOW_TIMERS' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, xrc.XRCID( menu_bar, 'SHOW_ALL_CODES' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, xrc.XRCID( menu_bar, 'HELP' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuAbout,        xrc.XRCID( menu_bar, 'ABOUT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = xrc.XRCID( 'NEW' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = xrc.XRCID( 'QUIT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = xrc.XRCID( 'EDIT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = xrc.XRCID( 'DELETE' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       id = xrc.XRCID( 'MOVE_UP' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     id = xrc.XRCID( 'MOVE_DOWN' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = xrc.XRCID( 'SHOW_TIMERS' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = xrc.XRCID( 'SHOW_ALL_CODES' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = xrc.XRCID( 'HELP' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = xrc.XRCID( 'ABOUT' ) )
 
 
     def OnCreate( self, event ):
@@ -123,7 +123,7 @@ class AuthFrame( wx.Frame ):
         print "About"
 
 
-    def CalcItemsShown( self, ws ):
+    def CalcItemsShown( self ):
         ws = self.GetClientSize()
         # Doing integer math, so we can't cancel terms and add 1/2
         n = ws.GetHeight() + ( self.entry_size.GetHeight() + 2 * self.entry_border ) / 2

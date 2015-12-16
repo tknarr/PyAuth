@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import stat
+import errno
 import random
 import wx
 
@@ -63,10 +63,11 @@ class AuthenticationStore:
         # Make sure our database of secrets is only accessible by us
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         try:
-            os.chmod( cfgfile, stat.IRUSR | stat.IWUSR )
+            os.chmod( cfgfile, 0600 )
         except OSError as e:
-            print "Problem with database file " + cfgfile
-            print "Error code " + str( e.errno ) + ": " + e.strerror
+            if e.errno != errno.ENOENT:
+                print "Problem with database file " + cfgfile
+                print "Error code " + str( e.errno ) + ": " + e.strerror
 
 
     def SaveEntry( self, cfg, entry ):
