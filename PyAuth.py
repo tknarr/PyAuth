@@ -11,6 +11,29 @@ import Configuration
 class PyAuthApp( wx.App ):
 
     def OnInit( self ):
+        logging.basicConfig( level = logging.WARNING )
+
+        # Set our configuration file up to be the default configuration source
+        cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = 'pyauth.cfg',
+                             style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        cfg.SetRecordDefaults( True )
+        wx.Config.Set( cfg )
+        # Make sure the directory for our configuration file exists
+        cfgfile = wx.FileConfig.GetLocalFileName( 'pyauth.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        cfgdir = os.path.dirname( cfgfile )
+        if not os.path.exists( cfgdir ):
+            try:
+                os.makedirs( cfgdir )
+            except OSError as e:
+                logging.critical( "Failed to create config directory %s", cfgdir )
+                logging.critical( "Error code %d: %s", e.errno, e.strerror )
+                return False
+
+        loglevel = Configuration.GetLoggingLevel()
+        logging.getLogger().setLevel( loglevel )
+
+        logging.info( "Configuration file: %s", cfgfile )
+
         # Load XRC resources
         self.xrc_path = sys.path[0] + '/xrc/'
         self.res = xrc.XmlResource( self.xrc_path + 'auth_window.xrc' )
@@ -31,31 +54,11 @@ class PyAuthApp( wx.App ):
         return True
 
 
+    def OnExit( self ):
+        logging.shutdown
+        return 0
+
+        
 if __name__ == '__main__':
-    logging.basicConfig( level = logging.WARNING )
-    
-    # Set our configuration file up to be the default configuration source
-    cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = 'pyauth.cfg',
-                         style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-    cfg.SetRecordDefaults( True )
-    wx.Config.Set( cfg )
-    # Make sure the directory for our configuration file exists
-    cfgfile = wx.FileConfig.GetLocalFileName( 'pyauth.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-    cfgdir = os.path.dirname( cfgfile )
-    if not os.path.exists( cfgdir ):
-        try:
-            os.makedirs( cfgdir )
-        except OSError as e:
-            logging.critical( "Failed to create config directory %s", cfgdir )
-            logging.critical( "Error code %d: %s", e.errno, e.strerror )
-            sys.exit()
-
-    loglevel = Configuration.GetLoggingLevel()
-    logging.getLogger().setLevel( loglevel )
-
-    logging.info( "Configuration file: %s", cfgfile )
-
     app = PyAuthApp( False )
     app.MainLoop()
-
-    logging.shutdown()
