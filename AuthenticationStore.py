@@ -20,6 +20,8 @@ class AuthenticationStore:
     def __init__( self, filename ):
         self.cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        logging.info( "Database file: %s", cfgfile )
         ## self.cfg.SetUmask( 0077 ) # Set permissions on the database file
         random.seed() # TODO Remove after proper GenerateNextCode() implemented
         self.entry_list = []

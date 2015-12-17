@@ -15,7 +15,7 @@ class PyAuthApp( wx.App ):
         self.xrc_path = sys.path[0] + '/xrc/'
         self.res = xrc.XmlResource( self.xrc_path + 'auth_window.xrc' )
         if self.res == None:
-            logging.critical( "Cannot find XML resources file %s", 'xrc/auth_window.xrc' )
+            logging.critical( "Cannot find XML resources file %s", self.xrc_path )
             return False
         
         # Create main frame
@@ -52,6 +52,8 @@ if __name__ == '__main__':
 
     loglevel = Configuration.GetLoggingLevel()
     logging.getLogger().setLevel( loglevel )
+
+    logging.info( "Configuration file: %s", cfgfile )
 
     app = PyAuthApp( False )
     app.MainLoop()
