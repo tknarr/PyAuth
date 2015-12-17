@@ -19,7 +19,7 @@ class AuthFrame( wx.Frame ):
         self.entry_panels = []
         self.visible_entries = 0
         self.entry_size = wx.Size( 0, 0 ) # Longest size in each direction of any entry panel
-        self.label_size = wx.Size( 0, 0 ) # Longest size in each direction of any label panel
+        self.label_width = 0 # Longest width label
 
         # Internal values
         self.entry_border = 2
@@ -30,6 +30,7 @@ class AuthFrame( wx.Frame ):
 
 
     def _post_init( self ):
+        print "AF  post-init"
         self.entries_window = xrc.XRCCTRL( self, 'entries_window' )
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
@@ -39,11 +40,14 @@ class AuthFrame( wx.Frame ):
         # Create our entry item panels and put them in the scrollable window
         self.entry_panels = []
         for entry in self.auth_store.EntryList():
-            panel = self.res.LoadPanel( self, 'entry_panel' )
+            print "AF  create panel: " + str(entry.GetGroup())
+            panel = self.res.LoadPanel( self.entries_window, 'entry_panel' )
             panel.SetEntry( entry )
             self.entry_panels.append( panel )
-        for item in self.entry_panels:
-            self.entries_window.GetSizer().Add( item, flag = wx.ALL | wx.ALIGN_CENTER, border = 2 )
+        for panel in self.entry_panels:
+            print "AF  add panel:    " + str(panel.GetName())
+            print "AF  panel size " + str(panel.GetSize()) + " min " + str(panel.GetMinSize())
+            self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_CENTER, border = self.entry_border )
 
         self.AdjustPanelSizes()
         self.AdjustWindowSizes()
@@ -132,6 +136,7 @@ class AuthFrame( wx.Frame ):
 
 
     def AdjustWindowSizes( self ):
+        print "AF  AWS size:  " + str(self.entry_size)
         # Need to adjust this here, it depends on the entry height which may change
         self.entries_window.SetScrollRate( 0, self.entry_size.GetHeight() + 2 * self.entry_border )
 
@@ -139,35 +144,36 @@ class AuthFrame( wx.Frame ):
         client_size = wx.DefaultSize
         client_size.SetWidth( self.entry_size.GetWidth() + 2 * self.entry_border + self.scrollbar_width )
         client_size.SetHeight( self.visible_entries * ( self.entry_size.GetHeight() + 2 * self.entry_border ) )
-        self.entries_window.SetSize( client_size )
-        self.SetClientSize( client_size )
+        self.entries_window.SetClientSize( client_size )
 
         # Minimum size is 1 entry wide accounting for scrollbar, 1 entry high
         min_size = wx.DefaultSize
         min_size.SetWidth( self.entry_size.GetWidth() + 2 * self.entry_border + self.scrollbar_width )
         min_size.SetHeight( self.entry_size.GetHeight() + 2 * self.entry_border )
-        self.entries_window.SetMinSize( min_size )
-        self.SetMinClientSize( min_size )
+        self.entries_window.SetMinClientSize( min_size )
 
-        self.entries_window.GetSizer().Fit( self.entries_window )
+        self.entries_window.GetSizer().Fit( self )
+        print "AF  AWS items: " + str(self.CalcItemsShown())
 
 
     def AdjustPanelSizes( self ):
-        self.entry_size = wx.Size( 0, 0 )
+        print "AF  APS"
+        self.entry_size = wx.DefaultSize
+        self.label_width = 0
         for entry in self.entry_panels:
+            print "AF  APS checking " + entry.GetName()
             # Update max entry panel sizes
             entry_size = entry.GetPanelSize()
             if entry_size.GetHeight() > self.entry_size.GetHeight():
                 self.entry_size.SetHeight( entry_size.GetHeight() )
             if entry_size.GetWidth() > self.entry_size.GetWidth():
                 self.entry_size.SetWidth( entry_size.GetWidth() )
-            label_size = entry.GetLabelPanelSize()
-            if label_size.GetHeight() > self.label_size.GetHeight():
-                self.label_size.SetHeight( label_size.GetHeight() )
-            if label_size.GetWidth() > self.label_size.GetWidth():
-                self.label_size.SetWidth( label_size.GetWidth() )
+            label_width = entry.GetLabelWidth()
+            if label_width > self.label_width:
+                self.label_width = label_width
+            print "AF  APS entry " + entry.GetName() + ": " + str(self.entry_size) + " label " + str(self.label_width)
         for entry in self.entry_panels:
-            entry.ResizePanel( self.entry_size, self.label_size )
+            entry.ResizePanel( self.entry_size, self.label_width )
         self.entries_window.GetSizer().Fit( self.entries_window )
                 
 
@@ -175,5 +181,3 @@ class AuthFrame( wx.Frame ):
         self.AdjustPanelSizes()
         self.AdjustWindowSizes()
         self.Refresh()
-        self.SendSizeEvent()
-        self.SafeYield()

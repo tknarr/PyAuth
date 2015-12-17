@@ -67,12 +67,15 @@
   </object>
   <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
     <object class="wxBoxSizer">
+      
+      
       <object class="sizeritem">
         <object class="wxPanel" name="label_panel">
           <object class="wxBoxSizer">
             <object class="sizeritem">
               <object class="wxStaticText" name="provider_text">
                 <label>PROVIDER</label>
+                <wrap>-1</wrap>
                 <font>
                   <size>12</size>
                   <style>normal</style>
@@ -82,14 +85,15 @@
                   <face>Sans</face>
                   <encoding>UTF-8</encoding>
                 </font>
-                <style>wxALIGN_LEFT|wxST_NO_AUTORESIZE</style>
+                <style>wxALIGN_LEFT</style>
               </object>
-              <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
-              <border>2</border>
+              <option>0</option>
+              <flag>wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
             <object class="sizeritem">
               <object class="wxStaticText" name="account_text">
                 <label>ACCOUNT</label>
+                <wrap>-1</wrap>
                 <font>
                   <size>12</size>
                   <style>normal</style>
@@ -99,52 +103,48 @@
                   <face>Sans</face>
                   <encoding>UTF-8</encoding>
                 </font>
-                <style>wxALIGN_LEFT|wxST_NO_AUTORESIZE</style>
+                <style>wxALIGN_LEFT</style>
               </object>
-              <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
-              <border>2</border>
+              <option>0</option>
+              <flag>wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
             </object>
             <orient>wxVERTICAL</orient>
           </object>
           <bg>#90EE90</bg>
         </object>
-        <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+        <option>1</option>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
         <border>2</border>
       </object>
       <object class="sizeritem">
-        <object class="wxPanel" name="code_panel">
-          <object class="wxStaticText" name="code_text">
-            <label>000000</label>
-            <font>
-              <size>32</size>
-              <style>normal</style>
-              <weight>normal</weight>
-              <underlined>0</underlined>
-              <family>default</family>
-              <face>Monospace</face>
-              <encoding>UTF-8</encoding>
-            </font>
-            <style>wxALIGN_CENTRE|wxST_NO_AUTORESIZE</style>
-          </object>
-          <bg>#ADD8E6</bg>
+        <object class="wxStaticText" name="code_text">
+          <label>000000</label>
+          <font>
+            <size>32</size>
+            <style>normal</style>
+            <weight>normal</weight>
+            <underlined>0</underlined>
+            <family>default</family>
+            <face>Monospace</face>
+            <encoding>UTF-8</encoding>
+          </font>
+          <style>wxALIGN_CENTRE|wxST_NO_AUTORESIZE</style>
         </object>
         <option>0</option>
-        <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
-        <border>2</border>
-      </object>
-      <object class="sizeritem">
-        <object class="wxPanel" name="timer_panel">
-          <object class="wxGauge" name="timer">
-            <size>30,15</size>
-            <range>30</range>
-            <value>30</value>
-          </object>
-          <bg>#FFC0CB</bg>
-        </object>
         <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE|wxFIXED_MINSIZE</flag>
-        <border>2</border>
+        <border>12</border>
       </object>
       <orient>wxHORIZONTAL</orient>
+      <object class="sizeritem">
+        <object class="wxGauge" name="timer">
+          <size>30,15</size>
+          <range>30</range>
+          <value>30</value>
+        </object>
+        <option>0</option>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE</flag>
+        <border>2</border>
+      </object>
     </object>
     <font>
       <size>12</size>
