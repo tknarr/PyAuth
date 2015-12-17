@@ -5,7 +5,7 @@
 #   database.cfg - authorization secrets storage
 
 # Config items:
-#   Last window size
+#   Last number of visible items in window
 #   Last window position
 #   Peg to top-left, top-right, bottom-left, bottom-right corner (TL, TR, BL, BR, or XX for not pegged)
 #       The last window position is in screen coordinates when not pegged to a corner.
@@ -14,7 +14,10 @@
 #   Last auth secrets file
 #   Show timers
 #   Show codes for all entries
+#   Database filename
+#   Logging level name, will be converted to the correct value for use
 
+import logging
 import wx
 
 def Save():
@@ -68,3 +71,11 @@ def SetShowAllCodes( state ):
 
 def GetDatabaseFilename():
     return wx.Config.Get().Read( '/database/file_name', 'database.cfg' )
+
+def GetLoggingLevel():
+    level_string = wx.Config.Get().Read( '/logging/level', 'WARNING' )
+    loglevel = getattr( logging, level_string.upper(), None )
+    if not isinstance( loglevel, int ):
+        logging.warning( "Invalid logging level %s, using WARNING instead", level_string )
+        loglevel = logging.WARNING
+    return loglevel

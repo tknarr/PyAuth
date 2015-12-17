@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import wx
 from wx import xrc as xrc
 from AuthenticationStore import AuthenticationEntry
@@ -28,7 +29,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def _post_init( self ):
-        print "AEP post-init"
+        logging.debug( "AEP post-init" )
         self.label_panel = xrc.XRCCTRL( self, 'label_panel' )
         self.provider_text = xrc.XRCCTRL( self, 'provider_text' )
         self.account_text = xrc.XRCCTRL( self, 'account_text' )
@@ -59,9 +60,9 @@ class AuthEntryPanel( wx.Panel ):
         self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
         self.index = self.entry.GetSortIndex()
         self.code = self.entry.GenerateNextCode()
-        print "AEP SE on " + self.GetName()
+        logging.debug( "AEP SE on %s", self.GetName() )
         if self.have_controls:
-            print "AEP SE changing contents"
+            logging.debug( "AEP SE changing contents" )
             self.ChangeContents()
         else:
             self.SetMinSize( self.GetSize() )
@@ -79,20 +80,18 @@ class AuthEntryPanel( wx.Panel ):
 
     def ResizePanel( self, panel_size, label_width ):
         if self.have_controls:
-            print "AEP RP updating " + self.GetName()
+            logging.debug( "AEP RP updating %s", self.GetName() )
             changed = False
             
             if label_width != self.label_panel.GetSize().GetWidth():
-                print "AEP RP label width: " + str(label_width)
-                ## self.label_width = label_width
+                logging.debug( "AEP RP label width: %d", label_width )
                 lps = self.label_panel.GetSize()
                 lps.SetWidth( label_width )
                 self.label_panel.SetSize( lps )
                 changed = True
 
             if panel_size != self.GetSize().GetWidth():
-                print "AEP RP panel size:  " + str(panel_size)
-                ## self.panel_size = panel_size
+                logging.debug( "AEP RP panel size:  %s", str( panel_size ) )
                 self.SetSize( panel_size )
                 self.SetMinSize( panel_size )
                 changed = True
@@ -100,7 +99,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def UpdateContents( self ):
         if self.entry != None:
-            print "AEP UC updating " + self.GetName()
+            logging.debug( "AEP UC updating %s", self.GetName() )
             self.code_text.SetLabelText( self.code )
             self.provider_text.SetLabelText( self.entry.GetProvider() )
             te = self.provider_text.GetTextExtent( self.entry.GetProvider() )
@@ -110,18 +109,16 @@ class AuthEntryPanel( wx.Panel ):
             self.account_text.SetMinSize( te )
             self.label_panel.GetSizer().Fit( self.label_panel )
             self.GetSizer().Fit( self )
-            ## self.panel_size = self.GetSize()
-            ## self.label_width = self.label_panel.GetSize().GetWidth()
-            print "AEP UC provider size: " + str(self.provider_text.GetSize())
-            print "AEP UC account size:  " + str(self.account_text.GetSize())
-            print "AEP UC label width:   " + str(self.label_panel.GetSize().GetWidth())
-            print "AEP UC panel size:    " + str(self.GetSize())
+            logging.debug( "AEP UC provider size: %s", str(self.provider_text.GetSize()) )
+            logging.debug( "AEP UC account size:  %s", str(self.account_text.GetSize()) )
+            logging.debug( "AEP UC label width:   %d", self.label_panel.GetSize().GetWidth() )
+            logging.debug( "AEP UC panel size:    %s", str(self.GetSize()) )
 
 
     def ChangeContents( self ):
-        print "AEP CC"
+        logging.debug( "AEP CC" )
         self.UpdateContents()
         gp = self.GetGrandParent()
         if gp != None:
-            print "AEP CC notifying frame"
+            logging.debug( "AEP CC notifying frame" )
             gp.UpdatePanelSize()
