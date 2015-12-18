@@ -53,7 +53,7 @@ class PyAuthApp( wx.App ):
 
 
     def OnExit( self ):
-        Logging.Shutdown()
+        logging.shutdown()
         return 0
 
         
