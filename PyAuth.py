@@ -3,16 +3,15 @@
 
 import sys
 import os.path
-import logging
 import wx
 from wx import xrc as xrc
 import Configuration
+import Logging
+from Logging import mylogger as mylogger
 
 class PyAuthApp( wx.App ):
 
     def OnInit( self ):
-        logging.basicConfig( level = logging.WARNING )
-
         # Set our configuration file up to be the default configuration source
         cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = 'pyauth.cfg',
                              style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
@@ -29,11 +28,6 @@ class PyAuthApp( wx.App ):
                 logging.critical( "Error code %d: %s", e.errno, e.strerror )
                 return False
 
-        loglevel = Configuration.GetLoggingLevel()
-        logging.getLogger().setLevel( loglevel )
-
-        logging.info( "Configuration file: %s", cfgfile )
-
         # Load XRC resources
         self.xrc_path = sys.path[0] + '/xrc/'
         self.res = xrc.XmlResource( self.xrc_path + 'auth_window.xrc' )
@@ -41,6 +35,12 @@ class PyAuthApp( wx.App ):
             logging.critical( "Cannot find XML resources file %s", self.xrc_path )
             return False
         
+        # Configure logging
+        # Up until here (and in Configuration) we've used the default root logger. After this
+        # we'll use the mylogger object from the Logging module.
+        Logging.Init()
+        mylogger.info( "Configuration file: %s", cfgfile )
+
         # Create main frame
         self.frame = self.res.LoadFrame( None, 'main_frame' )
         if self.frame == None:
@@ -55,7 +55,7 @@ class PyAuthApp( wx.App ):
 
 
     def OnExit( self ):
-        logging.shutdown
+        logging.shutdown()
         return 0
 
         

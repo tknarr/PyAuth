@@ -3,8 +3,8 @@
 import os
 import errno
 import random
-import logging
 import wx
+from Logging import mylogger as mylogger
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -21,7 +21,7 @@ class AuthenticationStore:
         self.cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-        logging.info( "Database file: %s", cfgfile )
+        mylogger.info( "Database file: %s", cfgfile )
         ## self.cfg.SetUmask( 0077 ) # Set permissions on the database file
         random.seed() # TODO Remove after proper GenerateNextCode() implemented
         self.entry_list = []
@@ -69,8 +69,8 @@ class AuthenticationStore:
             os.chmod( cfgfile, 0600 )
         except OSError as e:
             if e.errno != errno.ENOENT:
-                logging.warning( "Problem with database file %s", cfgfile )
-                logging.warning( "Error code %d: %s ", e.errno, e.strerror )
+                mylogger.warning( "Problem with database file %s", cfgfile )
+                mylogger.warning( "Error code %d: %s ", e.errno, e.strerror )
 
 
     def SaveEntry( self, cfg, entry ):

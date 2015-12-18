@@ -79,3 +79,6 @@ def GetLoggingLevel():
         logging.warning( "Invalid logging level %s, using WARNING instead", level_string )
         loglevel = logging.WARNING
     return loglevel
+
+def GetLogFilename():
+    return wx.Config.Get().Read( '/logging/filename' )
