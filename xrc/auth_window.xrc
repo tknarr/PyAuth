@@ -67,8 +67,6 @@
   </object>
   <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
     <object class="wxBoxSizer">
-      
-      
       <object class="sizeritem">
         <object class="wxPanel" name="label_panel">
           <object class="wxBoxSizer">
@@ -117,22 +115,31 @@
         <border>2</border>
       </object>
       <object class="sizeritem">
-        <object class="wxStaticText" name="code_text">
-          <label>000000</label>
-          <font>
-            <size>32</size>
-            <style>normal</style>
-            <weight>normal</weight>
-            <underlined>0</underlined>
-            <family>default</family>
-            <face>Monospace</face>
-            <encoding>UTF-8</encoding>
-          </font>
-          <style>wxALIGN_CENTRE|wxST_NO_AUTORESIZE</style>
+        <object class="wxPanel" name="code_panel">
+          <object class="wxBoxSizer">
+            <orient>wxVERTICAL</orient>
+            <object class="sizeritem">
+              <object class="wxStaticText" name="code_text">
+                <label>000000</label>
+                <wrap>-1</wrap>
+                <font>
+                  <size>32</size>
+                  <style>normal</style>
+                  <weight>normal</weight>
+                  <underlined>0</underlined>
+                  <family>default</family>
+                  <face>Monospace</face>
+                  <encoding>UTF-8</encoding>
+                </font>
+              </object>
+              <flag>wxALIGN_CENTRE</flag>
+            </object>
+          </object>
+          <bg>#FFC0CB</bg>
         </object>
         <option>0</option>
-        <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE|wxFIXED_MINSIZE</flag>
-        <border>12</border>
+        <flag>wxLEFT|wxRIGHT|wxFIXED_MINSIZE</flag>
+        <border>2</border>
       </object>
       <orient>wxHORIZONTAL</orient>
       <object class="sizeritem">
