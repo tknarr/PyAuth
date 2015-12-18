@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import wx
 from wx import xrc as xrc
-from Logging import mylogger as mylogger
 import Configuration
 from AuthenticationStore import AuthenticationStore, AuthenticationEntry as AuthenticationEntry
 from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
@@ -32,7 +32,7 @@ class AuthFrame( wx.Frame ):
 
 
     def _post_init( self ):
-        mylogger.debug( "AF  post-init" )
+        logging.debug( "AF  post-init" )
         self.entries_window = xrc.XRCCTRL( self, 'entries_window' )
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
@@ -42,13 +42,13 @@ class AuthFrame( wx.Frame ):
         # Create our entry item panels and put them in the scrollable window
         self.entry_panels = []
         for entry in self.auth_store.EntryList():
-            mylogger.debug( "AF  create panel: %d", entry.GetGroup() )
+            logging.debug( "AF  create panel: %d", entry.GetGroup() )
             panel = self.res.LoadPanel( self.entries_window, 'entry_panel' )
             panel.SetEntry( entry )
             self.entry_panels.append( panel )
         for panel in self.entry_panels:
-            mylogger.debug( "AF  add panel:    %s", panel.GetName() )
-            mylogger.debug( "AF  panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+            logging.debug( "AF  add panel:    %s", panel.GetName() )
+            logging.debug( "AF  panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
             self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
                                                 border = self.entry_border )
 
@@ -92,42 +92,42 @@ class AuthFrame( wx.Frame ):
 
     def OnMenuNewEntry( self, event ):
         # TODO menu handler
-        mylogger.warning( "New Entry" )
+        logging.warning( "New Entry" )
 
     def OnMenuQuit( self, event ):
         self.Close()
 
     def OnMenuEditEntry( self, event ):
         # TODO menu handler
-        mylogger.warning( "Edit Entry" )
+        logging.warning( "Edit Entry" )
 
     def OnMenuDeleteEntry( self, event ):
         # TODO menu handler
-        mylogger.warning( "Delete Entry" )
+        logging.warning( "Delete Entry" )
 
     def OnMenuMoveUp( self, event ):
         # TODO menu handler
-        mylogger.warning( "Move Up" )
+        logging.warning( "Move Up" )
 
     def OnMenuMoveDown( self, event ):
         # TODO menu handler
-        mylogger.warning( "Move Down" )
+        logging.warning( "Move Down" )
 
     def OnMenuShowTimers( self, event ):
         # TODO menu handler
-        mylogger.warning( "Show Timers" )
+        logging.warning( "Show Timers" )
 
     def OnMenuShowAllCodes( self, event ):
         # TODO menu handler
-        mylogger.warning( "Show All Codes" )
+        logging.warning( "Show All Codes" )
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
-        mylogger.warning( "Help Contents" )
+        logging.warning( "Help Contents" )
 
     def OnMenuAbout( self, event ):
         # TODO menu handler
-        mylogger.warning( "About" )
+        logging.warning( "About" )
 
 
     def CalcItemsShown( self ):
@@ -139,7 +139,7 @@ class AuthFrame( wx.Frame ):
 
 
     def AdjustWindowSizes( self ):
-        mylogger.debug( "AF  AWS entry height:  %d", self.entry_height )
+        logging.debug( "AF  AWS entry height:  %d", self.entry_height )
         # Need to adjust this here, it depends on the entry height which may change
         self.entries_window.SetScrollRate( 0, self.entry_height + 2 * self.entry_border )
 
@@ -147,26 +147,26 @@ class AuthFrame( wx.Frame ):
         client_size = wx.DefaultSize
         client_size.SetWidth( self.entry_width + 2 * self.entry_border + self.scrollbar_width )
         client_size.SetHeight( self.visible_entries * ( self.entry_height + 2 * self.entry_border ) )
-        self.entries_window.SetClientSize( client_size )
+        self.entries_window.SetSize( client_size )
 
         # Minimum size is 1 entry wide accounting for scrollbar, 1 entry high
         min_size = wx.DefaultSize
         min_size.SetWidth( self.entry_width + 2 * self.entry_border + self.scrollbar_width )
         min_size.SetHeight( self.entry_height + 2 * self.entry_border )
-        self.entries_window.SetMinClientSize( min_size )
+        self.entries_window.SetMinSize( min_size )
 
         self.SetClientSize( self.entries_window.GetSize() )
         self.SetMinClientSize( self.entries_window.GetMinSize() )
-        mylogger.debug( "AF  AWS items: %d", self.CalcItemsShown() )
+        logging.debug( "AF  AWS items: %d", self.CalcItemsShown() )
 
 
     def AdjustPanelSizes( self ):
-        mylogger.debug( "AF  APS" )
+        logging.debug( "AF  APS" )
         self.entry_height = 0
         self.entry_width = 0
         self.label_width = 0
         for entry in self.entry_panels:
-            mylogger.debug( "AF  APS checking %s", entry.GetName() )
+            logging.debug( "AF  APS checking %s", entry.GetName() )
             # Update max entry panel sizes
             entry_size = entry.GetPanelSize()
             if entry_size.GetHeight() > self.entry_height:
@@ -176,7 +176,7 @@ class AuthFrame( wx.Frame ):
             label_width = entry.GetLabelWidth()
             if label_width > self.label_width:
                 self.label_width = label_width
-            mylogger.debug( "AF  APS entry %s: height %d label %d", entry.GetName(),
+            logging.debug( "AF  APS entry %s: height %d label %d", entry.GetName(),
                            self.entry_height, self.label_width )
         for entry in self.entry_panels:
             entry.ResizePanel( self.entry_height, self.label_width )

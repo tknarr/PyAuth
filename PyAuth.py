@@ -3,11 +3,10 @@
 
 import sys
 import os.path
+import logging
 import wx
 from wx import xrc as xrc
 import Configuration
-import Logging
-from Logging import mylogger as mylogger
 
 class PyAuthApp( wx.App ):
 
@@ -36,10 +35,9 @@ class PyAuthApp( wx.App ):
             return False
         
         # Configure logging
-        # Up until here (and in Configuration) we've used the default root logger. After this
-        # we'll use the mylogger object from the Logging module.
-        Logging.Init()
-        mylogger.info( "Configuration file: %s", cfgfile )
+        loglevel = Configuration.GetLoggingLevel()
+        logging.setLevel( loglevel )
+        logging.info( "Configuration file: %s", cfgfile )
 
         # Create main frame
         self.frame = self.res.LoadFrame( None, 'main_frame' )
@@ -55,7 +53,7 @@ class PyAuthApp( wx.App ):
 
 
     def OnExit( self ):
-        logging.shutdown()
+        Logging.Shutdown()
         return 0
 
         
