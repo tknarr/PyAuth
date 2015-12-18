@@ -36,7 +36,8 @@ class PyAuthApp( wx.App ):
         
         # Configure logging
         loglevel = Configuration.GetLoggingLevel()
-        logging.setLevel( loglevel )
+        l = logging.getLogger()
+        l.setLevel( loglevel )
         logging.info( "Configuration file: %s", cfgfile )
 
         # Create main frame
