@@ -103,7 +103,10 @@ class AuthEntryPanel( wx.Panel ):
                 s.SetWidth( self.label_width )
                 self.account_text.SetSize( s )
                 self.account_text.SetMinSize( s )
-                self.label_panel.GetSizer().Fit( self.label_panel )
+                s = self.label_panel.GetClientSize()
+                s.SetWidth( self.label_width )
+                self.label_panel.SetClientSize( s )
+                self.label_panel.SetMinClientSize( s )
                 changed = True
 
             if panel_height != self.GetSize().GetHeight():

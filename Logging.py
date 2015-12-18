@@ -3,19 +3,19 @@
 import logging
 import Configuration
 
-mylogger = logging.GetLogger()
+mylogger = logging.getLogger()
 
 def Init():
     loglevel = Configuration.GetLoggingLevel()
-    logfile = Configureation.GetLogFilename()
+    logfile = Configuration.GetLogFilename()
 
-    l = logging.GetLogger( 'PyAuth' )
+    l = logging.getLogger( 'PyAuth' )
     h = None
     if logfile != None and logfile != '':
         h = logging.FileHandler( logfile)
     else:
         h = logging.StreamHandler()
     l.addHandler( h )
-    l.SetLevel( loglevel )
+    l.setLevel( loglevel )
 
     mylogger = l
