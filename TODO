@@ -14,7 +14,6 @@ Basic functionality:
     Click to show/hide code when all codes hidden
     Help system
     Menu accelerators
-    Snap size to entry size when resizing window
 Enhancements:
     Subclass authentication entry classes and panels
     HOTP entries and code generation
