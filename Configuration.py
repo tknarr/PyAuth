@@ -26,7 +26,11 @@ def Save():
 def GetLastWindowPosition():
     x = wx.Config.Get().ReadInt( '/window/last_x', -1 )
     y = wx.Config.Get().ReadInt( '/window/last_y', -1 )
-    # TODO Convert from pegged-relative to screen position, needs window size to calculate
+    c = GetPeggedCorner()
+    if c in { 'TL', 'TR', 'BL', 'BR' }:
+        r = ConvertPeggedToScreen( c, x, y )
+        x = r[0]
+        y = r[1]
     wp = None
     if x >= 0 and y >= 0:
         wp = wx.Point( x, y )
@@ -44,12 +48,21 @@ def GetPeggedCorner():
     return wx.Config.Get().Read( '/window/pegged_corner', 'XX' )
 
 def SetLastWindowPosition( wp, corner = 'XX' ):
-    # TODO Convert to pegged-relative if corner not XX or TL, needs window size to calculate
-    if wp.x >= 0:
-        wx.Config.Get().WriteInt( '/window/last_x', wp.x )
-    if wp.y >= 0:
-        wx.Config.Get().WriteInt( '/window/last_y', wp.y )
-    wx.Config.Get().Write( '/window/pegged_corner', corner.upper() )
+    x = wp.x
+    y = wp.y
+    c = corner.upper()
+    if c in { 'TL', 'TR', 'BL', 'BR' }:
+        r = ConvertScreenToPegged( x, y, c )
+        c = r[0]
+        x = r[1]
+        y = r[2]
+    else:
+        c = 'XX'
+    if x >= 0:
+        wx.Config.Get().WriteInt( '/window/last_x', x )
+    if y >= 0:
+        wx.Config.Get().WriteInt( '/window/last_y', y )
+    wx.Config.Get().Write( '/window/pegged_corner', c )
 
 def GetNumberOfItemsShown():
     return wx.Config.Get().ReadInt( '/window/items_shown', 2 )
@@ -82,3 +95,65 @@ def GetLoggingLevel():
 
 def GetLogFilename():
     return wx.Config.Get().Read( '/logging/filename' )
+
+
+def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
+    # If corner is TL/BL/TR/BR then the screen coordinates are converted to pegged-relative
+    # offsets from the given corner of the screen to the matching corner of the frame.
+    # Otherwise an appropriate corner is determined based on what quarter of the screen
+    # the centerpoint of the frame is in (ie. it will peg to the corner nearest the
+    # matching corner of the frame).
+    # The result is a tuple ( corner, x, y )
+    
+    scr_x = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_X )
+    scr_y = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_Y )
+    s = wx.GetApp().frame.GetSize()
+    fr_w = s.GetWidth()
+    fr_h = s.GetHeight()
+
+    peg_corner = corner.upper()
+
+    # If we weren't told the corner to peg to, calculate centerpoints and
+    # see which quarter of the screen the frame centerpoint is in.
+    if peg_corner not in { 'TL', 'TR', 'BL', 'BR' }
+        scr_center_x = scr_x / 2
+        scr_center_y = scr_y / 2
+        fr_center_x = x_pos + ( fr_w / 2 )
+        fr_center_y = y_pos + ( fr_h / 2 )
+        peg_corner = 'TL'
+        if fr_center_x > scr_center_x:
+            peg_corner[1] = 'R'
+        if fr_center_y > scr_center_y:
+            peg_corner[0] = 'B'
+
+    # Start with TL
+    peg_x = x_pos
+    peg_y = y_pos
+    # For B or R, adjust the y or x offset accordingly
+    if peg_corner[1] == 'R':
+        peg_x = scr_x - x_pos - fr_w
+    if peg_corner[0] == 'B':
+        peg_y = scr_y - y_pos - fr_h
+            
+    return ( peg_corner, peg_x, peg_y )
+
+def ConvertPeggedToScreen( corner, x_offset, y_offset ):
+    # Reverses the calculations in ConvertScreenToPegged()
+    # The result is a tuple ( x, y ) giving screen coordinates for the frame's top-left corner
+
+    scr_x = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_X )
+    scr_y = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_Y )
+    s = wx.GetApp().frame.GetSize()
+    fr_w = s.GetWidth()
+    fr_h = s.GetHeight()
+
+    x_pos = x_offset
+    y_pos = y_offset
+    peg_corner = corner.upper()
+
+    if peg_corner[1] == 'R':
+        x_pos = scr_x - x_offset - fr_w
+    if peg_corner[0] == 'B':
+        y_pos = scr_y - y_offset - fr_h
+
+    return ( x_pos, y_pos )
