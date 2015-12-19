@@ -68,100 +68,80 @@
   <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
     <object class="wxBoxSizer">
       <object class="sizeritem">
-        <object class="wxPanel" name="label_panel">
-          <object class="wxBoxSizer">
-            <object class="sizeritem">
-              <object class="wxStaticText" name="provider_text">
-                <label>PROVIDER</label>
-                <wrap>-1</wrap>
-                <font>
-                  <size>12</size>
-                  <style>normal</style>
-                  <weight>bold</weight>
-                  <underlined>0</underlined>
-                  <family>swiss</family>
-                  <face>Sans</face>
-                  <encoding>UTF-8</encoding>
-                </font>
-                <style>wxALIGN_LEFT</style>
-              </object>
-              <option>0</option>
-              <flag>wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+        <object class="wxBoxSizer">
+          <object class="sizeritem">
+            <object class="wxStaticText" name="provider_text">
+              <label>PROVIDER</label>
+              <wrap>-1</wrap>
+              <font>
+                <size>12</size>
+                <style>normal</style>
+                <weight>bold</weight>
+                <underlined>0</underlined>
+                <family>swiss</family>
+                <face>Sans</face>
+                <encoding>UTF-8</encoding>
+              </font>
+              <style>wxALIGN_LEFT</style>
             </object>
-            <object class="sizeritem">
-              <object class="wxStaticText" name="account_text">
-                <label>ACCOUNT</label>
-                <wrap>-1</wrap>
-                <font>
-                  <size>12</size>
-                  <style>normal</style>
-                  <weight>normal</weight>
-                  <underlined>0</underlined>
-                  <family>swiss</family>
-                  <face>Sans</face>
-                  <encoding>UTF-8</encoding>
-                </font>
-                <style>wxALIGN_LEFT</style>
-              </object>
-              <option>0</option>
-              <flag>wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
-            </object>
-            <orient>wxVERTICAL</orient>
+            <option>0</option>
+            <flag>wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
           </object>
-          <bg>#90EE90</bg>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="account_text">
+              <label>ACCOUNT</label>
+              <wrap>-1</wrap>
+              <font>
+                <size>12</size>
+                <style>normal</style>
+                <weight>normal</weight>
+                <underlined>0</underlined>
+                <family>swiss</family>
+                <face>Sans</face>
+                <encoding>UTF-8</encoding>
+              </font>
+              <style>wxALIGN_LEFT</style>
+            </object>
+            <option>0</option>
+            <flag>wxEXPAND|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+          </object>
+          <orient>wxVERTICAL</orient>
         </object>
         <option>1</option>
-        <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+        <flag>wxLEFT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
         <border>2</border>
       </object>
       <object class="sizeritem">
-        <object class="wxPanel" name="code_panel">
-          <object class="wxBoxSizer">
-            <orient>wxVERTICAL</orient>
-            <object class="sizeritem">
-              <object class="wxStaticText" name="code_text">
-                <label>000000</label>
-                <wrap>-1</wrap>
-                <font>
-                  <size>32</size>
-                  <style>normal</style>
-                  <weight>normal</weight>
-                  <underlined>0</underlined>
-                  <family>default</family>
-                  <face>Monospace</face>
-                  <encoding>UTF-8</encoding>
-                </font>
-              </object>
-              <flag>wxALIGN_CENTRE</flag>
-            </object>
-          </object>
-          <bg>#FFC0CB</bg>
+        <object class="wxStaticText" name="code_text">
+          <label>000000</label>
+          <wrap>-1</wrap>
+          <font>
+            <size>32</size>
+            <style>normal</style>
+            <weight>normal</weight>
+            <underlined>0</underlined>
+            <family>default</family>
+            <face>Monospace</face>
+            <encoding>UTF-8</encoding>
+          </font>
+          <style>wxALIGN_CENTRE|wxST_NO_AUTORESIZE</style>
         </object>
         <option>0</option>
-        <flag>wxLEFT|wxRIGHT|wxFIXED_MINSIZE</flag>
-        <border>2</border>
+        <flag>wxLEFT|wxRIGHT|wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL|wxFIXED_MINSIZE</flag>
+        <border>12</border>
       </object>
-      <orient>wxHORIZONTAL</orient>
       <object class="sizeritem">
-        <object class="wxGauge" name="timer">
+        <object class="wxGauge" name="timer_gauge">
           <size>30,15</size>
           <range>30</range>
           <value>30</value>
         </object>
         <option>0</option>
-        <flag>wxLEFT|wxRIGHT|wxALIGN_CENTRE</flag>
+        <flag>wxRIGHT|wxALIGN_CENTRE</flag>
         <border>2</border>
       </object>
+      <orient>wxHORIZONTAL</orient>
     </object>
-    <font>
-      <size>12</size>
-      <style>normal</style>
-      <weight>normal</weight>
-      <underlined>0</underlined>
-      <family>swiss</family>
-      <face>Sans</face>
-      <encoding>UTF-8</encoding>
-    </font>
     <style>wxBORDER_SUNKEN</style>
   </object>
 </resource>

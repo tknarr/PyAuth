@@ -14,33 +14,33 @@ class AuthEntryPanel( wx.Panel ):
         self.index = 0
         self.code = ''
         self.label_width = 0
+        self.code_width = 0
+        self.timer_width = 0
 
         self.have_controls = False
-        self.label_panel = None
         self.provider_text = None
         self.account_text = None
-        self.code_panel = None
         self.code_text = None
         self.timer_gauge = None
 
         self.PostCreate( p )
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
-        self.Bind( wx.EVT_SHOW, self.OnShow )
 
 
     def _post_init( self ):
         logging.debug( "AEP post-init" )
-        self.label_panel = xrc.XRCCTRL( self, 'label_panel' )
         self.provider_text = xrc.XRCCTRL( self, 'provider_text' )
         self.account_text = xrc.XRCCTRL( self, 'account_text' )
-        self.code_panel = xrc.XRCCTRL( self, 'code_panel' )
         self.code_text = xrc.XRCCTRL( self, 'code_text' )
-        self.timer_gauge = xrc.XRCCTRL( self, 'timer' )
+        self.timer_gauge = xrc.XRCCTRL( self, 'timer_gauge' )
         self.have_controls = True
 
-        logging.debug( "AEP post-init code panel size %s", str( self.code_panel.GetSize() ) )
-        self.code_panel.SetMinSize( self.code_panel.GetSize() )
+        te = self.code_text.GetTextExtent( '000000' )
+        self.code_width = te[0]
+        self.code_text.SetSize( te )
+        self.code_text.SetMinSize( te )
 
+        self.timer_width = self.timer_gauge.GetSize().GetWidth()
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
 
         self.ChangeContents()
@@ -52,15 +52,6 @@ class AuthEntryPanel( wx.Panel ):
         self.Refresh
 
 
-    def OnShow( self, event ):
-        # We only need to process the first one
-        self.Unbind( wx.EVT_WINDOW_SHOW )
-        logging.debug( "AEP show %s", str( event.IsShown() ) )
-        self.label_panel.GetSizer().Fit( self.label_panel )
-        self.code_panel.GetSizer().Fit( self.code_panel )
-        self.GetSizer().Fit( self )
-
-
     def GetEntry( self ):
         return self.entry
 
@@ -70,6 +61,8 @@ class AuthEntryPanel( wx.Panel ):
         self.index = self.entry.GetSortIndex()
         self.code = self.entry.GenerateNextCode()
         logging.debug( "AEP SE on %s", self.GetName() )
+        if self.have_controls:
+            self.ChangeContents()
 
 
     def GetPanelSize( self ):
@@ -88,8 +81,8 @@ class AuthEntryPanel( wx.Panel ):
     def ResizePanel( self, panel_height, label_width ):
         if self.have_controls:
             logging.debug( "AEP RP updating %s", self.GetName() )
-            logging.debug( "AEP RP panel currently %s", str( self.GetSize() ) )
-            logging.debug( "AEP RP label width currently %d", self.label_width )
+            logging.debug( "AEP RP initial panel %s", str( self.GetSize() ) )
+            logging.debug( "AEP RP initial label width %d", self.label_width )
             changed = False
             
             if label_width != self.label_width:
@@ -103,17 +96,15 @@ class AuthEntryPanel( wx.Panel ):
                 s.SetWidth( self.label_width )
                 self.account_text.SetSize( s )
                 self.account_text.SetMinSize( s )
-                s = self.label_panel.GetClientSize()
-                s.SetWidth( self.label_width )
-                self.label_panel.SetClientSize( s )
-                self.label_panel.SetMinClientSize( s )
                 changed = True
 
             if panel_height != self.GetSize().GetHeight():
                 logging.debug( "AEP RP panel height: %d", panel_height )
                 self.SetPanelHeight( panel_height )
-                logging.debug( "AEP RP panel size: %s", str( self.GetSize() ) )
                 changed = True
+
+            logging.debug( "AEP RP label width: %d", self.label_width )
+            logging.debug( "AEP RP panel size: %s", str( self.GetSize() ) )
 
 
     def UpdateContents( self ):
@@ -136,7 +127,6 @@ class AuthEntryPanel( wx.Panel ):
             self.account_text.SetSize( te_p )
             self.account_text.SetMinSize( te_p )
 
-            self.label_panel.GetSizer().Fit( self.label_panel )
             self.GetSizer().Fit( self )
 
             logging.debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )

@@ -82,9 +82,6 @@ class AuthFrame( wx.Frame ):
         wp = self.GetPosition()
         Configuration.SetLastWindowPosition( wp )
         items = self.CalcItemsShown()
-        # TODO Remove this limit later
-        if items > 12:
-            items = 12
         Configuration.SetNumberOfItemsShown( items )
         Configuration.Save()
         self.Destroy()
@@ -166,18 +163,18 @@ class AuthFrame( wx.Frame ):
         self.entry_width = 0
         self.label_width = 0
         for entry in self.entry_panels:
-            logging.debug( "AF  APS checking %s", entry.GetName() )
             # Update max entry panel sizes
             entry_size = entry.GetPanelSize()
+            label_width = entry.GetLabelWidth()
+            logging.debug( "AF  APS %s: panel size %s label width %d", entry.GetName(),
+                           str( entry_size ), label_width )
             if entry_size.GetHeight() > self.entry_height:
                 self.entry_height = entry_size.GetHeight()
             if entry_size.GetWidth() > self.entry_width:
                 self.entry_width = entry_size.GetWidth()
-            label_width = entry.GetLabelWidth()
             if label_width > self.label_width:
                 self.label_width = label_width
-            logging.debug( "AF  APS entry %s: height %d label %d", entry.GetName(),
-                           self.entry_height, self.label_width )
+        logging.debug( "AF  APS entry height %d label width %d", self.entry_height, self.label_width )
         for entry in self.entry_panels:
             entry.ResizePanel( self.entry_height, self.label_width )
                 

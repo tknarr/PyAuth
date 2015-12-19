@@ -180,4 +180,7 @@ class AuthenticationEntry:
 
     def GenerateNextCode( self ):
         # TODO Generate next TOTP code
-        return str( random.randint( 100, 999999 ) )
+        # Random 6-digit number, zero-filled on left
+        r = random.randint( 0, 999999 )
+        c = "{:0>6d}".format( r )
+        return c
