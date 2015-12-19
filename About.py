@@ -26,7 +26,7 @@ def GetAboutInfo( dc, desc_width = 350 ):
     info.SetVersion( version_string )
     info.SetCopyright( about_info['copyright'] )
     info.SetWebSite( about_info['website'] )
-    info.SetLicense( wordwrap( about_info['license'], desc_width, dc )
+    info.SetLicense( wordwrap( about_info['license'], desc_width, dc ) )
     info.SetDescription( wordwrap( about_info['description'], desc_width, dc ) )
     for s in about_info['developers']:
         info.AddDeveloper( s )
