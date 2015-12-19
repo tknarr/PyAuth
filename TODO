@@ -3,7 +3,6 @@ To-Do list:
 Dialogs:
     New entry
     Update entry
-    About
 Basic functionality:
     Add/update/delete entries
     Move entries up/down
@@ -14,6 +13,7 @@ Basic functionality:
     Click to show/hide code when all codes hidden
     Help system
     Menu accelerators
+    Add icon to About dialog
 Enhancements:
     Subclass authentication entry classes and panels
     HOTP entries and code generation

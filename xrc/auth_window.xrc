@@ -64,6 +64,15 @@
       <style>wxVSCROLL</style>
     </object>
     <title>PyAuth</title>
+    <font>
+      <size>10</size>
+      <style>normal</style>
+      <weight>normal</weight>
+      <underlined>0</underlined>
+      <family>swiss</family>
+      <face>Sans</face>
+      <encoding>UTF-8</encoding>
+    </font>
   </object>
   <object class="wxPanel" name="entry_panel" subclass="AuthEntryPanel.AuthEntryPanel">
     <object class="wxBoxSizer">
@@ -142,6 +151,15 @@
       </object>
       <orient>wxHORIZONTAL</orient>
     </object>
+    <font>
+      <size>10</size>
+      <style>normal</style>
+      <weight>normal</weight>
+      <underlined>0</underlined>
+      <family>swiss</family>
+      <face>Sans</face>
+      <encoding>UTF-8</encoding>
+    </font>
     <style>wxBORDER_SUNKEN</style>
   </object>
 </resource>

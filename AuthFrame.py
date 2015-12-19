@@ -6,6 +6,7 @@ from wx import xrc as xrc
 import Configuration
 from AuthenticationStore import AuthenticationStore, AuthenticationEntry as AuthenticationEntry
 from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
+from About import GetAboutInfo
 
 class AuthFrame( wx.Frame ):
 
@@ -92,6 +93,7 @@ class AuthFrame( wx.Frame ):
         logging.warning( "New Entry" )
 
     def OnMenuQuit( self, event ):
+        logging.debug( "AF  menu Quit command" )
         self.Close()
 
     def OnMenuEditEntry( self, event ):
@@ -123,8 +125,9 @@ class AuthFrame( wx.Frame ):
         logging.warning( "Help Contents" )
 
     def OnMenuAbout( self, event ):
-        # TODO menu handler
-        logging.warning( "About" )
+        logging.debug( "AF  menu About dialog" )
+        info = GetAboutInfo( wx.ClientDC( self ) )
+        wx.AboutBox( info )
 
 
     def CalcItemsShown( self ):

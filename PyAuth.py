@@ -54,6 +54,7 @@ class PyAuthApp( wx.App ):
 
 
     def OnExit( self ):
+        logging.info( "Exiting" )
         logging.shutdown()
         return 0
 
