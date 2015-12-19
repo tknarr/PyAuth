@@ -14,8 +14,6 @@ class AuthEntryPanel( wx.Panel ):
         self.index = 0
         self.code = ''
         self.label_width = 0
-        self.code_width = 0
-        self.timer_width = 0
 
         self.have_controls = False
         self.provider_text = None
@@ -36,11 +34,9 @@ class AuthEntryPanel( wx.Panel ):
         self.have_controls = True
 
         te = self.code_text.GetTextExtent( '000000' )
-        self.code_width = te[0]
         self.code_text.SetSize( te )
         self.code_text.SetMinSize( te )
 
-        self.timer_width = self.timer_gauge.GetSize().GetWidth()
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
 
         self.ChangeContents()
