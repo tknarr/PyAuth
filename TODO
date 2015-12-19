@@ -13,7 +13,8 @@ Basic functionality:
     Click to show/hide code when all codes hidden
     Help system
     Menu accelerators
-    Add icon to About dialog
+    Add icon to About dialog and for system use
+    Convert XRC file into module with embedded resources
 Enhancements:
     Subclass authentication entry classes and panels
     HOTP entries and code generation
