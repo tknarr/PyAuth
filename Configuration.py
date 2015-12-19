@@ -115,7 +115,7 @@ def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
 
     # If we weren't told the corner to peg to, calculate centerpoints and
     # see which quarter of the screen the frame centerpoint is in.
-    if peg_corner not in { 'TL', 'TR', 'BL', 'BR' }
+    if peg_corner not in { 'TL', 'TR', 'BL', 'BR' }:
         scr_center_x = scr_x / 2
         scr_center_y = scr_y / 2
         fr_center_x = x_pos + ( fr_w / 2 )
