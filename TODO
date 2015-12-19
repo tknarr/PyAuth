@@ -4,6 +4,7 @@ Dialogs:
     New entry
     Update entry
 Basic functionality:
+    Select entry (mouse and keyboard)
     Add/update/delete entries
     Move entries up/down
     TOTP code generation

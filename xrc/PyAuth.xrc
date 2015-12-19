@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<resource>
+<resource class="wxPanel">
   <object class="wxFrame" name="main_frame" subclass="AuthFrame.AuthFrame">
     <object class="wxMenuBar" name="menu_bar">
       <object class="wxMenu">
@@ -219,8 +219,8 @@
             <rows>4</rows>
             <vgap>4</vgap>
             <hgap>4</hgap>
-            <growablecols></growablecols>
-            <growablerows></growablerows>
+            <growablecols/>
+            <growablerows/>
             <object class="sizeritem">
               <object class="wxStaticText">
                 <label>Original label:</label>
@@ -241,7 +241,7 @@
         </object>
         <option>0</option>
         <flag>wxALL|wxEXPAND</flag>
-        <border>8</border>
+        <border>16</border>
       </object>
       <object class="spacer">
         <option>1</option>
@@ -255,7 +255,7 @@
                 <label>Cancel</label>
               </object>
               <option>0</option>
-              <flag>wxLEFT|wxALIGN_LEFT</flag>
+              <flag>wxBOTTOM|wxLEFT|wxALIGN_LEFT</flag>
               <border>8</border>
             </object>
             <object class="spacer">
@@ -267,7 +267,7 @@
                 <label>OK</label>
               </object>
               <option>0</option>
-              <flag>wxRIGHT|wxALIGN_RIGHT</flag>
+              <flag>wxBOTTOM|wxRIGHT|wxALIGN_RIGHT</flag>
               <border>8</border>
             </object>
             <orient>wxHORIZONTAL</orient>
@@ -282,6 +282,119 @@
     <title>New Entry</title>
     <centered>1</centered>
     <icon stock_id="wxART_NEW"/>
+    <font>
+      <size>12</size>
+      <style>normal</style>
+      <weight>normal</weight>
+      <underlined>0</underlined>
+      <family>swiss</family>
+      <face>Sans</face>
+      <encoding>UTF-8</encoding>
+    </font>
+    <style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
+  </object>
+  <object class="wxDialog" name="update_entry_dialog">
+    <object class="wxBoxSizer">
+      <orient>wxVERTICAL</orient>
+      <object class="sizeritem">
+        <object class="wxPanel">
+          <object class="wxFlexGridSizer">
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Provider:</label>
+                <tooltip>Name of service provider your account is at</tooltip>
+                <style>wxALIGN_RIGHT</style>
+              </object>
+              <flag>wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+              <border>4</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="provider_text">
+                <maxlength>80</maxlength>
+                <style>wxTE_DONTWRAP</style>
+              </object>
+              <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Account:</label>
+                <tooltip>Name of your account, usually a username or email address</tooltip>
+                <style>wxALIGN_RIGHT</style>
+              </object>
+              <flag>wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+              <border>4</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="account_text">
+                <maxlength>80</maxlength>
+                <style>wxTE_DONTWRAP</style>
+              </object>
+              <flag>wxALIGN_LEFT|wxALIGN_CENTRE_HORIZONTAL</flag>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Secret:</label>
+                <tooltip>Secret string generated for your authenticator</tooltip>
+                <style>wxALIGN_RIGHT</style>
+              </object>
+              <flag>wxRIGHT|wxALIGN_RIGHT|wxALIGN_CENTRE_VERTICAL</flag>
+              <border>4</border>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="secret_text">
+                <maxlength>80</maxlength>
+                <style>wxTE_DONTWRAP</style>
+              </object>
+              <flag>wxALIGN_LEFT|wxALIGN_CENTRE_VERTICAL</flag>
+            </object>
+            <cols>2</cols>
+            <rows>3</rows>
+            <vgap>4</vgap>
+            <hgap>4</hgap>
+            <growablecols></growablecols>
+            <growablerows></growablerows>
+          </object>
+        </object>
+        <option>0</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>16</border>
+      </object>
+      <object class="spacer">
+        <option>1</option>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel">
+          <object class="wxBoxSizer">
+            <object class="sizeritem">
+              <object class="wxButton" name="CANCEL">
+                <label>Cancel</label>
+              </object>
+              <option>0</option>
+              <flag>wxBOTTOM|wxLEFT|wxALIGN_LEFT</flag>
+              <border>8</border>
+            </object>
+            <object class="spacer">
+              <option>1</option>
+              <flag>wxEXPAND</flag>
+            </object>
+            <object class="sizeritem">
+              <object class="wxButton" name="OK">
+                <label>OK</label>
+              </object>
+              <option>0</option>
+              <flag>wxBOTTOM|wxRIGHT|wxALIGN_RIGHT</flag>
+              <border>8</border>
+            </object>
+            <orient>wxHORIZONTAL</orient>
+          </object>
+        </object>
+        <option>0</option>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>8</border>
+      </object>
+    </object>
+    <title>Update Entry</title>
     <font>
       <size>12</size>
       <style>normal</style>
