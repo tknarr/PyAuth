@@ -27,7 +27,7 @@ def GetAboutInfo( dc, desc_width = 350 ):
     info.SetCopyright( about_info['copyright'] )
     info.SetWebSite( about_info['website'] )
     info.SetLicense( wordwrap( about_info['license'], desc_width, dc ) )
-    info.SetDescription( wordwrap( about_info['description'], desc_width, dc ) )
+    info.SetDescription( about_info['description'] )
     for s in about_info['developers']:
         info.AddDeveloper( s )
     if 'docwriters' in about_info:

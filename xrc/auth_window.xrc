@@ -65,7 +65,7 @@
     </object>
     <title>PyAuth</title>
     <font>
-      <size>10</size>
+      <size>12</size>
       <style>normal</style>
       <weight>normal</weight>
       <underlined>0</underlined>
@@ -152,7 +152,7 @@
       <orient>wxHORIZONTAL</orient>
     </object>
     <font>
-      <size>10</size>
+      <size>12</size>
       <style>normal</style>
       <weight>normal</weight>
       <underlined>0</underlined>
