@@ -29,7 +29,7 @@ class PyAuthApp( wx.App ):
 
         # Load XRC resources
         self.xrc_path = sys.path[0] + '/xrc/'
-        self.res = xrc.XmlResource( self.xrc_path + 'auth_window.xrc' )
+        self.res = xrc.XmlResource( self.xrc_path + 'PyAuth.xrc' )
         if self.res == None:
             logging.critical( "Cannot find XML resources file %s", self.xrc_path )
             return False

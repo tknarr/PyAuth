@@ -45,7 +45,10 @@ class AuthenticationStore:
                 provider = self.cfg.Read( cfgpath + 'provider' )
                 account = self.cfg.Read( cfgpath + 'account' )
                 secret = self.cfg.Read( cfgpath + 'secret' )
-                entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret )
+                original_label = self.cfg.Read( cfgpath + 'original_label', '' )
+                if original_label == '':
+                    original_label = provider + ':' + account
+                entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret, original_label )
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
@@ -79,6 +82,7 @@ class AuthenticationStore:
         cfg.Write( cfgpath + 'provider', entry.provider )
         cfg.Write( cfgpath + 'account', entry.account )
         cfg.Write( cfgpath + 'secret', entry.secret )
+        cfg.Write( cfgpath + 'original_label', entry.original_label )
 
 
     def Reindex( self ):
@@ -105,12 +109,12 @@ class AuthenticationStore:
         self.next_index = i
 
 
-    def Add( self, provider, account, secret ):
+    def Add( self, provider, account, secret, original_label = None ):
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
         elist = filter( f, self.entry_list )
         if len( elist ) > 0:
             return None
-        entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret )
+        entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret, original_label )
         self.entry_list.append( entry )
         self.next_index += 1
         self.next_group += 1
@@ -125,7 +129,7 @@ class AuthenticationStore:
                 del self.entry_list[i]
 
 
-    def Update( self, entry_group, provider = None, account = None, secret = None ):
+    def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
         for entry in self.entry_list:
             if entry.GetGroup() == entry_group:
                 if provider != None:
@@ -134,16 +138,22 @@ class AuthenticationStore:
                     entry.SetAccount( account )
                 if secret != None:
                     entry.SetSecret( secret )
+                if original_label != None:
+                    entry.SetOriginalLabel( original_label )
                 
     
 class AuthenticationEntry:
 
-    def __init__( self, group, index, provider = '', account = '', secret = '' ):
+    def __init__( self, group, index, provider, account, secret, original_label = None ):
         self.entry_group = group
         self.sort_index = index
         self.provider = provider
         self.account = account
         self.secret = secret
+        if original_label != None:
+            self.original_label = original_label
+        else:
+            self.original_label = provider + ':' + account
 
 
     def GetGroup( self ):
@@ -170,6 +180,12 @@ class AuthenticationEntry:
     
     def SetAccount( self, account ):
         self.account = account
+
+    def GetOriginalLabel( self ):
+        return self.original_label
+
+    def SetOriginalLabel( self, original_label ):
+        self.original_label = original_label
 
     def GetSecret( self ):
         return self.secret
