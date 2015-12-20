@@ -23,45 +23,76 @@ class NewEntryDialog( wx.Dialog ):
         fgs.SetFlexibleDirection( wx.HORIZONTAL )
         fgs.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_NONE )
         fgs.AddGrowableCol( 1, 1 )
-        vbox.Add( fgs, 0, wx.ALL, 16 )
+        vbox.Add( fgs, 0, wx.ALL, 8 )
 
+        label_minsize = wx.Size( 0, 0 )
+        labels = []
+        
         # Row 1
-        lbl = wx.StaticText( self, wx.ID_ANY, "Provider:" )
-        lbl.SetMinSize( self.GetTextExtent( "Provider:" ) )
-        fgs.Add( lbl, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 0 )
+        lbl = wx.StaticText( self, wx.ID_ANY, "Provider:", style = wx.ALIGN_RIGHT )
+        lbl_te = lbl.GetTextExtent( lbl.GetLabelText() )
+        if lbl_te[0] > label_minsize.GetWidth():
+            label_minsize.SetWidth( lbl_te[0] )
+        if lbl_te[1] > label_minsize.GetHeight():
+            label_minsize.SetHeight( lbl_te[1] )
+        labels.append( lbl )
+        fgs.Add( lbl, 0, wx.ALL |  wx.ALIGN_CENTER_VERTICAL, 2 )
         self.provider_text = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        self.provider_text.SetMinSize( self.provider_text.GetTextExtent( 'MMMMMMMMMM' ) )
-        fgs.Add( self.provider_text, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 0 )
+        self.provider_text.SetMinSize( wx.DLG_SZE( self, self.provider_text.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        fgs.Add( self.provider_text, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 2 )
 
         # Row 2
-        lbl = wx.StaticText( self, wx.ID_ANY, "Account:" )
-        lbl.SetMinSize( self.GetTextExtent( "Account:" ) )
-        fgs.Add( lbl, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 0 )
+        lbl = wx.StaticText( self, wx.ID_ANY, "Account:", style = wx.ALIGN_RIGHT )
+        lbl_te = lbl.GetTextExtent( lbl.GetLabelText() )
+        if lbl_te[0] > label_minsize.GetWidth():
+            label_minsize.SetWidth( lbl_te[0] )
+        if lbl_te[1] > label_minsize.GetHeight():
+            label_minsize.SetHeight( lbl_te[1] )
+        labels.append( lbl )
+        fgs.Add( lbl, 0, wx.ALL |  wx.ALIGN_CENTER_VERTICAL, 2 )
         self.account_text = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        fgs.Add( self.account_text, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 0 )
+        self.account_text.SetMinSize( wx.DLG_SZE( self, self.account_text.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        fgs.Add( self.account_text, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 2 )
 
         # Row 3
-        lbl = wx.StaticText( self, wx.ID_ANY, "Secret:", )
-        lbl.SetMinSize( self.GetTextExtent( "Secret:" ) )
-        fgs.Add( lbl, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 0 )
+        lbl = wx.StaticText( self, wx.ID_ANY, "Secret:", style = wx.ALIGN_RIGHT )
+        lbl_te = lbl.GetTextExtent( lbl.GetLabelText() )
+        if lbl_te[0] > label_minsize.GetWidth():
+            label_minsize.SetWidth( lbl_te[0] )
+        if lbl_te[1] > label_minsize.GetHeight():
+            label_minsize.SetHeight( lbl_te[1] )
+        labels.append( lbl )
+        fgs.Add( lbl, 0, wx.ALL |  wx.ALIGN_CENTER_VERTICAL, 2 )
         self.secret_text = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        fgs.Add( self.secret_text, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 0 )
+        self.secret_text.SetMinSize( wx.DLG_SZE( self, self.secret_text.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        fgs.Add( self.secret_text, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 2 )
 
         # Row 4
-        lbl = wx.StaticText( self, wx.ID_ANY, "Original label:" )
-        lbl.SetMinSize( self.GetTextExtent( "Original Label:" ) )
-        fgs.Add( lbl, 0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL, 0 )
+        lbl = wx.StaticText( self, wx.ID_ANY, "Original label:", style = wx.ALIGN_RIGHT )
+        lbl_te = lbl.GetTextExtent( lbl.GetLabelText() )
+        if lbl_te[0] > label_minsize.GetWidth():
+            label_minsize.SetWidth( lbl_te[0] )
+        if lbl_te[1] > label_minsize.GetHeight():
+            label_minsize.SetHeight( lbl_te[1] )
+        labels.append( lbl )
+        fgs.Add( lbl, 0, wx.ALL |  wx.ALIGN_CENTER_VERTICAL, 2 )
         self.original_label_text = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        fgs.Add( self.original_label_text, 1, wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 0 )
+        self.original_label_text.SetMinSize( wx.DLG_SZE( self, self.original_label_text.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        fgs.Add( self.original_label_text, 1, wx.ALL | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL, 2 )
+
+        label_minsize_dlg = wx.DLG_SZE( self, label_minsize )
+        for lbl in labels:
+            lbl.SetSize( label_minsize_dlg )
+            lbl.SetMinSize( label_minsize_dlg )
 
         self.error_message = wx.StaticText( self, wx.ID_ANY, '' )
-        self.error_message.SetMinSize( self.error_message.GetTextExtent( 'M' ) )
+        self.error_message.SetMinSize( wx.DLG_SZE( self, self.error_message.GetTextExtent( 'M' ) ) )
         vbox.Add( self.error_message, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.ALIGN_CENTER, 16 )
 
         vbox.AddStretchSpacer( 1 )
 
         btnsizer = self.CreateButtonSizer( wx.OK | wx.CANCEL )
-        vbox.Add( btnsizer, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 16 )
+        vbox.Add( btnsizer, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 8 )
 
         self.GetSizer().Fit( self )
 
@@ -88,9 +119,9 @@ class NewEntryDialog( wx.Dialog ):
     def SetErrorMessage( self, msg ):
         self.error_message.SetLabel( msg )
         if msg != '':
-            self.error_message.SetMinSize( self.error_message.GetTextExtent( msg ) )
+            self.error_message.SetMinSize( wx.DLG_SZE( self, self.error_message.GetTextExtent( msg ) ) )
         else:
-            self.error_message.SetMinSize( self.error_message.GetTextExtent( 'M' ) )
+            self.error_message.SetMinSize( wx.DLG_SZE( self, self.error_message.GetTextExtent( 'M' ) ) )
 
     def Reset( self ):
         self.provider_text.Clear()
