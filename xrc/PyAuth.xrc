@@ -254,7 +254,6 @@
               <object class="wxButton" name="CANCEL">
                 <label>Cancel</label>
               </object>
-              <option>0</option>
               <flag>wxBOTTOM|wxLEFT|wxALIGN_LEFT</flag>
               <border>8</border>
             </object>
@@ -266,7 +265,6 @@
               <object class="wxButton" name="OK">
                 <label>OK</label>
               </object>
-              <option>0</option>
               <flag>wxBOTTOM|wxRIGHT|wxALIGN_RIGHT</flag>
               <border>8</border>
             </object>
@@ -351,8 +349,8 @@
             <rows>3</rows>
             <vgap>4</vgap>
             <hgap>4</hgap>
-            <growablecols></growablecols>
-            <growablerows></growablerows>
+            <growablecols/>
+            <growablerows/>
           </object>
         </object>
         <option>0</option>
@@ -370,7 +368,6 @@
               <object class="wxButton" name="CANCEL">
                 <label>Cancel</label>
               </object>
-              <option>0</option>
               <flag>wxBOTTOM|wxLEFT|wxALIGN_LEFT</flag>
               <border>8</border>
             </object>
@@ -382,7 +379,6 @@
               <object class="wxButton" name="OK">
                 <label>OK</label>
               </object>
-              <option>0</option>
               <flag>wxBOTTOM|wxRIGHT|wxALIGN_RIGHT</flag>
               <border>8</border>
             </object>
