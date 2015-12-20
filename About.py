@@ -3,7 +3,7 @@
 import wx
 from wx.lib.wordwrap import wordwrap
 
-about_info = {
+about_data = {
     'name': "PyAuth",
     'version': '0.1.1',
     'version-tag': 'dev',
@@ -13,28 +13,28 @@ about_info = {
     'license': "GPL v3 or any later version",
     'description': "Google Authenticator desktop application"
     }
+about_info = None
 
 def GetAboutInfo( dc, desc_width = 350 ):
-    info = wx.AboutDialogInfo()
-
-    info.SetName( about_info['name'] )
-    version_string = about_info['version']
-    if 'version-tag' in about_info:
-        vt = about_info['version-tag']
-        if vt != None and vt != '':
-            version_string += ' ' + vt
-    info.SetVersion( version_string )
-    info.SetCopyright( about_info['copyright'] )
-    info.SetWebSite( about_info['website'] )
-    info.SetLicense( wordwrap( about_info['license'], desc_width, dc ) )
-    info.SetDescription( about_info['description'] )
-    for s in about_info['developers']:
-        info.AddDeveloper( s )
-    if 'docwriters' in about_info:
-        for x in about_info['docwriters']:
-            info.AddDocWriter( s )
-    if 'translators' in about_info:
-        for x in about_info['translators']:
-            info.AddTranslator( s )
-
-    return info
+    if about_info == None:
+        about_info = wx.AboutDialogInfo()
+        about_info.SetName( about_data['name'] )
+        version_string = about_data['version']
+        if 'version-tag' in about_data:
+            vt = about_data['version-tag']
+            if vt != None and vt != '':
+                version_string += ' ' + vt
+        about_info.SetVersion( version_string )
+        about_info.SetCopyright( about_data['copyright'] )
+        about_info.SetWebSite( about_data['website'] )
+        about_info.SetLicense( wordwrap( about_data['license'], desc_width, dc ) )
+        about_info.SetDescription( about_data['description'] )
+        for s in about_data['developers']:
+            about_info.AddDeveloper( s )
+        if 'docwriters' in about_data:
+            for x in about_data['docwriters']:
+                about_info.AddDocWriter( s )
+        if 'translators' in about_data:
+            for x in about_data['translators']:
+                about_info.AddTranslator( s )
+    return about_info

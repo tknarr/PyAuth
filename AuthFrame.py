@@ -7,6 +7,8 @@ import Configuration
 from AuthenticationStore import AuthenticationStore, AuthenticationEntry as AuthenticationEntry
 from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
 from About import GetAboutInfo
+import NewEntryDialog
+#import UpdateEntryDialog
 
 class AuthFrame( wx.Frame ):
 
@@ -27,6 +29,9 @@ class AuthFrame( wx.Frame ):
         # Internal values
         self.entry_border = 2
         self.scrollbar_width = 0
+
+        self.new_entry_dialog = None
+        self.update_entry_dialog = None
 
         self.PostCreate( p )
         self.Bind( self._first_event_type, self.OnCreate )
@@ -60,16 +65,16 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
         # Menu event handlers
         menu_bar = xrc.XRCCTRL( self, 'menu_bar' )
-        self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = xrc.XRCID( 'NEW' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = xrc.XRCID( 'QUIT' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = xrc.XRCID( 'EDIT' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = xrc.XRCID( 'DELETE' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       id = xrc.XRCID( 'MOVE_UP' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     id = xrc.XRCID( 'MOVE_DOWN' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = xrc.XRCID( 'SHOW_TIMERS' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = xrc.XRCID( 'SHOW_ALL_CODES' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = xrc.XRCID( 'HELP' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = xrc.XRCID( 'ABOUT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = xrc.XRCID( 'MENU_NEW' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = xrc.XRCID( 'MENU_QUIT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = xrc.XRCID( 'MENU_EDIT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = xrc.XRCID( 'MENU_DELETE' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       id = xrc.XRCID( 'MENU_MOVE_UP' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     id = xrc.XRCID( 'MENU_MOVE_DOWN' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = xrc.XRCID( 'MENU_SHOW_TIMERS' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = xrc.XRCID( 'MENU_SHOW_ALL_CODES' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = xrc.XRCID( 'MENU_HELP' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = xrc.XRCID( 'MENU_ABOUT' ) )
 
 
     def OnCreate( self, event ):
@@ -79,18 +84,54 @@ class AuthFrame( wx.Frame ):
 
 
     def OnCloseWindow( self, event ):
+        logging.debug( "AF  close window" )
         self.auth_store.Save()
         wp = self.GetPosition()
         Configuration.SetLastWindowPosition( wp )
         items = self.CalcItemsShown()
         Configuration.SetNumberOfItemsShown( items )
         Configuration.Save()
+        if self.new_entry_dialog != None:
+            self.new_entry_dialog.Destroy()
+        if self.update_entry_dialog != None:
+            self.update_entry_dialog.Destroy()
         self.Destroy()
 
 
     def OnMenuNewEntry( self, event ):
-        # TODO menu handler
-        logging.warning( "New Entry" )
+        if self.new_entry_dialog == None:
+            self.new_entry_dialog = self.res.LoadDialog( self, 'new_entry_dialog' )
+        provider_text = xrc.XRCCTRL( self.new_entry_dialog, 'provider_text' )
+        account_text = xrc.XRCCTRL( self.new_entry_dialog, 'account_text' )
+        secret_text = xrc.XRCCTRL( self.new_entry_dialog, 'secret_text' )
+        original_label_text = xrc.XRCCTRL( self.new_entry_dialog, 'original_label_text' )
+        error_label = xrc.XRCCTRL( self.new_entry_dialog, 'error_label' )
+
+        provider_text.Clear()
+        account_text.Clear()
+        secret_text.Clear()
+        original_label_text.Clear()
+
+        finished = False
+        cancelled = False
+        while not finished and not cancelled:
+            result = self.new_entry_dialog.ShowModal()
+            if result == wx.ID_OK:
+                if provider_text.IsEmpty():
+                    error_label.SetLabel( "Provider is required" )
+                elif account_text.IsEmpty():
+                    error_label.SetLabel( "Account is required" )
+                elif secret_text.IsEmpty():
+                    error_label.SetLabel( "Secret is required" )
+                else:
+                    finished = True
+            elif result == wx.ID_CANCEL:
+                cancelled = True
+            else:
+                logging.error( "AF  menu New Entry unknown result: %s", str(result) )
+        if finished:
+            # TODO create a new panel at the end of the list
+            logging.warning( "AF  menu New Entry unfinished" )
 
     def OnMenuQuit( self, event ):
         logging.debug( "AF  menu Quit command" )
