@@ -4,11 +4,11 @@ import logging
 import wx
 from wx import xrc as xrc
 import Configuration
-from AuthenticationStore import AuthenticationStore, AuthenticationEntry as AuthenticationEntry
+from AuthenticationStore import AuthenticationStore
 from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
 from About import GetAboutInfo
-import NewEntryDialog
-#import UpdateEntryDialog
+from NewEntryDialog import NewEntryDialog as NewEntryDialog
+#from UpdateEntryDialog import UpdateEntryDialog as UpdateEntryDialog
 
 class AuthFrame( wx.Frame ):
 
@@ -100,31 +100,16 @@ class AuthFrame( wx.Frame ):
 
     def OnMenuNewEntry( self, event ):
         if self.new_entry_dialog == None:
-            self.new_entry_dialog = self.res.LoadDialog( self, 'new_entry_dialog' )
-        provider_text = xrc.XRCCTRL( self.new_entry_dialog, 'provider_text' )
-        account_text = xrc.XRCCTRL( self.new_entry_dialog, 'account_text' )
-        secret_text = xrc.XRCCTRL( self.new_entry_dialog, 'secret_text' )
-        original_label_text = xrc.XRCCTRL( self.new_entry_dialog, 'original_label_text' )
-        error_label = xrc.XRCCTRL( self.new_entry_dialog, 'error_label' )
-
-        provider_text.Clear()
-        account_text.Clear()
-        secret_text.Clear()
-        original_label_text.Clear()
+            self.new_entry_dialog = NewEntryDialog( self, wx.ID_ANY, "New Entry" )
+        self.new_entry_dialog.Reset()
 
         finished = False
         cancelled = False
         while not finished and not cancelled:
             result = self.new_entry_dialog.ShowModal()
+            # TODO validation needed anymore?
             if result == wx.ID_OK:
-                if provider_text.IsEmpty():
-                    error_label.SetLabel( "Provider is required" )
-                elif account_text.IsEmpty():
-                    error_label.SetLabel( "Account is required" )
-                elif secret_text.IsEmpty():
-                    error_label.SetLabel( "Secret is required" )
-                else:
-                    finished = True
+                finished = True
             elif result == wx.ID_CANCEL:
                 cancelled = True
             else:

@@ -64,7 +64,7 @@ class AuthenticationStore:
 
     def Save( self ):
         for entry in self.entry_list:
-            self.SaveEntry( self.cfg, entry )
+            entry.Save( self.cfg )
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
@@ -74,15 +74,6 @@ class AuthenticationStore:
             if e.errno != errno.ENOENT:
                 logging.warning( "Problem with database file %s", cfgfile )
                 logging.warning( "Error code %d: %s ", e.errno, e.strerror )
-
-
-    def SaveEntry( self, cfg, entry ):
-        cfgpath = '/entries/%s/' % entry.entry_group
-        cfg.WriteInt( cfgpath + 'sort_index', entry.sort_index )
-        cfg.Write( cfgpath + 'provider', entry.provider )
-        cfg.Write( cfgpath + 'account', entry.account )
-        cfg.Write( cfgpath + 'secret', entry.secret )
-        cfg.Write( cfgpath + 'original_label', entry.original_label )
 
 
     def Reindex( self ):
@@ -103,7 +94,7 @@ class AuthenticationStore:
         for e in self.entry_list:
             e.SetGroup( i )
             e.SetIndex( i )
-            self.SaveEntry( self.cfg, e )
+            e.Save( self.cfg )
             i += 1
         self.next_group = i
         self.next_index = i
@@ -118,6 +109,7 @@ class AuthenticationStore:
         self.entry_list.append( entry )
         self.next_index += 1
         self.next_group += 1
+        entry.Save( self.cfg )
         return entry
 
 
@@ -140,6 +132,7 @@ class AuthenticationStore:
                     entry.SetSecret( secret )
                 if original_label != None:
                     entry.SetOriginalLabel( original_label )
+                entry.Save( self.cfg )
                 
     
 class AuthenticationEntry:
@@ -154,6 +147,15 @@ class AuthenticationEntry:
             self.original_label = original_label
         else:
             self.original_label = provider + ':' + account
+
+
+    def Save( self, cfg ):
+        cfgpath = '/entries/%s/' % self.entry_group
+        cfg.WriteInt( cfgpath + 'sort_index', self.sort_index )
+        cfg.Write( cfgpath + 'provider', self.provider )
+        cfg.Write( cfgpath + 'account', self.account )
+        cfg.Write( cfgpath + 'secret', self.secret )
+        cfg.Write( cfgpath + 'original_label', self.original_label )
 
 
     def GetGroup( self ):

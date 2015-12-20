@@ -1,6 +1,7 @@
 To-Do list:
 
 Basic functionality:
+    Toolbar for main frame
     Select entry (mouse and keyboard)
     Add/update/delete entries
     Move entries up/down
@@ -12,7 +13,6 @@ Basic functionality:
     Help system
     Menu accelerators
     Add icon to About dialog and for system use
-    Convert XRC file into module with embedded resources
 Enhancements:
     Subclass authentication entry classes and panels
     HOTP entries and code generation
