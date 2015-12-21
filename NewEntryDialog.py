@@ -134,7 +134,7 @@ class NewEntryDialog( wx.Dialog ):
         if required:
             lbl += ' '
             if error:
-                lbl += '<span foreground=\'red\'>'
+                lbl += '<span color=\'red\' weight=\'bold\'>'
             lbl += self.required_literal
             if error:
                 lbl += '</span>'
