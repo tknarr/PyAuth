@@ -107,13 +107,12 @@ class AuthFrame( wx.Frame ):
         cancelled = False
         while not finished and not cancelled:
             result = self.new_entry_dialog.ShowModal()
-            # TODO validation needed anymore?
             if result == wx.ID_OK:
                 finished = True
-            elif result == wx.ID_CANCEL:
-                cancelled = True
             else:
-                logging.error( "AF  menu New Entry unknown result: %s", str(result) )
+                cancelled = True
+                if result != wx.ID_CANCEL:
+                    logging.error( "AF  menu New Entry unknown result: %s", str(result) )
         if finished:
             # TODO create a new panel at the end of the list
             logging.warning( "AF  menu New Entry unfinished" )

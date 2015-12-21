@@ -19,13 +19,19 @@ class NewEntryDialog( wx.Dialog ):
         self.original_label_label = None
         self.original_label_text = None
 
+        self.provider_literal = "Provider:"
+        self.account_literal = "Account:"
+        self.secret_literal = "Secret:"
+        self.original_label_literal = "Original label:"
+        self.required_literal = "(required)"
+
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )
 
         vbox.AddSpacer( 16, 0 )
 
         # Item 1
-        lbl = wx.StaticText( self, wx.ID_ANY, "Provider:" )
+        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.provider_literal, True, False ) )
         lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.provider_label = lbl
@@ -37,7 +43,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddSpacer( 16, 0 )
 
         # Item 2
-        lbl = wx.StaticText( self, wx.ID_ANY, "Account:" )
+        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.account_literal, True, False ) )
         lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.account_label = lbl
@@ -49,7 +55,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddSpacer( 16, 0 )
 
         # Item 3
-        lbl = wx.StaticText( self, wx.ID_ANY, "Secret:" )
+        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.secret_literal, True, False ) )
         lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.secret_label = lbl
@@ -61,7 +67,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddSpacer( 16, 0 )
 
         # Item 4
-        lbl = wx.StaticText( self, wx.ID_ANY, "Original label:" )
+        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.original_label_literal, False, False ) )
         lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.original_label_label = lbl
@@ -83,10 +89,28 @@ class NewEntryDialog( wx.Dialog ):
 
 
     def OnOK( self, event ):
-        # TODO validation and error message
-        self.Close()
+        err = False
+        if self.provider_text.IsEmpty():
+            err = True
+            self.provider_label.SetLabelMarkup( self.MakeLabel( self.provider_literal, True, True ) )
+        else:
+            self.provider_label.SetLabel( self.MakeLabel( self.provider_literal, True, False ) )
+        if self.account_text.IsEmpty():
+            err = True
+            self.account_label.SetLabelMarkup( self.MakeLabel( self.account_literal, True, True ) )
+        else:
+            self.account_label.SetLabel( self.MakeLabel( self.account_literal, True, False ) )
+        if self.secret_text.IsEmpty():
+            err = True
+            self.secret_label.SetLabelMarkup( self.MakeLabel( self.secret_literal, True, True ) )
+        else:
+            self.secret_label.SetLabel( self.MakeLabel( self.secret_literal, True, False ) )
+        if err:
+            wx.Bell()
+        else:
+            event.Skip( True )
 
-
+                
     def GetProviderValue( self ):
         return self.provider_text.GetValue()
 
@@ -104,3 +128,14 @@ class NewEntryDialog( wx.Dialog ):
         self.account_text.Clear()
         self.secret_text.Clear()
         self.original_label_text.Clear()
+
+    def MakeLabel( self, txt, required, error ):
+        lbl = txt
+        if required:
+            lbl += ' '
+            if error:
+                lbl += '<span foreground=\'red\'>'
+            lbl += self.required_literal
+            if error:
+                lbl += '</span>'
+        return lbl
