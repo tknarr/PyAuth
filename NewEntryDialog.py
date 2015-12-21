@@ -25,14 +25,16 @@ class NewEntryDialog( wx.Dialog ):
         self.original_label_literal = "Original label:"
         self.required_literal = "(required)"
 
+        self.text_color = self.GetForegroundColour()
+
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )
 
         vbox.AddSpacer( 16, 0 )
 
         # Item 1
-        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.provider_literal, True, False ) )
-        lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.provider_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.provider_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
@@ -43,8 +45,8 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddSpacer( 16, 0 )
 
         # Item 2
-        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.account_literal, True, False ) )
-        lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.account_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.account_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
@@ -55,8 +57,8 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddSpacer( 16, 0 )
 
         # Item 3
-        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.secret_literal, True, False ) )
-        lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.secret_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.secret_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
@@ -67,8 +69,8 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddSpacer( 16, 0 )
 
         # Item 4
-        lbl = wx.StaticText( self, wx.ID_ANY, self.MakeLabel( self.original_label_literal, False, False ) )
-        lbl.SetMinSize( wx.DLG_SZE( self, lbl.GetTextExtent( lbl.GetLabelText() ) ) )
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.original_label_literal, False )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.original_label_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
@@ -90,21 +92,15 @@ class NewEntryDialog( wx.Dialog ):
 
     def OnOK( self, event ):
         err = False
-        if self.provider_text.IsEmpty():
-            err = True
-            self.provider_label.SetLabelMarkup( self.MakeLabel( self.provider_literal, True, True ) )
-        else:
-            self.provider_label.SetLabel( self.MakeLabel( self.provider_literal, True, False ) )
-        if self.account_text.IsEmpty():
-            err = True
-            self.account_label.SetLabelMarkup( self.MakeLabel( self.account_literal, True, True ) )
-        else:
-            self.account_label.SetLabel( self.MakeLabel( self.account_literal, True, False ) )
-        if self.secret_text.IsEmpty():
-            err = True
-            self.secret_label.SetLabelMarkup( self.MakeLabel( self.secret_literal, True, True ) )
-        else:
-            self.secret_label.SetLabel( self.MakeLabel( self.secret_literal, True, False ) )
+        f = self.provider_text.IsEmpty()
+        err = err or f
+        self.ColorLabel( self.provider_label, f )
+        f = self.account_text.IsEmpty()
+        err = err or f
+        self.ColorLabel( self.account_label, f )
+        f = self.secret_text.IsEmpty()
+        err = err or f
+        self.ColorLabel( self.secret_label, f )
         if err:
             wx.Bell()
         else:
@@ -129,13 +125,15 @@ class NewEntryDialog( wx.Dialog ):
         self.secret_text.Clear()
         self.original_label_text.Clear()
 
-    def MakeLabel( self, txt, required, error ):
+    def ColorLabel( self, ctrl, error ):
+        if error:
+            ctrl.SetForegroundColour( wx.RED )
+        else:
+            ctrl.SetForegroundColour( self.text_color )
+
+    def MakeLabel( self, ctrl, txt, required ):
         lbl = txt
         if required:
-            lbl += ' '
-            if error:
-                lbl += '<span color=\'red\' weight=\'bold\'>'
-            lbl += self.required_literal
-            if error:
-                lbl += '</span>'
-        return lbl
+            lbl += ' ' + self.required_literal
+        ctrl.SetLabelText( lbl )
+        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )
