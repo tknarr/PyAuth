@@ -6,10 +6,11 @@ import wx
 class NewEntryDialog( wx.Dialog ):
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
-                  name = wx.DialogNameStr ):
-        wx.Dialog.__init__( self, parent, id, title, pos, size,
-                             wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER, name )
+                  style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
+        wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
+        logging.debug( "NEF init" )
+        
         self.provider_label = None
         self.provider_text = None
         self.account_label = None
@@ -38,7 +39,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.provider_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.provider_text = txt
 
@@ -50,7 +51,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.account_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.account_text = txt
 
@@ -62,7 +63,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.secret_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.secret_text = txt
 
@@ -74,7 +75,7 @@ class NewEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.original_label_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMM' ) ) )
+        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.original_label_text = txt
 
@@ -89,6 +90,8 @@ class NewEntryDialog( wx.Dialog ):
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
+        logging.debug( "NEF init done" )
+
 
     def OnOK( self, event ):
         err = False
@@ -102,8 +105,10 @@ class NewEntryDialog( wx.Dialog ):
         err = err or f
         self.ColorLabel( self.secret_label, f )
         if err:
+            logging.debug( "NEF OK button missing required items" )
             wx.Bell()
         else:
+            logging.debug( "NEF OK button" )
             event.Skip( True )
 
                 
@@ -120,6 +125,10 @@ class NewEntryDialog( wx.Dialog ):
         return self.original_label_text.GetValue()
 
     def Reset( self ):
+        logging.debug( "NEF reset" )
+        self.ColorLabel( self.provider_label, False )
+        self.ColorLabel( self.account_label, False )
+        self.ColorLabel( self.secret_label, False )
         self.provider_text.Clear()
         self.account_text.Clear()
         self.secret_text.Clear()

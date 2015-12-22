@@ -99,23 +99,35 @@ class AuthFrame( wx.Frame ):
 
 
     def OnMenuNewEntry( self, event ):
+        logging.debug( "AF  menu New Entry command" )
         if self.new_entry_dialog == None:
             self.new_entry_dialog = NewEntryDialog( self, wx.ID_ANY, "New Entry" )
         self.new_entry_dialog.Reset()
 
-        finished = False
-        cancelled = False
-        while not finished and not cancelled:
-            result = self.new_entry_dialog.ShowModal()
-            if result == wx.ID_OK:
-                finished = True
-            else:
-                cancelled = True
-                if result != wx.ID_CANCEL:
-                    logging.error( "AF  menu New Entry unknown result: %s", str(result) )
-        if finished:
-            # TODO create a new panel at the end of the list
-            logging.warning( "AF  menu New Entry unfinished" )
+        result = self.new_entry_dialog.ShowModal()
+        if result == wx.ID_OK:
+            logging.debug( "AF  NE creating new entry" )
+            provider = self.new_entry_dialog.GetProviderValue()
+            account = self.new_entry_dialog.GetAccountValue()
+            secret = self.new_entry_dialog.GetSecretValue()
+            original_label = self.new_entry_dialog.GetOriginalLabel()
+            if original_label == '':
+                original_label = provider + ':' + account
+            logging.debug( "AF  NE provider %s", provider )
+            logging.debug( "AF  NE account  %s", account )
+            logging.debug( "AF  NE secret   %s", secret )
+            logging.debug( "AF  NE orig lbl %s", original_label )
+            entry = self.auth_store.Add( provider, account,secret, original_label )
+            logging.debug( "AF  NE new panel: %d", entry.GetGroup() )
+            panel = self.res.LoadPanel( self.entries_window, 'entry_panel' )
+            panel.SetEntry( entry )
+            self.entry_panels.append( panel )
+            logging.debug( "AF  NE add panel:    %s", panel.GetName() )
+            logging.debug( "AF  NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+            self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
+                                                border = self.entry_border )
+            self.AdjustPanelSizes()
+            self.AdjustWindowSizes()
 
     def OnMenuQuit( self, event ):
         logging.debug( "AF  menu Quit command" )
