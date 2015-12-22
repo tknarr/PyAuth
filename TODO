@@ -1,4 +1,4 @@
-To-Do list:
+PYAuth to-do list
 
 Basic functionality:
     Toolbar for main frame
@@ -23,3 +23,9 @@ Enhancements:
         WinAuth
         JAuth
         Google sqlite3
+    Fonts and colors:
+        Application
+        Entry panel
+        Label area
+        Code area
+        Timer gauge
