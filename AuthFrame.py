@@ -12,8 +12,6 @@ from NewEntryDialog import NewEntryDialog as NewEntryDialog
 
 class AuthFrame( wx.Frame ):
 
-    _first_event_type = wx.EVT_WINDOW_CREATE
-
     def __init__( self ):
         p = wx.PreFrame()
 
@@ -34,7 +32,7 @@ class AuthFrame( wx.Frame ):
         self.update_entry_dialog = None
 
         self.PostCreate( p )
-        self.Bind( self._first_event_type, self.OnCreate )
+        self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
 
 
     def _post_init( self ):
@@ -49,8 +47,7 @@ class AuthFrame( wx.Frame ):
         self.entry_panels = []
         for entry in self.auth_store.EntryList():
             logging.debug( "AF  create panel: %d", entry.GetGroup() )
-            panel = self.res.LoadPanel( self.entries_window, 'entry_panel' )
-            panel.SetEntry( entry )
+            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
             self.entry_panels.append( panel )
         for panel in self.entry_panels:
             logging.debug( "AF  add panel:    %s", panel.GetName() )
@@ -78,7 +75,7 @@ class AuthFrame( wx.Frame ):
 
 
     def OnCreate( self, event ):
-        self.Unbind( self._first_event_type )
+        self.Unbind( wx.EVT_WINDOW_CREATE )
         self._post_init()
         self.Refresh
 
