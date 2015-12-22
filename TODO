@@ -1,12 +1,15 @@
 PYAuth to-do list
 
-Basic functionality:
-    Toolbar for main frame
-    Select entry (mouse and keyboard)
-    Add/update/delete entries
-    Move entries up/down
+Minimal functionality:
+    Update entry
+    Select an entry via mouse
+    Delete selected entry
     TOTP code generation
     Timer countdown
+Basic functionality:
+    Toolbar for main frame
+    Select entry via keyboard
+    Move entries up/down
     Show/hide timers
     Show/hide all codes
     Click to show/hide code when all codes hidden
