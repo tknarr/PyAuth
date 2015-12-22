@@ -12,10 +12,11 @@ from NewEntryDialog import NewEntryDialog as NewEntryDialog
 
 class AuthFrame( wx.Frame ):
 
-    def __init__( self ):
-        p = wx.PreFrame()
+    def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
+                  style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr ):
+        wx.Frame.__init__( self, parent, id, title, pos, size, style, name )
+        logging.debug( "AF init" )
 
-        self.res = wx.GetApp().res
         self.entries_window = None
         self.auth_store = None
         self.entry_panels = []
@@ -31,13 +32,9 @@ class AuthFrame( wx.Frame ):
         self.new_entry_dialog = None
         self.update_entry_dialog = None
 
-        self.PostCreate( p )
-        self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
-
-
-    def _post_init( self ):
-        logging.debug( "AF  post-init" )
-        self.entries_window = xrc.XRCCTRL( self, 'entries_window' )
+        menu_bar = self.create_menu_bar()
+        self.SetMenuBar( menu_bar )
+        self.entries_window = self.create_entries_window()
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
         # Get scrollbar width so we can account for it in window sizing
@@ -59,25 +56,25 @@ class AuthFrame( wx.Frame ):
         self.AdjustWindowSizes()
 
         # Window event handlers
+        self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
         # Menu event handlers
-        menu_bar = xrc.XRCCTRL( self, 'menu_bar' )
-        self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = xrc.XRCID( 'MENU_NEW' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = xrc.XRCID( 'MENU_QUIT' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = xrc.XRCID( 'MENU_EDIT' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = xrc.XRCID( 'MENU_DELETE' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       id = xrc.XRCID( 'MENU_MOVE_UP' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     id = xrc.XRCID( 'MENU_MOVE_DOWN' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = xrc.XRCID( 'MENU_SHOW_TIMERS' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = xrc.XRCID( 'MENU_SHOW_ALL_CODES' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = xrc.XRCID( 'MENU_HELP' ) )
-        self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = xrc.XRCID( 'MENU_ABOUT' ) )
+        self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
+        self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = wx.ID_EXIT )
+        self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = wx.ID_EDIT )
+        self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = wx.ID_DELETE )
+        self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       id = wx.ID_UP )
+        self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     id = wx.ID_DOWN )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = self.MENU_SHOW_TIMERS )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = self.MENU_SHOW_ALL_CODES )
+        self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = wx.ID_HELP )
+        self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = wx.ID_ABOUT )
 
 
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
-        self._post_init()
-        self.Refresh
+        logging.debug( "AF created" )
+        self.Refresh()
 
 
     def OnCloseWindow( self, event ):
@@ -87,6 +84,7 @@ class AuthFrame( wx.Frame ):
         Configuration.SetLastWindowPosition( wp )
         items = self.CalcItemsShown()
         Configuration.SetNumberOfItemsShown( items )
+        # TODO Save state of timers and all codes menu items
         Configuration.Save()
         if self.new_entry_dialog != None:
             self.new_entry_dialog.Destroy()
@@ -116,8 +114,7 @@ class AuthFrame( wx.Frame ):
             logging.debug( "AF  NE orig lbl %s", original_label )
             entry = self.auth_store.Add( provider, account,secret, original_label )
             logging.debug( "AF  NE new panel: %d", entry.GetGroup() )
-            panel = self.res.LoadPanel( self.entries_window, 'entry_panel' )
-            panel.SetEntry( entry )
+            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
             self.entry_panels.append( panel )
             logging.debug( "AF  NE add panel:    %s", panel.GetName() )
             logging.debug( "AF  NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
@@ -162,6 +159,50 @@ class AuthFrame( wx.Frame ):
         logging.debug( "AF  menu About dialog" )
         info = GetAboutInfo( wx.ClientDC( self ) )
         wx.AboutBox( info )
+
+
+    def create_menu_bar( self ):
+        logging.debug( "AF create menu bar" )
+        mb = wx.MenuBar()
+
+        menu = wx.Menu()
+        menu.Append( wx.ID_NEW, "&New", "Create a new entry" )
+        menu.AppendSeparator()
+        menu.Append( wx.ID_EXIT, "E&xit", "Exit the program" )
+        mb.Append( menu, "&File" )
+        
+        menu = wx.Menu()
+        menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected entry" )
+        menu.Append( wx.ID_DELETE, "&Delete", "Delete the selected entry" )
+        menu.AppendSeparator()
+        menu.Append( wx.ID_UP, "Move Up", "Move the selected entry up one position" )
+        menu.Append( wx.ID_DOWN, "Move Down", "Move the selected entry down one position" )
+        mb.Append( menu, "Edit" )
+        
+        menu = wx.Menu()
+        mi = wx.MenuItem( menu, wx.ID_ANY, "&Timers", "Show timer bars", kind = wx.ITEM_CHECK )
+        self.MENU_SHOW_TIMERS = mi.GetId()
+        menu.AppendItem( mi )
+        menu.Check( self.MENU_SHOW_TIMERS, Configuration.GetShowTimers() )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "All &Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
+        self.MENU_SHOW_ALL_CODES = mi.GetId()
+        menu.AppendItem( mi )
+        menu.Check( self.MENU_SHOW_ALL_CODES, Configuration.GetShowAllCodes() )
+        mb.Append( menu, "&View" )
+        
+        menu = wx.Menu()
+        menu.Append( wx.ID_HELP, "&Help", "Help index" )
+        menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
+        mb.Append( menu, "Help" )
+        
+        return mb
+
+
+    def create_entries_window( self ):
+        logging.debug( "AF create entries window" )
+        sw = wx.ScrolledWindow( self, wx.ID_ANY, style = wx.VSCROLL, name = 'entries_window' )
+        sw.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
+        return sw
 
 
     def CalcItemsShown( self ):

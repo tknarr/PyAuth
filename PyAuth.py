@@ -6,6 +6,7 @@ import os.path
 import logging
 import wx
 from wx import xrc as xrc
+from AuthFrame import AuthFrame as AuthFrame
 import Configuration
 
 class PyAuthApp( wx.App ):
@@ -27,21 +28,14 @@ class PyAuthApp( wx.App ):
                 logging.critical( "Error code %d: %s", e.errno, e.strerror )
                 return False
 
-        # Load XRC resources
-        self.xrc_path = sys.path[0] + '/xrc/'
-        self.res = xrc.XmlResource( self.xrc_path + 'PyAuth.xrc' )
-        if self.res == None:
-            logging.critical( "Cannot find XML resources file %s", self.xrc_path )
-            return False
-        
         # Configure logging
         loglevel = Configuration.GetLoggingLevel()
         l = logging.getLogger()
         l.setLevel( loglevel )
         logging.info( "Configuration file: %s", cfgfile )
 
-        # Create main frame
-        self.frame = self.res.LoadFrame( None, 'main_frame' )
+        # Create and position main frame
+        self.frame = AuthFrame( None, wx.ID_ANY, "PyAuth", name = 'main_frame' )
         if self.frame == None:
             logging.critical( "Cannot create main program window" )
             return False
@@ -49,6 +43,8 @@ class PyAuthApp( wx.App ):
         wpos = Configuration.GetLastWindowPosition()
         if wpos != None:
             self.frame.SetPosition( wpos )
+
+        # Display main frame and start running
         self.frame.Show()
         return True
 
