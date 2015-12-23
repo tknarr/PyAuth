@@ -182,6 +182,7 @@ class AuthenticationEntry:
 
     def Save( self, cfg ):
         cfgpath = '/entries/%s/' % self.entry_group
+        cfg.Write( cfgpath + 'type', 'totp' )
         cfg.WriteInt( cfgpath + 'sort_index', self.sort_index )
         cfg.Write( cfgpath + 'provider', self.provider )
         cfg.Write( cfgpath + 'account', self.account )
