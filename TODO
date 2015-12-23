@@ -1,8 +1,6 @@
 PYAuth to-do list
 
 Minimal functionality:
-    Update entry
-    Select an entry via mouse
     Delete selected entry
     TOTP code generation
     Timer countdown

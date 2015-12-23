@@ -16,6 +16,9 @@ class AuthEntryPanel( wx.Panel ):
         self.code = ''
         self.label_width = 0
 
+        self.left_down = False
+        self.selected = False
+
         self.provider_text = None
         self.account_text = None
         self.code_text = None
@@ -74,8 +77,20 @@ class AuthEntryPanel( wx.Panel ):
         self.UpdateContents()
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
+        self.Bind( wx.EVT_ENTER_WINDOW, self.OnMouseEnter )
+        self.Bind( wx.EVT_LEAVE_WINDOW, self.OnMouseLeave )
+        self.MouseBind( wx.EVT_LEFT_DCLICK, self.OnDoubleClick )
+        self.MouseBind( wx.EVT_LEFT_DOWN, self.OnLeftDown )
+        self.MouseBind( wx.EVT_LEFT_UP, self.OnLeftUp )
 
         logging.debug( "AEP init done" )
+
+
+    def MouseBind( self, event_type, func ):
+        self.Bind( event_type, func )
+        self.provider_text.Bind( event_type, func )
+        self.account_text.Bind( event_type, func )
+        self.code_text.Bind( event_type, func )
 
 
     def OnCreate( self, event ):
@@ -83,6 +98,32 @@ class AuthEntryPanel( wx.Panel ):
         logging.debug( "AEP created" )
         self.Refresh()
 
+    def OnLeftDown( self, event ):
+        self.left_down = True
+        event.Skip
+
+    def OnLeftUp( self, event ):
+        if self.left_down:
+            self.left_down = False
+            gp = self.GetGrandParent()
+            if gp != None:
+                gp.SelectPanel( self, not self.selected )
+        event.Skip()
+
+    def OnDoubleClick( self, event ):
+        self.left_down = False
+        gp = self.GetGrandParent()
+        if gp != None:
+            gp.SelectPanel( self, True ) # TODO also trigger edit
+        event.Skip()
+
+    def OnMouseEnter( self, event ):
+        self.left_down = False
+        event.Skip()
+
+    def OnMouseLeave( self, event ):
+        self.left_down = False
+        event.Skip()
 
     def GetEntry( self ):
         return self.entry
@@ -168,3 +209,12 @@ class AuthEntryPanel( wx.Panel ):
         if gp != None:
             logging.debug( "AEP CC notifying frame" )
             gp.UpdatePanelSize()
+
+
+    def Select( self ):
+        self.selected = True
+        self.SetBackgroundColour( wx.WHITE )
+
+    def Deselect( self ):
+        self.selected = False
+        self.SetBackgroundColour( wx.NullColour )

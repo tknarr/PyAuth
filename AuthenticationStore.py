@@ -141,8 +141,19 @@ class AuthenticationStore:
                 if original_label != None:
                     entry.SetOriginalLabel( original_label )
                 entry.Save( self.cfg )
-                
+
+    def UpdateEntry( self, entry, provider = None, account = None, secret = None, original_label = None ):
+        if provider != None:
+            entry.SetProvider( provider )
+        if account != None:
+            entry.SetAccount( account )
+        if secret != None:
+            entry.SetSecret( secret )
+        if original_label != None:
+            entry.SetOriginalLabel( original_label )
+        entry.Save( self.cfg )
     
+
 class AuthenticationEntry:
 
     def __init__( self, group, index, provider, account, secret, original_label = None ):

@@ -7,7 +7,7 @@ from AuthenticationStore import AuthenticationStore
 from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
 from About import GetAboutInfo
 from NewEntryDialog import NewEntryDialog as NewEntryDialog
-#from UpdateEntryDialog import UpdateEntryDialog as UpdateEntryDialog
+from UpdateEntryDialog import UpdateEntryDialog as UpdateEntryDialog
 
 class AuthFrame( wx.Frame ):
 
@@ -27,9 +27,12 @@ class AuthFrame( wx.Frame ):
         # Internal values
         self.entry_border = 2
         self.scrollbar_width = 0
+        self.selected_panel = None
 
         self.new_entry_dialog = None
         self.update_entry_dialog = None
+
+        logging.debug( "AF background color %s", str( self.GetBackgroundColour() ) )
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
@@ -101,6 +104,10 @@ class AuthFrame( wx.Frame ):
         self.Destroy()
 
 
+    def OnMenuQuit( self, event ):
+        logging.debug( "AF menu Quit command" )
+        self.Close()
+
     def OnMenuNewEntry( self, event ):
         logging.debug( "AF menu New Entry command" )
         if self.new_entry_dialog == None:
@@ -130,13 +137,42 @@ class AuthFrame( wx.Frame ):
                                                 border = self.entry_border )
             self.UpdatePanelSize()
 
-    def OnMenuQuit( self, event ):
-        logging.debug( "AF menu Quit command" )
-        self.Close()
-
     def OnMenuEditEntry( self, event ):
-        # TODO menu handler
-        logging.warning( "Edit Entry" )
+        logging.debug( "AF menu Edit Entry command" )
+        if self.update_entry_dialog == None:
+            self.update_entry_dialog = UpdateEntryDialog( self, wx.ID_ANY, "Edit Entry" )
+        entry = None
+        if self.selected_panel == None:
+            wx.Bell()
+            dlg = wx.MessageDialog( self, "You must select an entry to edit.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.ShowModal()
+            dlg.Destroy()
+        else:
+            entry = self.selected_panel.GetEntry()
+        if entry != None:
+            self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(), entry.GetSecret() )
+            result = self.update_entry_dialog.ShowModal()
+            if result == wx.ID_OK:
+                provider = self.update_entry_dialog.GetProviderValue()
+                account = self.update_entry_dialog.GetAccountValue()
+                secret = self.update_entry_dialog.GetSecretValue()
+                if provider != entry.GetProvider():
+                    logging.debug( "AF UE new provider %s", provider )
+                else:
+                    provider = None
+                if account != entry.GetAccount():
+                    logging.debug( "AF UE new account  %s", account )
+                else:
+                    account = None
+                if secret != entry.GetSecret():
+                    logging.debug( "AF UE new secret   %s", secret )
+                else:
+                    secret = None
+                if provider != None or account != None or secret != None:
+                    logging.debug( "AF UE updating entry" )
+                    self.auth_store.UpdateEntry( entry, provider, account, secret )
+                    self.selected_panel.ChangeContents()
 
     def OnMenuDeleteEntry( self, event ):
         # TODO menu handler
@@ -292,3 +328,13 @@ class AuthFrame( wx.Frame ):
         self.AdjustWindowSizes()
         self.Refresh()
         self.SendSizeEvent()
+
+    def SelectPanel( self, panel, selected = True ):
+        if self.selected_panel != None:
+            self.selected_panel.Deselect()
+        if selected:
+            self.selected_panel = panel
+            self.selected_panel.Select()
+        else:
+            self.selected_panel.Deselect()
+            self.selected_panel = None
