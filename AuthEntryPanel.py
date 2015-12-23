@@ -77,7 +77,6 @@ class AuthEntryPanel( wx.Panel ):
         else:
             self.SetName( 'entry_panel_X' )
             self.code = 'XXXXXX'
-        ## self.UpdateContents()
         self.ChangeContents()
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
