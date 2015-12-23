@@ -35,15 +35,19 @@ class AuthenticationStore:
         more, value, index = self.cfg.GetFirstGroup()
         while more:
             entry_group = int( value )
+            logging.debug( "AS reading group %d", entry_group )
             if entry_group > 0:
                 if entry_group > self.next_group:
                     self.next_group = entry_group
                 cfgpath = '%s/' % entry_group
                 sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
+                logging.debug( "AS   sort index %d", sort_index )
                 if sort_index > self.next_index:
                     self.next_index = sort_index
                 provider = self.cfg.Read( cfgpath + 'provider' )
                 account = self.cfg.Read( cfgpath + 'account' )
+                logging.debug( "AS   provider %s", provider )
+                logging.debug( "AS   account %s", account )
                 secret = self.cfg.Read( cfgpath + 'secret' )
                 original_label = self.cfg.Read( cfgpath + 'original_label', '' )
                 if original_label == '':
@@ -52,6 +56,10 @@ class AuthenticationStore:
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
+        self.next_group += 1
+        self.next_index += 1
+        logging.debug( "AS next group %d", self.next_group )
+        logging.debug( "AS next index %d", self.next_index )
 
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()

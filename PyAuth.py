@@ -5,7 +5,6 @@ import sys
 import os.path
 import logging
 import wx
-from wx import xrc as xrc
 from AuthFrame import AuthFrame as AuthFrame
 import Configuration
 

@@ -2,7 +2,6 @@
 
 import logging
 import wx
-from wx import xrc as xrc
 from AuthenticationStore import AuthenticationEntry
 
 class AuthEntryPanel( wx.Panel ):
@@ -64,8 +63,8 @@ class AuthEntryPanel( wx.Panel ):
         self.account_text.SetMinSize( self.account_text.GetSize() )
         
         te = self.code_text.GetTextExtent( '000000' )
-        self.code_text.SetSize( te )
-        self.code_text.SetMinSize( te )
+        self.code_text.SetClientSize( te )
+        self.code_text.SetMinClientSize( te )
 
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
 
@@ -100,17 +99,11 @@ class AuthEntryPanel( wx.Panel ):
     def GetPanelSize( self ):
         return self.GetSize()
 
-    def SetPanelHeight( self, height ):
-        s = self.GetSize()
-        s.SetHeight( height )
-        self.SetSize( s )
-        self.SetMinSize( s )
-    
     def GetLabelWidth( self ):
         return self.label_width
 
 
-    def ResizePanel( self, panel_height, label_width ):
+    def ResizePanel( self, panel_width, panel_height, label_width ):
         logging.debug( "AEP RP updating %s", self.GetName() )
         logging.debug( "AEP RP initial panel %s", str( self.GetSize() ) )
         logging.debug( "AEP RP initial label width %d", self.label_width )
@@ -119,19 +112,21 @@ class AuthEntryPanel( wx.Panel ):
         if label_width != self.label_width:
             logging.debug( "AEP RP label width: %d", label_width )
             self.label_width = label_width
-            s = self.provider_text.GetSize()
+            s = self.provider_text.GetClientSize()
             s.SetWidth( self.label_width )
-            self.provider_text.SetSize( s )
-            self.provider_text.SetMinSize( s )
-            s = self.account_text.GetSize()
+            self.provider_text.SetClientSize( s )
+            self.provider_text.SetMinClientSize( s )
+            s = self.account_text.GetClientSize()
             s.SetWidth( self.label_width )
-            self.account_text.SetSize( s )
-            self.account_text.SetMinSize( s )
+            self.account_text.SetClientSize( s )
+            self.account_text.SetMinClientSize( s )
             changed = True
 
-        if panel_height != self.GetSize().GetHeight():
-            logging.debug( "AEP RP panel height: %d", panel_height )
-            self.SetPanelHeight( panel_height )
+        if panel_height != self.GetSize().GetHeight() or panel_width != self.GetSize().GetWidth():
+            logging.debug( "AEP RP panel size: %dx%d", panel_width, panel_height )
+            s = wx.Size( panel_width, panel_height )
+            self.SetSize( s )
+            self.SetMinSize( s )
             changed = True
 
         logging.debug( "AEP RP label width: %d", self.label_width )
@@ -149,14 +144,14 @@ class AuthEntryPanel( wx.Panel ):
             self.label_width = te_p[0]
             if te_a[0] > self.label_width:
                 self.label_width = te_a[0]
-                te_p[0] = te_a[0]
+                te_p = ( te_a[0], te_p[1] )
 
             self.provider_text.SetLabelText( self.entry.GetProvider() )
-            self.provider_text.SetSize( te_p )
-            self.provider_text.SetMinSize( te_p )
+            self.provider_text.SetClientSize( te_p )
+            self.provider_text.SetMinClientSize( te_p )
             self.account_text.SetLabelText( self.entry.GetAccount() )
-            self.account_text.SetSize( te_p )
-            self.account_text.SetMinSize( te_p )
+            self.account_text.SetClientSize( te_p )
+            self.account_text.SetMinClientSize( te_p )
 
             self.GetSizer().Fit( self )
 
