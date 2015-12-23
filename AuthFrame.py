@@ -49,8 +49,14 @@ class AuthFrame( wx.Frame ):
         self.entry_panels = []
         for entry in self.auth_store.EntryList():
             logging.debug( "AF create panel: %d", entry.GetGroup() )
-            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
+            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN,
+                                    entry = entry )
             self.entry_panels.append( panel )
+        if len( self.entry_panels ) == 0:
+            # Add dummy entry. We need at least this to be able to size things properly. We'll
+            # replace it with the first real entry.
+            self.entry_panels.append( AuthEntryPanel( self.entries_window, wx.ID_ANY,
+                                                      style = wx.BORDER_SUNKEN ) )
         for panel in self.entry_panels:
             logging.debug( "AF add panel: %s", panel.GetName() )
             ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
@@ -128,12 +134,18 @@ class AuthFrame( wx.Frame ):
             entry = self.auth_store.Add( provider, account,secret, original_label )
             if entry != None:
                 logging.debug( "AF NE new panel: %d", entry.GetGroup() )
-                panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
-                self.entry_panels.append( panel )
-                logging.debug( "AF NE add panel: %s", panel.GetName() )
+                # If all we have is the dummy entry then replace it, otherwise add the new entry at the end
+                if len( self.entry_panels ) == 1 and self.entry_panels[0].GetEntry() == None:
+                    panel = self.entry_panels[0]
+                    panel.SetEntry( entry )
+                    logging.debug( "AF NE replaced dummy panel with: %s", panel.GetName() )
+                else:
+                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
+                    self.entry_panels.append( panel )
+                    logging.debug( "AF NE add panel: %s", panel.GetName() )
+                    self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
+                                                        border = self.entry_border )
                 ## logging.debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
-                self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
-                                                    border = self.entry_border )
                 self.UpdatePanelSize()
             else:
                 logging.debug( "AF NE duplicate item" )
@@ -158,7 +170,9 @@ class AuthFrame( wx.Frame ):
             dlg.Destroy()
         else:
             entry = self.selected_panel.GetEntry()
-        if entry != None:
+        if entry == None:
+            self.OnMenuNewEntry( event ) # Dummy panel selected, create a new entry instead
+        else:
             self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(), entry.GetSecret() )
             result = self.update_entry_dialog.ShowModal()
             if result == wx.ID_OK:

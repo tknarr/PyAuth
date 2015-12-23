@@ -49,7 +49,7 @@ class AuthEntryPanel( wx.Panel ):
 
         sizer.Add( label_sizer, 1, wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
         
-        self.code_text = wx.StaticText( self, wx.ID_ANY, '000000', style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
+        self.code_text = wx.StaticText( self, wx.ID_ANY, '', style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
                                         name = 'code_text' )
         self.code_text.Wrap( -1 )
         self.code_text.SetFont( self.code_font )
@@ -74,7 +74,11 @@ class AuthEntryPanel( wx.Panel ):
         if entry != None:
             self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
             self.code = self.entry.GenerateNextCode()
-        self.UpdateContents()
+        else:
+            self.SetName( 'entry_panel_X' )
+            self.code = 'XXXXXX'
+        ## self.UpdateContents()
+        self.ChangeContents()
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_ENTER_WINDOW, self.OnMouseEnter )
@@ -180,26 +184,45 @@ class AuthEntryPanel( wx.Panel ):
 
             self.code_text.SetLabelText( self.code )
 
-            te_p = self.provider_text.GetTextExtent( self.entry.GetProvider() )
+            te_l = self.provider_text.GetTextExtent( self.entry.GetProvider() )
             te_a = self.account_text.GetTextExtent( self.entry.GetAccount() )
-            self.label_width = te_p[0]
+            self.label_width = te_l[0]
             if te_a[0] > self.label_width:
                 self.label_width = te_a[0]
-                te_p = ( te_a[0], te_p[1] )
+                te_l = ( te_a[0], te_l[1] )
 
             self.provider_text.SetLabelText( self.entry.GetProvider() )
-            self.provider_text.SetClientSize( te_p )
-            self.provider_text.SetMinClientSize( te_p )
+            self.provider_text.SetClientSize( te_l )
+            self.provider_text.SetMinClientSize( te_l )
             self.account_text.SetLabelText( self.entry.GetAccount() )
-            self.account_text.SetClientSize( te_p )
-            self.account_text.SetMinClientSize( te_p )
+            self.account_text.SetClientSize( te_l )
+            self.account_text.SetMinClientSize( te_l )
 
-            self.GetSizer().Fit( self )
+        else:
+            logging.debug( "AEP UC updating dummy entry panel" )
 
-            ## logging.debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )
-            ## logging.debug( "AEP UC account size:  %s", str( self.account_text.GetSize() ) )
-            ## logging.debug( "AEP UC label width:   %d", self.label_width )
-            ## logging.debug( "AEP UC panel size:    %s", str( self.GetSize() ) )
+            self.code_text.SetLabelText( 'XXXXXX' )
+
+            te_l = self.provider_text.GetTextExtent( "PROVIDER" )
+            te_a = self.account_text.GetTextExtent( "ACCOUNT" )
+            self.label_width = te_l[0]
+            if te_a[0] > self.label_width:
+                self.label_width = te_a[0]
+                te_l = ( te_a[0], te_l[1] )
+
+            self.provider_text.SetLabelText( "PROVIDER" )
+            self.provider_text.SetClientSize( te_l )
+            self.provider_text.SetMinClientSize( te_l )
+            self.account_text.SetLabelText( "ACCOUNT" )
+            self.account_text.SetClientSize( te_l )
+            self.account_text.SetMinClientSize( te_l )
+
+        self.GetSizer().Fit( self )
+            
+        ## logging.debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )
+        ## logging.debug( "AEP UC account size:  %s", str( self.account_text.GetSize() ) )
+        ## logging.debug( "AEP UC label width:   %d", self.label_width )
+        ## logging.debug( "AEP UC panel size:    %s", str( self.GetSize() ) )
 
 
     def ChangeContents( self ):

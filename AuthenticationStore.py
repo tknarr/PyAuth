@@ -36,13 +36,13 @@ class AuthenticationStore:
             entry_group = int( value )
             logging.debug( "AS reading group %d", entry_group )
             if entry_group > 0:
-                if entry_group > self.next_group:
-                    self.next_group = entry_group
+                if entry_group >= self.next_group:
+                    self.next_group = entry_group + 1
                 cfgpath = '%s/' % entry_group
                 sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
                 logging.debug( "AS   sort index %d", sort_index )
-                if sort_index > self.next_index:
-                    self.next_index = sort_index
+                if sort_index >= self.next_index:
+                    self.next_index = sort_index + 1
                 provider = self.cfg.Read( cfgpath + 'provider' )
                 account = self.cfg.Read( cfgpath + 'account' )
                 logging.debug( "AS   provider %s", provider )
@@ -55,8 +55,6 @@ class AuthenticationStore:
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
-        self.next_group += 1
-        self.next_index += 1
         logging.debug( "AS next group %d", self.next_group )
         logging.debug( "AS next index %d", self.next_index )
 
