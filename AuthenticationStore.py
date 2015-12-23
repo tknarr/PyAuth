@@ -22,7 +22,6 @@ class AuthenticationStore:
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         logging.info( "Database file: %s", cfgfile )
-        ## self.cfg.SetUmask( 0077 ) # Set permissions on the database file
         random.seed() # TODO Remove after proper GenerateNextCode() implemented
         self.entry_list = []
         self.next_group = 1
@@ -71,10 +70,12 @@ class AuthenticationStore:
 
 
     def Save( self ):
+        logging.debug( "AS saving all" )
         for entry in self.entry_list:
             entry.Save( self.cfg )
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
+        # This should be handled via SetUmask(), but it's not implemented in the Python bindings
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         try:
             os.chmod( cfgfile, 0600 )
@@ -85,6 +86,7 @@ class AuthenticationStore:
 
 
     def Reindex( self ):
+        logging.debug( "AS reindexing" )
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
         i = 1;
@@ -92,9 +94,11 @@ class AuthenticationStore:
             e.SetIndex( i )
             i += 1
         self.next_index = i
+        logging.debug( "AS next index = %d", self.next_index )
 
     
     def Regroup( self ):
+        logging.debug( "AS regroup" )
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
         self.cfg.DeleteGroup( '/entries' )
@@ -106,13 +110,17 @@ class AuthenticationStore:
             i += 1
         self.next_group = i
         self.next_index = i
+        logging.debug( "AS next group and index = %d", i )
 
 
     def Add( self, provider, account, secret, original_label = None ):
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
         elist = filter( f, self.entry_list )
         if len( elist ) > 0:
+            logging.warning( "Entry already exists for %s:%s", provider, account )
             return None
+        logging.debug( "AS adding new entry %s:%s, group %d, sort index %d",
+                       provider, account, self.next_group, self.next_index )
         entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret, original_label )
         self.entry_list.append( entry )
         self.next_index += 1
@@ -122,36 +130,42 @@ class AuthenticationStore:
 
 
     def Delete( self, entry_group ):
+        logging.debug( "AS deleting entry %d", entry_group )
+        # Have to run the list in reverse so deletions don't change the indexes of upcoming entries
+        # TODO More efficient way of doing this
         for i in range( len( self.entry_list ) - 1, -1, -1 ):
             entry = self.entry_list[i]
             if entry.GetGroup() == entry_group:
+                logging.debug( "AS deleted entry %d", entry_group )
                 self.cfg.DeleteGroup( '/entries/%s' % entry.entry_group )
                 del self.entry_list[i]
 
 
     def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
-        for entry in self.entry_list:
-            if entry.GetGroup() == entry_group:
-                if provider != None:
-                    entry.SetProvider( provider )
-                if account != None:
-                    entry.SetAccount( account )
-                if secret != None:
-                    entry.SetSecret( secret )
-                if original_label != None:
-                    entry.SetOriginalLabel( original_label )
-                entry.Save( self.cfg )
-
-    def UpdateEntry( self, entry, provider = None, account = None, secret = None, original_label = None ):
+        logging.debug( "AS updating entry %d", entry_group )
+        f = lambda x: x.GetGroup() == entry_group
+        elist = filter( f, self.entry_list )
+        if len( elist ) < 1:
+            return 0 # No entry found
+        if len( elist ) > 1:
+            logging.error( "AS %d duplicates of entry %d found, database likely corrupt",
+                           len( elist ), entry_group )
+            return -1
+        entry = elist[0]
         if provider != None:
+            logging.debug( "AS new provider %s", provider )
             entry.SetProvider( provider )
         if account != None:
+            logging.debug( "AS new account %s", account )
             entry.SetAccount( account )
         if secret != None:
+            logging.debug( "AS new secret %s", secret )
             entry.SetSecret( secret )
         if original_label != None:
+            logging.debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
         entry.Save( self.cfg )
+        return 1
     
 
 class AuthenticationEntry:

@@ -32,8 +32,6 @@ class AuthFrame( wx.Frame ):
         self.new_entry_dialog = None
         self.update_entry_dialog = None
 
-        logging.debug( "AF background color %s", str( self.GetBackgroundColour() ) )
-
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
         self.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
@@ -45,7 +43,7 @@ class AuthFrame( wx.Frame ):
         # Get scrollbar width so we can account for it in window sizing
         # Turns out for layout we don't need to adjust for this
         self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.entries_window ) + 5
-        logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
+        ## logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
         
         # Create our entry item panels and put them in the scrollable window
         self.entry_panels = []
@@ -54,8 +52,8 @@ class AuthFrame( wx.Frame ):
             panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
             self.entry_panels.append( panel )
         for panel in self.entry_panels:
-            logging.debug( "AF add panel:    %s", panel.GetName() )
-            logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+            logging.debug( "AF add panel: %s", panel.GetName() )
+            ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
             self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
                                                 border = self.entry_border )
 
@@ -88,10 +86,10 @@ class AuthFrame( wx.Frame ):
         self.auth_store.Save()
         wp = self.GetPosition()
         Configuration.SetLastWindowPosition( wp )
-        logging.debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
-                       self.entries_window.GetMinSize() )
-        logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
-                       self.GetMinClientSize() )
+        ## logging.debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
+        ##                self.entries_window.GetMinSize() )
+        ## logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
+        ##                self.GetMinClientSize() )
         self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
         logging.debug( "AF visible items %d", self.visible_entries )
         Configuration.SetNumberOfItemsShown( self.visible_entries )
@@ -128,14 +126,23 @@ class AuthFrame( wx.Frame ):
             logging.debug( "AF NE secret   %s", secret )
             logging.debug( "AF NE orig lbl %s", original_label )
             entry = self.auth_store.Add( provider, account,secret, original_label )
-            logging.debug( "AF NE new panel: %d", entry.GetGroup() )
-            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
-            self.entry_panels.append( panel )
-            logging.debug( "AF NE add panel:    %s", panel.GetName() )
-            logging.debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
-            self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
-                                                border = self.entry_border )
-            self.UpdatePanelSize()
+            if entry != None:
+                logging.debug( "AF NE new panel: %d", entry.GetGroup() )
+                panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
+                self.entry_panels.append( panel )
+                logging.debug( "AF NE add panel: %s", panel.GetName() )
+                ## logging.debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+                self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
+                                                    border = self.entry_border )
+                self.UpdatePanelSize()
+            else:
+                logging.debug( "AF NE duplicate item" )
+                wx.Bell()
+                dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
+                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                dlg.SetExtendedMessage( "Provider: %s\nAccount: %s" % ( provider, account ) )
+                dlg.ShowModal()
+                dlg.Destroy()
 
     def OnMenuEditEntry( self, event ):
         logging.debug( "AF menu Edit Entry command" )
@@ -144,8 +151,9 @@ class AuthFrame( wx.Frame ):
         entry = None
         if self.selected_panel == None:
             wx.Bell()
-            dlg = wx.MessageDialog( self, "You must select an entry to edit.", "Error",
+            dlg = wx.MessageDialog( self, "No entry selected.", "Error",
                                     style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.SetExtendedMessage( "You must select an entry to edit." )
             dlg.ShowModal()
             dlg.Destroy()
         else:
@@ -157,22 +165,32 @@ class AuthFrame( wx.Frame ):
                 provider = self.update_entry_dialog.GetProviderValue()
                 account = self.update_entry_dialog.GetAccountValue()
                 secret = self.update_entry_dialog.GetSecretValue()
-                if provider != entry.GetProvider():
-                    logging.debug( "AF UE new provider %s", provider )
-                else:
+                if provider == entry.GetProvider():
                     provider = None
-                if account != entry.GetAccount():
-                    logging.debug( "AF UE new account  %s", account )
-                else:
+                if account == entry.GetAccount():
                     account = None
-                if secret != entry.GetSecret():
-                    logging.debug( "AF UE new secret   %s", secret )
-                else:
+                if secret == entry.GetSecret():
                     secret = None
                 if provider != None or account != None or secret != None:
                     logging.debug( "AF UE updating entry" )
-                    self.auth_store.UpdateEntry( entry, provider, account, secret )
-                    self.selected_panel.ChangeContents()
+                    status = self.auth_store.Update( entry.GetGroup(), provider, account, secret )
+                    if status < 0:
+                        wx.Bell()
+                        dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
+                                                style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                        dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
+                                                "The database is likely corrupted and needs repaired." )
+                        dlg.ShowModal()
+                        dlg.Destroy()
+                    elif status == 0:
+                        dlg = wx.MessageDialog( self, "Entry not found.", "Error",
+                                                style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                        dlg.SetExtendedMessage( "The entry was not found in the database.\n" +
+                                                "This should not have happened." )
+                        dlg.ShowModal()
+                        dlg.Destroy()
+                    else:
+                        self.selected_panel.ChangeContents()
 
     def OnMenuDeleteEntry( self, event ):
         # TODO menu handler
@@ -251,21 +269,21 @@ class AuthFrame( wx.Frame ):
 
 
     def CalcItemsShown( self, height ):
-        logging.debug( "AF CIS wcs = %s, entry height = %d", height, self.entry_height )
+        ## logging.debug( "AF CIS wcs = %s, entry height = %d", height, self.entry_height )
         # Doing integer math, so we can't cancel terms and add 1/2
         n = height + ( self.entry_height + 2 * self.entry_border ) / 2
         d = self.entry_height + 2 * self.entry_border
         r = n / d
         if r < 1:
             r = 1
-        logging.debug( "AF CIS result = %d / %d = %d", n, d, r )
+        ## logging.debug( "AF CIS result = %d / %d = %d", n, d, r )
         return r
 
 
     def AdjustWindowSizes( self ):
         self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
-        logging.debug( "AF AWS entry size:  %dx%d, visible = %d", self.entry_width, self.entry_height,
-                       self.visible_entries )
+        ## logging.debug( "AF AWS entry size:  %dx%d, visible = %d", self.entry_width, self.entry_height,
+        ##                self.visible_entries )
         # Need to adjust this here, it depends on the entry height which may change
         self.entries_window.SetScrollRate( 0, self.entry_height + 2 * self.entry_border )
 
@@ -280,14 +298,14 @@ class AuthFrame( wx.Frame ):
         
         # Frame size is 1 entry wide accounting for scrollbar, visible_entries high
         client_size = wx.Size( column_width, column_height )
-        logging.debug( "AF AWS calc client size = %s", str( client_size ) )
+        ## logging.debug( "AF AWS calc client size = %s", str( client_size ) )
         items_shown = self.CalcItemsShown( client_size.GetHeight() )
-        logging.debug( "AF AWS items shown = %d", items_shown )
+        ## logging.debug( "AF AWS items shown = %d", items_shown )
         self.entries_window.SetClientSize( client_size )
 
         # Minimum size is 1 entry wide accounting for scrollbar, 1 entry high
         min_size = wx.Size( column_width, min_height )
-        logging.debug( "AF AWS calc min client size = %s", str( min_size ) )
+        ## logging.debug( "AF AWS calc min client size = %s", str( min_size ) )
         self.entries_window.SetMinClientSize( min_size )
 
         win_client_size = self.entries_window.ClientToWindowSize( client_size )
@@ -310,15 +328,16 @@ class AuthFrame( wx.Frame ):
             # Update max entry panel sizes
             entry_size = entry.GetPanelSize()
             label_width = entry.GetLabelWidth()
-            logging.debug( "AF APS %s: panel size %s label width %d", entry.GetName(),
-                           str( entry_size ), label_width )
+            ## logging.debug( "AF APS %s: panel size %s label width %d", entry.GetName(),
+            ##                str( entry_size ), label_width )
             if entry_size.GetHeight() > self.entry_height:
                 self.entry_height = entry_size.GetHeight()
             if entry_size.GetWidth() > self.entry_width:
                 self.entry_width = entry_size.GetWidth()
             if label_width > self.label_width:
                 self.label_width = label_width
-        logging.debug( "AF APS entry size %dx%d label width %d", self.entry_width, self.entry_height, self.label_width )
+        ## logging.debug( "AF APS entry size %dx%d label width %d", self.entry_width, self.entry_height,
+        ##                self.label_width )
         for entry in self.entry_panels:
             entry.ResizePanel( self.entry_width, self.entry_height, self.label_width )
                 
