@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import functools
 import wx
 import Configuration
 from AuthenticationStore import AuthenticationStore
