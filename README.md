@@ -21,6 +21,39 @@ this program. If not, see
 * wxPython 3.x, which requires matching wxWidgets 3.x
 * otpauth package, [https://pypi.python.org/pypi/otpauth/](https://pypi.python.org/pypi/otpauth/)
 
+## Status
+
+Everything in the v0.0.x series is a development version. v0.0.1 includes the
+minimal functionality to be usable. The commit messages up to this point aren't
+too useful.
+
+Basic functionality (listed in TODO.md) will get added as v0.1.x. Once that's
+complete and it's stable enough for testing, the version will get bumped to
+v0.9.x until any final glitches are cleaned up. v1.0.0 will be a hopefully
+stable release ready for regular users. I don't intend any of the enhancements
+listed in TODO.md to be added until v1.0.0 is done.
+
+#### Known areas of concern
+
+* Window element sizing. wxWidgets has some odd behavior when it comes to
+  sizing controls. I've tried to make things as clean as I could, but it still
+  has some quirks.
+
+* Window resizing. Ideally I'd like the main window to not be resizable
+  horizontally and to resize vertically in single-entry increments with a
+  minimal size of one entry visible. Currently it doesn't work that way
+  (although it will size itself correctly when starting up) and the window
+  itself can be resized a few pixels narrower than needed for the panels and
+  scrollbar.
+
+* Encryption of the database. Right now it's a plain wxWidgets configuration
+  file with one section per entry. The code sets permissions to keep the file
+  readable only by the user themselves. That's problematic on Windows, but I'm
+  not really targetting that platform since it's got a good option in
+  WinAuth. I'm considering adding encryption to keep the secret strings in the
+  database from being easily read by malware, at the cost of having to
+  manually enter a password when the program starts.
+
 ## Using
 
 The GUI interface should be fairly straightforward at this point. Each entry
