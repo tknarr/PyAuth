@@ -5,6 +5,7 @@ import errno
 import random
 import logging
 import wx
+from otpauth import OtpAuth
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -22,7 +23,6 @@ class AuthenticationStore:
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         logging.info( "Database file: %s", cfgfile )
-        random.seed() # TODO Remove after proper GenerateNextCode() implemented
         self.entry_list = []
         self.next_group = 1
         self.next_index = 1
@@ -178,6 +178,8 @@ class AuthenticationEntry:
         else:
             self.original_label = provider + ':' + account
 
+        self.auth = OtpAuth( self.secret )
+
 
     def __cmp__( self, other ):
         return cmp( self.entry_group, other.entry_group ) if other != None else -1
@@ -229,11 +231,13 @@ class AuthenticationEntry:
     
     def SetSecret( self, secret ):
         self.secret = secret
+        # Need a new auth object too
+        self.auth = OtpAuth( self.secret )
 
+
+    def GetPeriod( self ):
+        return 30 # Google Authenticator uses a 30-second period
 
     def GenerateNextCode( self ):
-        # TODO Generate next TOTP code
-        # Random 6-digit number, zero-filled on left
-        r = random.randint( 0, 999999 )
-        c = "{:0>6d}".format( r )
-        return c
+        c = self.auth.totp( 30 )
+        return "{:0>6d}".format( c )

@@ -19,6 +19,7 @@ class AuthEntryPanel( wx.Panel ):
         self.left_down = False
         self.selected = False
         self.totp_cycle = 0
+        self.totp_period = 30
 
         self.provider_text = None
         self.account_text = None
@@ -57,9 +58,10 @@ class AuthEntryPanel( wx.Panel ):
         sizer.Add( self.code_text, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER | wx.FIXED_MINSIZE, 12 )
 
         # The countdown gauge has a 30-second range, 0-29
-        self.timer_gauge = wx.Gauge( self, wx.ID_ANY, 29, size = wx.Size( 30, 15 ),
+        self.totp_period = entry.GetPeriod() if self.entry != None else 30
+        self.timer_gauge = wx.Gauge( self, wx.ID_ANY, self.totp_period - 1, size = wx.Size( 30, 15 ),
                                      style = wx.GA_HORIZONTAL, name='timer_gauge' )
-        self.timer_gauge.SetValue( 29 )
+        self.timer_gauge.SetValue( self.totp_period - 1 )
         sizer.Add( self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2 )
 
         # Initialize and size controls
@@ -113,13 +115,13 @@ class AuthEntryPanel( wx.Panel ):
         current_time = wx.GetUTCTime()
         ## logging.debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
         last_cycle = self.totp_cycle
-        self.totp_cycle = current_time % 30
-        # If we wrapped around the end of a 30-second cycle, update the code and
-        # reset the countdown timer gauge
+        self.totp_cycle = current_time % self.totp_period
+        # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
         if self.totp_cycle < last_cycle and self.entry != None:
             self.code = self.entry.GenerateNextCode()
+            self.code_text.SetLabelText( self.code )
         # Make our timer gauge count down to zero
-        self.timer_gauge.SetValue( 29 - self.totp_cycle )
+        self.timer_gauge.SetValue( self.totp_period - self.totp_cycle - 1 )
 
     def OnLeftDown( self, event ):
         self.left_down = True

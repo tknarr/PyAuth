@@ -1,7 +1,5 @@
 PYAuth to-do list
 
-Minimal functionality:
-    TOTP code generation
 Basic functionality:
     Toolbar for main frame
     Select entry via keyboard
