@@ -96,9 +96,14 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text.Bind( event_type, func )
 
 
+    def __cmp__( self, other ):
+        return cmp( self.GetName(), other.GetName() ) if other != None else -1
+
+
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
         logging.debug( "AEP created" )
+        self.ChangeContents()
         self.Refresh()
 
     def OnLeftDown( self, event ):
@@ -148,7 +153,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def ResizePanel( self, panel_width, panel_height, label_width ):
-        logging.debug( "AEP RP updating %s", self.GetName() )
+        ## logging.debug( "AEP RP updating %s", self.GetName() )
         ## logging.debug( "AEP RP initial panel %s", str( self.GetSize() ) )
         ## logging.debug( "AEP RP initial label width %d", self.label_width )
         changed = False

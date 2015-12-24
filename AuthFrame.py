@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import functools
 import wx
 import Configuration
 from AuthenticationStore import AuthenticationStore
@@ -28,6 +29,8 @@ class AuthFrame( wx.Frame ):
         self.entry_border = 2
         self.scrollbar_width = 0
         self.selected_panel = None
+        self.show_timers = Configuration.GetShowTimers()
+        self.show_all_codes = Configuration.GetShowAllCodes()
 
         self.new_entry_dialog = None
         self.update_entry_dialog = None
@@ -68,6 +71,7 @@ class AuthFrame( wx.Frame ):
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
+        self.Bind( wx.EVT_SIZE, self.OnSize )
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = wx.ID_EXIT )
@@ -87,6 +91,13 @@ class AuthFrame( wx.Frame ):
         self.Refresh()
 
 
+    def OnSize( self, event ):
+        # Need this to keep the size of the window in entries updated as it's resized
+        new_size = self.WindowToClientSize( event.GetSize() )
+        self.visible_entries = self.CalcItemsShown( new_size.GetHeight() )
+        event.Skip()
+
+
     def OnCloseWindow( self, event ):
         logging.debug( "AF close window" )
         self.auth_store.Save()
@@ -99,7 +110,8 @@ class AuthFrame( wx.Frame ):
         self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
         logging.debug( "AF visible items %d", self.visible_entries )
         Configuration.SetNumberOfItemsShown( self.visible_entries )
-        # TODO Save state of timers and all codes menu items
+        Configuration.SetShowTimers( self.show_timers )
+        Configuration.SetShowAllCodes( self.show_all_codes )
         Configuration.Save()
         if self.new_entry_dialog != None:
             self.new_entry_dialog.Destroy()
@@ -205,10 +217,35 @@ class AuthFrame( wx.Frame ):
                         dlg.Destroy()
                     else:
                         self.selected_panel.ChangeContents()
+                        ## logging.debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
+                        ##                str( panel.GetMinSize() ) )
+                        self.UpdatePanelSize()
 
     def OnMenuDeleteEntry( self, event ):
-        # TODO menu handler
-        logging.warning( "Delete Entry" )
+        logging.debug( "AF menu Delete Entry command" )
+        if self.selected_panel != None:
+            logging.debug( "AF DE deleting panel %s", self.selected_panel.GetName() )
+            panel = self.selected_panel
+            self.selected_panel = None
+            # Remove the panel from the entries list and the entries window
+            self.entry_panels.remove( panel )
+            status = self.entries_window.GetSizer().Detach( panel )
+            if not status:
+                logging.warning( "Could not remove %s from entries window", panel.GetName() )
+            ## logging.debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
+            ##                str( panel.GetMinSize() ) )
+            self.UpdatePanelSize()
+            # Delete the panel's entry in the authentication store
+            entry = panel.GetEntry()
+            if entry != None:
+                self.auth_store.Delete( entry.GetGroup() )
+        else:
+            dlg = wx.MessageDialog( self, "No entry selected.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.SetExtendedMessage( "You must select an entry to delete." )
+            dlg.ShowModal()
+            dlg.Destroy()
+            
 
     def OnMenuMoveUp( self, event ):
         # TODO menu handler
@@ -258,11 +295,11 @@ class AuthFrame( wx.Frame ):
         mi = wx.MenuItem( menu, wx.ID_ANY, "&Timers", "Show timer bars", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TIMERS = mi.GetId()
         menu.AppendItem( mi )
-        menu.Check( self.MENU_SHOW_TIMERS, Configuration.GetShowTimers() )
+        menu.Check( self.MENU_SHOW_TIMERS, self.show_timers )
         mi = wx.MenuItem( menu, wx.ID_ANY, "All &Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
-        menu.Check( self.MENU_SHOW_ALL_CODES, Configuration.GetShowAllCodes() )
+        menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
         mb.Append( menu, "&View" )
         
         menu = wx.Menu()
@@ -295,7 +332,6 @@ class AuthFrame( wx.Frame ):
 
 
     def AdjustWindowSizes( self ):
-        self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
         ## logging.debug( "AF AWS entry size:  %dx%d, visible = %d", self.entry_width, self.entry_height,
         ##                self.visible_entries )
         # Need to adjust this here, it depends on the entry height which may change
@@ -362,12 +398,16 @@ class AuthFrame( wx.Frame ):
         self.Refresh()
         self.SendSizeEvent()
 
+
     def SelectPanel( self, panel, selected = True ):
-        if self.selected_panel != None:
-            self.selected_panel.Deselect()
+        logging.debug( "AF panel %s: %s", panel.GetName(), "select" if selected else "deselect" )
         if selected:
+            if self.selected_panel != None:
+                self.selected_panel.Deselect()
+            panel.Select()
             self.selected_panel = panel
-            self.selected_panel.Select()
         else:
-            self.selected_panel.Deselect()
+            panel.Deselect()
+            if self.selected_panel != None:
+                self.selected_panel.Deselect()
             self.selected_panel = None

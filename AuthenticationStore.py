@@ -129,14 +129,13 @@ class AuthenticationStore:
 
     def Delete( self, entry_group ):
         logging.debug( "AS deleting entry %d", entry_group )
-        # Have to run the list in reverse so deletions don't change the indexes of upcoming entries
-        # TODO More efficient way of doing this
-        for i in range( len( self.entry_list ) - 1, -1, -1 ):
-            entry = self.entry_list[i]
-            if entry.GetGroup() == entry_group:
-                logging.debug( "AS deleted entry %d", entry_group )
-                self.cfg.DeleteGroup( '/entries/%s' % entry.entry_group )
-                del self.entry_list[i]
+        f = lambda x: x.GetGroup() == entry_group
+        elist = filter( f, self.entry_list )
+        for entry in elist:
+            index = self.entry_list.index( entry )
+            removed = self.entry_list.pop( index )
+            logging.debug( "AS deleted entry %d", removed.entry_group )
+            self.cfg.DeleteGroup( '/entries/%s' % removed.entry_group )
 
 
     def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
@@ -178,6 +177,10 @@ class AuthenticationEntry:
             self.original_label = original_label
         else:
             self.original_label = provider + ':' + account
+
+
+    def __cmp__( self, other ):
+        return cmp( self.entry_group, other.entry_group ) if other != None else -1
 
 
     def Save( self, cfg ):
