@@ -235,8 +235,14 @@ class AuthEntryPanel( wx.Panel ):
 
     def Select( self ):
         self.selected = True
-        self.SetBackgroundColour( wx.WHITE )
+        bg = wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT )
+        fg = wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHTTEXT )
+        for item in [ self, self.provider_text, self.account_text, self.code_text, self.timer_gauge ]:
+            item.SetBackgroundColour( bg )
+            item.SetForegroundColour( fg )
 
     def Deselect( self ):
         self.selected = False
-        self.SetBackgroundColour( wx.NullColour )
+        for item in [ self, self.provider_text, self.account_text, self.code_text, self.timer_gauge ]:
+            item.SetBackgroundColour( wx.NullColour )
+            item.SetForegroundColour( wx.NullColour )
