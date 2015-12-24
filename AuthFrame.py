@@ -37,6 +37,15 @@ class AuthFrame( wx.Frame ):
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
 
+        # Timers are scarce on some platforms, so we set one up here and broadcast the
+        # resulting timer event to all our entry panels for processing. That also simplifies
+        # shutdown. The timer will tick roughly once per second. The higher the precision the
+        # better, but since we're using absolute times to generate codes rather than counting
+        # ticks the precision isn't horribly critical beyond being good enough to keep the UI
+        # from being too far out-of-sync with the wall clock second hand.
+        self.timer = wx.Timer( self )
+        self.iconized = True # Start off iconized for timer purposes, set correctly in OnCreate
+
         self.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         menu_bar = self.create_menu_bar()
         self.SetMenuBar( menu_bar )
@@ -72,6 +81,8 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
         self.Bind( wx.EVT_SIZE, self.OnSize )
+        self.Bind( wx.EVT_TIMER, self.OnTimerTick )
+        self.Bind( wx.EVT_ICONIZE, self.OnIconize )
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = wx.ID_EXIT )
@@ -88,6 +99,8 @@ class AuthFrame( wx.Frame ):
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
         logging.debug( "AF created" )
+        self.iconized = self.IsIconized()
+        self.timer.Start( 1000 )
         self.Refresh()
 
 
@@ -98,8 +111,29 @@ class AuthFrame( wx.Frame ):
         event.Skip()
 
 
+    def OnTimerTick( self, event ):
+        # Make sure we don't broadcast any more timer ticks after shutdown
+        # even if we do get called by straggling tick events. We also don't
+        # need to update entry panels while we're minimized.
+        if self.timer != None and not self.iconized:
+            # Broadcast the event to all entry panels for processing
+            for panel in self.entry_panels:
+                # TODO Use a custom event rather than a timer event
+                panel.QueueEvent( event.Clone() )
+
+
+    def OnIconize( self, event ):
+        was_iconized = self.iconized
+        self.iconized = event.IsIconized()
+        # TODO if was_iconized and not iconized, generate a tick event to the panels
+        event.Skip()
+
+        
     def OnCloseWindow( self, event ):
         logging.debug( "AF close window" )
+        self.timer.Stop()
+        self.Unbind( wx.EVT_TIMER )
+        self.timer = None
         self.auth_store.Save()
         wp = self.GetPosition()
         Configuration.SetLastWindowPosition( wp )

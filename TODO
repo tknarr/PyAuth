@@ -2,7 +2,6 @@ PYAuth to-do list
 
 Minimal functionality:
     TOTP code generation
-    Timer countdown
 Basic functionality:
     Toolbar for main frame
     Select entry via keyboard

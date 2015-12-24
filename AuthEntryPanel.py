@@ -18,6 +18,7 @@ class AuthEntryPanel( wx.Panel ):
 
         self.left_down = False
         self.selected = False
+        self.totp_cycle = 0
 
         self.provider_text = None
         self.account_text = None
@@ -55,9 +56,10 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text.SetFont( self.code_font )
         sizer.Add( self.code_text, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER | wx.FIXED_MINSIZE, 12 )
 
-        self.timer_gauge = wx.Gauge( self, wx.ID_ANY, 30, size = wx.Size( 30, 15 ),
+        # The countdown gauge has a 30-second range, 0-29
+        self.timer_gauge = wx.Gauge( self, wx.ID_ANY, 29, size = wx.Size( 30, 15 ),
                                      style = wx.GA_HORIZONTAL, name='timer_gauge' )
-        self.timer_gauge.SetValue( 30 )
+        self.timer_gauge.SetValue( 29 )
         sizer.Add( self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2 )
 
         # Initialize and size controls
@@ -80,6 +82,7 @@ class AuthEntryPanel( wx.Panel ):
         self.ChangeContents()
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
+        self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ENTER_WINDOW, self.OnMouseEnter )
         self.Bind( wx.EVT_LEAVE_WINDOW, self.OnMouseLeave )
         self.MouseBind( wx.EVT_LEFT_DCLICK, self.OnDoubleClick )
@@ -105,6 +108,18 @@ class AuthEntryPanel( wx.Panel ):
         logging.debug( "AEP created" )
         self.ChangeContents()
         self.Refresh()
+
+    def OnTimerTick( self, event ):
+        current_time = wx.GetUTCTime()
+        ## logging.debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
+        last_cycle = self.totp_cycle
+        self.totp_cycle = current_time % 30
+        # If we wrapped around the end of a 30-second cycle, update the code and
+        # reset the countdown timer gauge
+        if self.totp_cycle < last_cycle and self.entry != None:
+            self.code = self.entry.GenerateNextCode()
+        # Make our timer gauge count down to zero
+        self.timer_gauge.SetValue( 29 - self.totp_cycle )
 
     def OnLeftDown( self, event ):
         self.left_down = True
