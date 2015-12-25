@@ -12,7 +12,7 @@ class AuthEntryPanel( wx.Panel ):
         logging.debug( "AEP init" )
 
         self.entry = entry
-        self.index = 0
+        self.sort_index = 0
         self.code = ''
         self.label_width = 0
 
@@ -139,7 +139,8 @@ class AuthEntryPanel( wx.Panel ):
         self.left_down = False
         gp = self.GetGrandParent()
         if gp != None:
-            gp.SelectPanel( self, True ) # TODO also trigger edit
+            gp.SelectPanel( self, True )
+            # TODO Trigger an edit command on ourselves
         event.Skip()
 
     def OnMouseEnter( self, event ):
@@ -155,11 +156,21 @@ class AuthEntryPanel( wx.Panel ):
 
     def SetEntry( self, entry ):
         self.entry = entry
+        self.sort_index = entry.GetSortIndex()
         self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
-        self.index = self.entry.GetSortIndex()
         self.code = self.entry.GenerateNextCode()
         logging.debug( "AEP SE on %s", self.GetName() )
         self.ChangeContents()
+
+    def GetSortIndex( self ):
+        if self.entry != None:
+            self.sort_index = self.entry.GetSortIndex()
+        return self.sort_index
+
+    def SetSortIndex( self, index ):
+        self.sort_index = index
+        if self.entry != None:
+            self.entry.SetSortIndex( index )
 
 
     def GetPanelSize( self ):
