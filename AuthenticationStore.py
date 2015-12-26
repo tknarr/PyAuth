@@ -89,7 +89,7 @@ class AuthenticationStore:
         self.entry_list.sort( key = keyfunc )
         i = 1;
         for e in self.entry_list:
-            e.SetIndex( i )
+            e.SetSortIndex( i )
             i += 1
         self.next_index = i
         logging.debug( "AS next index = %d", self.next_index )
@@ -103,7 +103,7 @@ class AuthenticationStore:
         i = 1
         for e in self.entry_list:
             e.SetGroup( i )
-            e.SetIndex( i )
+            e.SetSortIndex( i )
             e.Save( self.cfg )
             i += 1
         self.next_group = i

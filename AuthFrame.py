@@ -35,6 +35,7 @@ class AuthFrame( wx.Frame ):
         self.update_entry_dialog = None
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
+        self.since_idle = wx.GetUTCTime()
 
         # Timers are scarce on some platforms, so we set one up here and broadcast the
         # resulting timer event to all our entry panels for processing. That also simplifies
@@ -53,27 +54,10 @@ class AuthFrame( wx.Frame ):
 
         # Get scrollbar width so we can account for it in window sizing
         # Turns out for layout we don't need to adjust for this
-        self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.entries_window ) + 5
+        self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.entries_window )
         ## logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
         
-        # Create our entry item panels and put them in the scrollable window
-        self.entry_panels = []
-        for entry in self.auth_store.EntryList():
-            logging.debug( "AF create panel: %d", entry.GetGroup() )
-            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN,
-                                    entry = entry )
-            self.entry_panels.append( panel )
-        if len( self.entry_panels ) == 0:
-            # Add dummy entry. We need at least this to be able to size things properly. We'll
-            # replace it with the first real entry.
-            self.entry_panels.append( AuthEntryPanel( self.entries_window, wx.ID_ANY,
-                                                      style = wx.BORDER_SUNKEN ) )
-        for panel in self.entry_panels:
-            logging.debug( "AF add panel: %s", panel.GetName() )
-            ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
-            self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
-                                                border = self.entry_border )
-
+        self.populate_entries_window()
         self.UpdatePanelSize()
 
         # Window event handlers
@@ -82,8 +66,12 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_SIZE, self.OnSize )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
+        ## TODO self.KeyBind( wx.EVT_CHAR, self.OnKey )
+        ## self.Bind( wx.EVT_IDLE, self.OnIdle ) # Debugging sizing only
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
+        self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
+        self.Bind( wx.EVT_MENU, self.OnMenuRegroup,      id = self.MENU_REGROUP )
         self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = wx.ID_EXIT )
         self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = wx.ID_EDIT )
         self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = wx.ID_DELETE )
@@ -93,6 +81,13 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = self.MENU_SHOW_ALL_CODES )
         self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = wx.ID_HELP )
         self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = wx.ID_ABOUT )
+
+
+    def KeyBind( self, event_type, func ):
+        self.Bind( event_type, func )
+        self.entries_window.Bind( event_type, func )
+        for panel in self.entry_panels:
+            panel.Bind( event_type, func )
 
 
     def OnCreate( self, event ):
@@ -117,17 +112,57 @@ class AuthFrame( wx.Frame ):
         if self.timer != None and not self.iconized:
             # Broadcast the event to all entry panels for processing
             for panel in self.entry_panels:
-                # TODO Use a custom event rather than a timer event
                 panel.QueueEvent( event.Clone() )
+
+
+    def OnIdle( self, event ):
+        now = wx.GetUTCTime()
+        t = now - self.since_idle
+        if t > 5:
+            self.since_idle = now
+            logging.debug( "IDLE FR window size %s min %s",
+                           self.GetSize(), self.GetMinSize() )
+            logging.debug( "IDLE FR client size %s min %s",
+                           self.GetClientSize(), self.GetMinClientSize() )
+            logging.debug( "IDLE EW window size %s min %s",
+                           self.entries_window.GetSize(), self.entries_window.GetMinSize() )
+            logging.debug( "IDLE EW client size %s min %s",
+                           self.entries_window.GetClientSize(), self.entries_window.GetMinClientSize() )
 
 
     def OnIconize( self, event ):
         was_iconized = self.iconized
         self.iconized = event.IsIconized()
-        # TODO if was_iconized and not iconized, generate a tick event to the panels
+        ## if was_iconized and not self.iconized:
+        # TODO Generate an immediate fake timer tick to update the countdown
         event.Skip()
 
-        
+
+    def OnKey( self, event ):
+        key = event.GetUnicodeKey()
+        if key == WXK_NONE:
+            key = event.GetKeyCode()
+        logging.debug( "AF OnKey code %d", key )
+        # The Escape key deselects any selected entry
+        if key == wx.WXK_ESCAPE:
+            if self.selected_panel != None:
+                self.selected_panel.Deselect()
+                self.selected_panel = None
+        elif key == wx.WXK_UP or key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_UP or key == wx.WXK_NUMPAD_UP:
+            if not event.HasModifiers():
+                logging.debug( "AF OnKey up/down key" )
+                # TODO Alone, Up/Down arrow keys change the selected panel
+            elif event.HasModifiers() == wx.MOD_CONTROL:
+                logging.debug( "AF OnKey Control-up/down key" )
+                # TODO With Control key, move entries up/down in the list
+        elif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE:
+            if not event.HasModifiers():
+                logging.debug( "AF OnKey delete key" )
+                # TODO Delete key deletes the selected entry
+        # TODO other keycodes
+        event.Skip()
+
+
     def OnCloseWindow( self, event ):
         logging.debug( "AF close window" )
         self.timer.Stop()
@@ -188,8 +223,7 @@ class AuthFrame( wx.Frame ):
                     panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
                     self.entry_panels.append( panel )
                     logging.debug( "AF NE add panel: %s", panel.GetName() )
-                    self.entries_window.GetSizer().Add( panel, flag = wx.ALL | wx.ALIGN_LEFT,
-                                                        border = self.entry_border )
+                    self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
                 ## logging.debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
                 self.UpdatePanelSize()
             else:
@@ -281,12 +315,62 @@ class AuthFrame( wx.Frame ):
             
 
     def OnMenuMoveUp( self, event ):
-        # TODO menu handler
-        logging.warning( "Move Up" )
+        logging.debug( "AF menu Move Up command" )
+        if self.selected_panel != None:
+            i = self.entry_panels.index( self.selected_panel )
+            if i > 0 and i < len( self.entry_panels ):
+                logging.debug( "AF moving entry %d up", i )
+                # Swap the selected panel with the one before it in the list by popping it
+                # and inserting it one position before it's previous location, then swap the
+                # sort indexes of the two panels we switched around.
+                tgt = self.entry_panels.pop(i)
+                self.entry_panels.insert( i-1, tgt )
+                si = self.entry_panels[i].GetSortIndex()
+                self.entry_panels[i].SetSortIndex( self.entry_panels[i-1].GetSortIndex() )
+                self.entry_panels[i-1].SetSortIndex( si )
+                # Then visually update the list by swapping the items in the sizer
+                sts = self.entries_window.GetSizer().Remove( i )
+                if sts:
+                    self.entries_window.GetSizer().Insert( i-1, tgt, 0, wx.ALL | wx.ALIGN_LEFT,
+                                                           self.entry_border )
+                    self.SendSizeEvent()
+                else:
+                    logging.warning( "Error removing item %d from entries window. Recovering.", i )
+                    self.depopulate_entries_window()
+                    self.populate_entries_window()
+                    self.UpdatePanelSize()
+            else:
+                logging.debug( "AF entry %d out-of-range", i )
+                wx.Bell()
 
     def OnMenuMoveDown( self, event ):
-        # TODO menu handler
-        logging.warning( "Move Down" )
+        logging.debug( "AF menu Move Down command" )
+        if self.selected_panel != None:
+            i = self.entry_panels.index( self.selected_panel )
+            if i >= 0 and i < len( self.entry_panels ) - 1:
+                logging.debug( "AF moving entry %d down", i )
+                # Swap the selected panel with the one after it in the list by popping the
+                # one after it and inserting that one back at the selected panel's position,
+                # then swap the sort indexes of the two panels we switched around.
+                tgt = self.entry_panels.pop(i+1)
+                self.entry_panels.insert( i, tgt )
+                si = self.entry_panels[i+1].GetSortIndex()
+                self.entry_panels[i+1].SetSortIndex( self.entry_panels[i].GetSortIndex() )
+                self.entry_panels[i].SetSortIndex( si )
+                # Then visually update the list by swapping the items in the sizer
+                sts = self.entries_window.GetSizer().Remove( i+1 )
+                if sts:
+                    self.entries_window.GetSizer().Insert( i, tgt, 0, wx.ALL | wx.ALIGN_LEFT,
+                                                           self.entry_border )
+                    self.SendSizeEvent()
+                else:
+                    logging.warning( "Error removing item %d from entries window. Recovering.", i )
+                    self.depopulate_entries_window()
+                    self.populate_entries_window()
+                    self.UpdatePanelSize()
+            else:
+                logging.debug( "AF entry %d out-of-range", i )
+                wx.Bell()
 
     def OnMenuShowTimers( self, event ):
         # TODO menu handler
@@ -305,6 +389,20 @@ class AuthFrame( wx.Frame ):
         info = GetAboutInfo( wx.ClientDC( self ) )
         wx.AboutBox( info )
 
+    def OnMenuReindex( self, event ):
+        logging.warning( "AF menu Reindex command" )
+        self.auth_store.Reindex()
+        self.depopulate_entries_window()
+        self.populate_entries_window()
+        self.UpdatePanelSize()
+
+    def OnMenuRegroup( self, event ):
+        logging.warning( "AF menu Regroup command" )
+        self.auth_store.Regroup()
+        self.depopulate_entries_window()
+        self.populate_entries_window()
+        self.UpdatePanelSize()
+
 
     def create_menu_bar( self ):
         logging.debug( "AF create menu bar" )
@@ -312,6 +410,12 @@ class AuthFrame( wx.Frame ):
 
         menu = wx.Menu()
         menu.Append( wx.ID_NEW, "&New", "Create a new entry" )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
+        self.MENU_REINDEX = mi.GetId()
+        menu.AppendItem( mi )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "Regroup", "Completely compact database in current order" )
+        self.MENU_REGROUP = mi.GetId()
+        menu.AppendItem( mi )
         menu.AppendSeparator()
         menu.Append( wx.ID_EXIT, "E&xit", "Exit the program" )
         mb.Append( menu, "&File" )
@@ -350,6 +454,40 @@ class AuthFrame( wx.Frame ):
         sw.EnableScrolling( False, True )
         sw.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         return sw
+
+
+    def populate_entries_window( self ):
+        logging.debug( "AF populating the entries window" )
+        # Create our entry item panels and put them in the scrollable window
+        self.entry_panels = []
+        for entry in self.auth_store.EntryList():
+            logging.debug( "AF create panel: %d", entry.GetGroup() )
+            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN,
+                                    entry = entry )
+            self.entry_panels.append( panel )
+        if len( self.entry_panels ) > 0:
+            # Make sure they're sorted at the start
+            keyfunc = lambda x: x.GetSortIndex()
+            self.entry_panels.sort( key = keyfunc )
+        else:
+            # Add dummy entry. We need at least this to be able to size things properly. We'll
+            # replace it with the first real entry.
+            self.entry_panels.append( AuthEntryPanel( self.entries_window, wx.ID_ANY,
+                                                      style = wx.BORDER_SUNKEN ) )
+        for panel in self.entry_panels:
+            logging.debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
+            ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+            self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
+
+
+    def depopulate_entries_window( self ):
+        logging.debug( "AF depopulating the entries window" )
+        # Clear out the entries window sizer and then destroy the individual entry panels
+        self.entries_window.GetSizer().Clear( False )
+        for panel in self.entry_panels:
+            logging.debug( "AF destroy panel: %s", panel.GetName() )
+            panel.Destroy()
+        self.entry_panels = []
 
 
     def CalcItemsShown( self, height ):
