@@ -455,6 +455,11 @@ class AuthFrame( wx.Frame ):
         mb.Append( menu, "Edit" )
         
         menu = wx.Menu()
+        mi = wx.MenuItem( menu, wx.ID_ANY, "Toolbar", "Show the toolbar", kind = wx.ITEM_CHECK )
+        self.MENU_SHOW_TOOLBAR = mi.GetId()
+        menu.AppendItem( mi )
+        menu.Check( self.MENU_SHOW_TOOLBAR, self.show_toolbar )
+        menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Timers", "Show timer bars", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TIMERS = mi.GetId()
         menu.AppendItem( mi )
@@ -463,10 +468,6 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
-        mi = wx.MenuItem( menu, wx.ID_ANY, "Toolbar", "Show the toolbar", kind = wx.ITEM_CHECK )
-        self.MENU_SHOW_TOOLBAR = mi.GetId()
-        menu.AppendItem( mi )
-        menu.Check( self.MENU_SHOW_TOOLBAR, self.show_toolbar )
         mb.Append( menu, "&View" )
         
         menu = wx.Menu()
