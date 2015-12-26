@@ -395,7 +395,7 @@ class AuthFrame( wx.Frame ):
         logging.warning( "Show All Codes" )
 
     def OnMenuShowToolbar( self, event ):
-        # TODO menu handler
+        # TODO show/hide toolbar
         logging.warning( "Show Toolbar" )
 
     def OnMenuHelpContents( self, event ):
