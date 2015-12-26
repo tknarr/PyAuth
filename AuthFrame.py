@@ -56,7 +56,7 @@ class AuthFrame( wx.Frame ):
         # Turns out for layout we don't need to adjust for this
         self.scrollbar_width = wx.SystemSettings.GetMetric( wx.SYS_VSCROLL_X, self.entries_window )
         ## logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
-        
+
         self.populate_entries_window()
         self.UpdatePanelSize()
 
@@ -516,28 +516,35 @@ class AuthFrame( wx.Frame ):
         # Figure out the window height and minimum height based on entries
         column_height = self.visible_entries * ( self.entry_height + 2 * self.entry_border )
         min_height = self.entry_height + 2 * self.entry_border
+
+        # The size calculations are broken out and made explicit to make sure everything's
+        # calculated correctly. We end up not using the client sizes, but we need them
+        # as intermediate steps to make sure the frame has a minimum size large enough
+        # for it's client area to hold the entries window. Setting the client sizes for
+        # the entries window and frame ends up causing glitches where the minimum height
+        # can be less than 1 entry panel and the minimum width is a few pixels short of
+        # accounting for the scrollbar.
         
-        # Frame size is 1 entry wide accounting for scrollbar, visible_entries high
-        client_size = wx.Size( column_width, column_height )
-        ## logging.debug( "AF AWS calc client size = %s", str( client_size ) )
-        items_shown = self.CalcItemsShown( client_size.GetHeight() )
-        ## logging.debug( "AF AWS items shown = %d", items_shown )
-        self.entries_window.SetClientSize( client_size )
+        # Calculate size needed in client area of scrolling entries window
+        entries_client_size = wx.Size( column_width, column_height )
+        entries_min_client_size = wx.Size( column_width, min_height )
+        # Convert the client area size to the entries window size
+        entries_size = self.entries_window.ClientToWindowSize( entries_client_size )
+        entries_min_size = self.entries_window.ClientToWindowSize( entries_min_client_size )
 
-        # Minimum size is 1 entry wide accounting for scrollbar, 1 entry high
-        min_size = wx.Size( column_width, min_height )
-        ## logging.debug( "AF AWS calc min client size = %s", str( min_size ) )
-        self.entries_window.SetMinClientSize( min_size )
-
-        win_client_size = self.entries_window.ClientToWindowSize( client_size )
-        win_min_client_size = self.entries_window.ClientToWindowSize( min_size )
-        win_size = self.ClientToWindowSize( win_client_size )
-        win_min_size = self.ClientToWindowSize( win_min_client_size )
-
-        self.SetClientSize( win_client_size )
-        self.SetMinClientSize( win_min_client_size )
-        self.SetSize( win_size )
-        self.SetMinSize( win_min_size )
+        # Generate correct frame size to hold the entries window in the client area
+        frame_size = self.ClientToWindowSize( entries_size )
+        frame_min_size = self.ClientToWindowSize( entries_min_size_size )
+        
+        ## logging.debug( "AWS FR window size %s min %s", frame_size, frame_min_size )
+        ## logging.debug( "AWs EW window size %s min %s", entries_size, entries_min_size )
+        ## logging.debug( "AWS EW client size %s min %s", entries_client_size, entries_min_client_size )
+        
+        # Set window sizes and minimum sizes for the entries window and the frame
+        self.entries_window.SetSize( entries_size )
+        self.entries_window.SetMinSize( entries_min_size )
+        self.SetSize( frame_size )
+        self.SetMinSize( frame_min_size )
 
 
     def AdjustPanelSizes( self ):
