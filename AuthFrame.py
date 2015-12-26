@@ -30,7 +30,11 @@ class AuthFrame( wx.Frame ):
         self.selected_panel = None
         self.show_timers = Configuration.GetShowTimers()
         self.show_all_codes = Configuration.GetShowAllCodes()
+        self.show_toolbar = Configuration.GetShowToolbar()
 
+        self.toolbar = None
+        self.tool_ids = {}
+        self.toolbar_icon_size = Configuration.GetToolIconSize()
         self.new_entry_dialog = None
         self.update_entry_dialog = None
 
@@ -49,6 +53,8 @@ class AuthFrame( wx.Frame ):
         self.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         menu_bar = self.create_menu_bar()
         self.SetMenuBar( menu_bar )
+        self.toolbar = self.create_toolbar()
+        # TODO Hide toolbar if not shown
         self.entries_window = self.create_entries_window()
         self.GetSizer().Add( self.entries_window, 1, 0, 0 )
 
@@ -73,14 +79,17 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
         self.Bind( wx.EVT_MENU, self.OnMenuRegroup,      id = self.MENU_REGROUP )
         self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = wx.ID_EXIT )
+        self.Bind( wx.EVT_MENU, self.OnMenuCopyCode,     id = self.MENU_COPY_CODE )
         self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = wx.ID_EDIT )
         self.Bind( wx.EVT_MENU, self.OnMenuDeleteEntry,  id = wx.ID_DELETE )
         self.Bind( wx.EVT_MENU, self.OnMenuMoveUp,       id = wx.ID_UP )
         self.Bind( wx.EVT_MENU, self.OnMenuMoveDown,     id = wx.ID_DOWN )
         self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = self.MENU_SHOW_TIMERS )
         self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = self.MENU_SHOW_ALL_CODES )
+        self.Bind( wx.EVT_MENU, self.OnMenuShowToolbar,  id = self.MENU_SHOW_TOOLBAR )
         self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = wx.ID_HELP )
         self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = wx.ID_ABOUT )
+        # Any toolbar tool handlers that aren't also menu item handlers go below here
 
 
     def KeyBind( self, event_type, func ):
@@ -220,7 +229,7 @@ class AuthFrame( wx.Frame ):
                     panel.SetEntry( entry )
                     logging.debug( "AF NE replaced dummy panel with: %s", panel.GetName() )
                 else:
-                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN, entry = entry )
+                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME, entry = entry )
                     self.entry_panels.append( panel )
                     logging.debug( "AF NE add panel: %s", panel.GetName() )
                     self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
@@ -314,6 +323,11 @@ class AuthFrame( wx.Frame ):
             dlg.Destroy()
             
 
+    def OnMenuCopyCode( self, event ):
+        logging.warning( "AF tool CopyCode command" )
+        # TODO Copy code from selected panel to clipboard
+
+
     def OnMenuMoveUp( self, event ):
         logging.debug( "AF menu Move Up command" )
         if self.selected_panel != None:
@@ -380,6 +394,10 @@ class AuthFrame( wx.Frame ):
         # TODO menu handler
         logging.warning( "Show All Codes" )
 
+    def OnMenuShowToolbar( self, event ):
+        # TODO menu handler
+        logging.warning( "Show Toolbar" )
+
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
         logging.warning( "Help Contents" )
@@ -390,14 +408,16 @@ class AuthFrame( wx.Frame ):
         wx.AboutBox( info )
 
     def OnMenuReindex( self, event ):
-        logging.warning( "AF menu Reindex command" )
+        logging.debug( "AF menu Reindex command" )
+        logging.info( "Database reindex ordered" )
         self.auth_store.Reindex()
         self.depopulate_entries_window()
         self.populate_entries_window()
         self.UpdatePanelSize()
 
     def OnMenuRegroup( self, event ):
-        logging.warning( "AF menu Regroup command" )
+        logging.debug( "AF menu Regroup command" )
+        logging.info( "Database regroup and reindex ordered" )
         self.auth_store.Regroup()
         self.depopulate_entries_window()
         self.populate_entries_window()
@@ -421,6 +441,12 @@ class AuthFrame( wx.Frame ):
         mb.Append( menu, "&File" )
         
         menu = wx.Menu()
+        mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code", "Copy current code to clipboard" )
+        self.MENU_COPY_CODE = mi.GetId()
+        mi_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_MENU )
+        mi.SetBitmap( mi_icon )
+        menu.AppendItem( mi )
+        menu.AppendSeparator()
         menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected entry" )
         menu.Append( wx.ID_DELETE, "&Delete", "Delete the selected entry" )
         menu.AppendSeparator()
@@ -429,14 +455,18 @@ class AuthFrame( wx.Frame ):
         mb.Append( menu, "Edit" )
         
         menu = wx.Menu()
-        mi = wx.MenuItem( menu, wx.ID_ANY, "&Timers", "Show timer bars", kind = wx.ITEM_CHECK )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "Timers", "Show timer bars", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TIMERS = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TIMERS, self.show_timers )
-        mi = wx.MenuItem( menu, wx.ID_ANY, "All &Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "All Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "Toolbar", "Show the toolbar", kind = wx.ITEM_CHECK )
+        self.MENU_SHOW_TOOLBAR = mi.GetId()
+        menu.AppendItem( mi )
+        menu.Check( self.MENU_SHOW_TOOLBAR, self.show_toolbar )
         mb.Append( menu, "&View" )
         
         menu = wx.Menu()
@@ -445,6 +475,34 @@ class AuthFrame( wx.Frame ):
         mb.Append( menu, "Help" )
         
         return mb
+
+
+    def create_toolbar( self ):
+        toolbar = self.CreateToolBar( name = 'tool_bar' )
+        toolbar.SetToolBitmapSize( self.toolbar_icon_size )
+
+        self.tool_ids = {}
+        
+        tool_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_TOOLBAR, self.toolbar_icon_size )
+        tool = toolbar.AddTool( self.MENU_COPY_CODE, tool_icon,
+                                shortHelpString = "Copy selected code to clipboard" )
+        self.tool_ids['COPYCODE'] = tool.GetId()
+
+        toolbar.AddSeparator()
+
+        tool_icon = wx.ArtProvider.GetBitmap( wx.ART_GO_UP, wx.ART_TOOLBAR, self.toolbar_icon_size )
+        tool = toolbar.AddTool( wx.ID_UP, tool_icon,
+                                shortHelpString = "Move selected entry up one position" )
+        self.tool_ids['MOVE_UP'] = tool.GetId()
+
+        tool_icon = wx.ArtProvider.GetBitmap( wx.ART_GO_DOWN, wx.ART_TOOLBAR, self.toolbar_icon_size )
+        tool = toolbar.AddTool( wx.ID_DOWN, tool_icon,
+                                shortHelpString = "Move selected entry down one position" )
+        self.tool_ids['MOVE_DOWN'] = tool.GetId()
+
+        toolbar.Realize()
+        
+        return toolbar
 
 
     def create_entries_window( self ):
@@ -462,7 +520,7 @@ class AuthFrame( wx.Frame ):
         self.entry_panels = []
         for entry in self.auth_store.EntryList():
             logging.debug( "AF create panel: %d", entry.GetGroup() )
-            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_SUNKEN,
+            panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
                                     entry = entry )
             self.entry_panels.append( panel )
         if len( self.entry_panels ) > 0:
@@ -473,7 +531,7 @@ class AuthFrame( wx.Frame ):
             # Add dummy entry. We need at least this to be able to size things properly. We'll
             # replace it with the first real entry.
             self.entry_panels.append( AuthEntryPanel( self.entries_window, wx.ID_ANY,
-                                                      style = wx.BORDER_SUNKEN ) )
+                                                      style = wx.BORDER_THEME ) )
         for panel in self.entry_panels:
             logging.debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
             ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
@@ -534,7 +592,7 @@ class AuthFrame( wx.Frame ):
 
         # Generate correct frame size to hold the entries window in the client area
         frame_size = self.ClientToWindowSize( entries_size )
-        frame_min_size = self.ClientToWindowSize( entries_min_size_size )
+        frame_min_size = self.ClientToWindowSize( entries_min_size )
         
         ## logging.debug( "AWS FR window size %s min %s", frame_size, frame_min_size )
         ## logging.debug( "AWs EW window size %s min %s", entries_size, entries_min_size )
