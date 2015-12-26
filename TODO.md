@@ -3,7 +3,6 @@
 * Basic functionality:
   - Toolbar for main frame
   - Select entry via keyboard
-  - Move entries up/down
   - Show/hide timers
   - Show/hide all codes
   - Click to show/hide code when all codes hidden
