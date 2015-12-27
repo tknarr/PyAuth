@@ -34,19 +34,19 @@ class AuthenticationStore:
         more, value, index = self.cfg.GetFirstGroup()
         while more:
             entry_group = int( value )
-            logging.debug( "AS reading group %d", entry_group )
+            ## logging.debug( "AS reading group %d", entry_group )
             if entry_group > 0:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
                 cfgpath = '%s/' % entry_group
                 sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
-                logging.debug( "AS   sort index %d", sort_index )
+                ## logging.debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
                     self.next_index = sort_index + 1
                 provider = self.cfg.Read( cfgpath + 'provider' )
                 account = self.cfg.Read( cfgpath + 'account' )
-                logging.debug( "AS   provider %s", provider )
-                logging.debug( "AS   account %s", account )
+                ## logging.debug( "AS   provider %s", provider )
+                ## logging.debug( "AS   account %s", account )
                 secret = self.cfg.Read( cfgpath + 'secret' )
                 original_label = self.cfg.Read( cfgpath + 'original_label', '' )
                 if original_label == '':

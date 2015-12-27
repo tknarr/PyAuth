@@ -82,6 +82,49 @@ def GetShowAllCodes():
 def SetShowAllCodes( state ):
     wx.Config.Get().WriteBool( '/window/show_all_codes', state )
 
+def GetShowToolbar():
+    return wx.Config.Get().ReadBool( '/window/show_toolbar', True )
+
+def SetShowToolbar( state ):
+    wx.Config.Get().WriteBool( '/window/show_toolbar', state )
+
+def GetToolIconSize():
+    size_string = wx.Config.Get().Read( '/window/tool_icon_size', 'default' )
+    s = wx.DefaultSize
+    if size_string == 'small':
+        s = wx.Size( 16, 16 )
+    elif size_string == 'medium':
+        s = wx.Size( 24, 24 )
+    elif size_string == 'large':
+        s = wx.Size( 32, 32 )
+    elif size_string == 'extra-large':
+        s = wx.Size( 48, 48 )
+    elif size_string == 'default':
+        s = wx.DefaultSize
+    else:
+        logging.warning( "Tool icon size not legal, resetting to default size." )
+        wx.Config.Get().Write( '/window/tool_icon_size', 'default' )
+        s = wx.DefaultSize
+    return s
+
+def SetToolIconSize( s ):
+    if s.GetWidth() != s.GetHeight():
+        logging.warning( "Tool icon width and height not equal: %s", str( s ) )
+    x = s.GetWidth()
+    if x != 16 and x != 24 and x != 32 and x != 48 and x != wx.DefaultSize.GetWidth():
+        logging.warning( "Tool icon size not standard, using default size." )
+        x = -1
+    size_string = 'default'
+    if x == 16:
+        size_string = 'small'
+    elif x == 24:
+        size_string = 'medium'
+    elif x == 32:
+        size_string = 'large'
+    elif x == 48:
+        size_string = 'extra-large'
+    wx.Config.Get().Write( '/window/tool_icon_size', size_string )
+
 def GetDatabaseFilename():
     return wx.Config.Get().Read( '/database/file_name', 'database.cfg' )
 

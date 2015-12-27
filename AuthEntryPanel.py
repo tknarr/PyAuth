@@ -9,7 +9,7 @@ class AuthEntryPanel( wx.Panel ):
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, entry = None ):
         wx.Panel.__init__ ( self, parent, id, pos, size, style, name )
-        logging.debug( "AEP init" )
+        ## logging.debug( "AEP init" )
 
         self.entry = entry
         self.sort_index = 0
@@ -91,7 +91,7 @@ class AuthEntryPanel( wx.Panel ):
         self.MouseBind( wx.EVT_LEFT_DOWN, self.OnLeftDown )
         self.MouseBind( wx.EVT_LEFT_UP, self.OnLeftUp )
 
-        logging.debug( "AEP init done" )
+        ## logging.debug( "AEP init done" )
 
 
     def MouseBind( self, event_type, func ):
@@ -107,7 +107,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
-        logging.debug( "AEP created" )
+        ## logging.debug( "AEP created" )
         self.ChangeContents()
         self.Refresh()
 
@@ -159,7 +159,7 @@ class AuthEntryPanel( wx.Panel ):
         self.sort_index = entry.GetSortIndex()
         self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
         self.code = self.entry.GenerateNextCode()
-        logging.debug( "AEP SE on %s", self.GetName() )
+        ## logging.debug( "AEP SE on %s", self.GetName() )
         self.ChangeContents()
 
     def GetSortIndex( self ):
@@ -212,7 +212,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def UpdateContents( self ):
         if self.entry != None:
-            logging.debug( "AEP UC updating %s", self.GetName() )
+            ## logging.debug( "AEP UC updating %s", self.GetName() )
 
             self.code_text.SetLabelText( self.code )
 
@@ -231,7 +231,7 @@ class AuthEntryPanel( wx.Panel ):
             self.account_text.SetMinClientSize( te_l )
 
         else:
-            logging.debug( "AEP UC updating dummy entry panel" )
+            ## logging.debug( "AEP UC updating dummy entry panel" )
 
             self.code_text.SetLabelText( 'XXXXXX' )
 
@@ -258,11 +258,11 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def ChangeContents( self ):
-        logging.debug( "AEP CC" )
+        ## logging.debug( "AEP CC" )
         self.UpdateContents()
         gp = self.GetGrandParent()
         if gp != None:
-            logging.debug( "AEP CC notifying frame" )
+            ## logging.debug( "AEP CC notifying frame" )
             gp.UpdatePanelSize()
 
 
