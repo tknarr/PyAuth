@@ -20,6 +20,7 @@ class AuthFrame( wx.Frame ):
         self.auth_store = None
         self.entry_panels = []
         self.visible_entries = Configuration.GetNumberOfItemsShown()
+        logging.info( "Visible entries: %d", self.visible_entries )
         self.entry_height = 0    # Height of tallest panel
         self.entry_width = 0     # Width of widest panel
         self.label_width = 0     # Width of widest label
@@ -66,6 +67,7 @@ class AuthFrame( wx.Frame ):
         ## logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
 
         self.populate_entries_window()
+        self.record_toolbar_height()
         self.UpdatePanelSize()
 
         # Window event handlers
@@ -110,9 +112,11 @@ class AuthFrame( wx.Frame ):
 
 
     def OnSize( self, event ):
-        # Need this to keep the size of the window in entries updated as it's resized
-        new_size = self.WindowToClientSize( event.GetSize() )
-        self.visible_entries = self.CalcItemsShown( new_size.GetHeight() )
+        ## logging.debug( "OnSize event" )
+        if ( not self.show_toolbar ) or ( self.toolbar_height > 0 ):
+            # Need this to keep the size of the window in entries updated as it's resized
+            new_size = self.WindowToClientSize( event.GetSize() )
+            self.visible_entries = self.CalcItemsShown( new_size.GetHeight() )
         event.Skip()
 
 
@@ -189,7 +193,8 @@ class AuthFrame( wx.Frame ):
         ## logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
         ##                self.GetMinClientSize() )
         self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
-        logging.debug( "AF visible items %d", self.visible_entries )
+        ## logging.debug( "AF visible items %d", self.visible_entries )
+        logging.info( "Items visible: %d", self.visible_entries )
         Configuration.SetNumberOfItemsShown( self.visible_entries )
         Configuration.SetShowTimers( self.show_timers )
         Configuration.SetShowAllCodes( self.show_all_codes )
@@ -453,6 +458,7 @@ class AuthFrame( wx.Frame ):
         mi_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_MENU )
         mi.SetBitmap( mi_icon )
         menu.AppendItem( mi )
+        menu.Enable( self.MENU_COPY_CODE, False )
         menu.AppendSeparator()
         menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected entry" )
         menu.Append( wx.ID_DELETE, "&Delete", "Delete the selected entry" )
@@ -472,14 +478,17 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_TIMERS = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TIMERS, self.show_timers )
+        menu.Enable( self.MENU_SHOW_TIMERS, False )
         mi = wx.MenuItem( menu, wx.ID_ANY, "All Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
+        menu.Enable( self.MENU_SHOW_ALL_CODES, False )
         mb.Append( menu, "&View" )
         
         menu = wx.Menu()
         menu.Append( wx.ID_HELP, "&Help", "Help index" )
+        menu.Enable( wx.ID_HELP, False )
         menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
         mb.Append( menu, "Help" )
         
@@ -497,6 +506,7 @@ class AuthFrame( wx.Frame ):
         tool = toolbar.AddTool( self.MENU_COPY_CODE, tool_icon,
                                 shortHelpString = "Copy selected code to clipboard" )
         self.tool_ids['COPYCODE'] = tool.GetId()
+        toolbar.EnableTool( self.tool_ids['COPYCODE'], False )
 
         toolbar.AddSeparator()
 
@@ -529,7 +539,8 @@ class AuthFrame( wx.Frame ):
     def record_toolbar_height( self ):
         button_height = self.toolbar.GetToolSize().GetHeight()
         toolbar_height = self.toolbar.GetSize().GetHeight()
-        if toolbar_height > button_height:
+        if ( toolbar_height > button_height ) and ( self.toolbar_height < toolbar_height ):
+            logging.debug( "Toolbar height set to %d", toolbar_height )
             self.toolbar_height = toolbar_height
         return self.toolbar_height
 
@@ -578,11 +589,12 @@ class AuthFrame( wx.Frame ):
 
 
     def CalcItemsShown( self, height ):
-        ## logging.debug( "AF CIS wcs = %s, entry height = %d", height, self.entry_height )
+        ## logging.debug( "AF CIS wcs = %s, entry height = %d, toolbar = %d", height, self.entry_height,
+        ##                self.toolbar_height )
         # Adjust for toolbar space if needed
         h = height
-        if self.show_toolbar:
-            h -= self.toolbar_height
+        # if self.show_toolbar:
+        #     h -= self.toolbar_height
         # Doing integer math, so we can't cancel terms and add 1/2
         n = h + ( self.entry_height + 2 * self.entry_border ) / 2
         d = self.entry_height + 2 * self.entry_border
