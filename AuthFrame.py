@@ -247,7 +247,6 @@ class AuthFrame( wx.Frame ):
                 self.UpdatePanelSize()
             else:
                 logging.debug( "AF NE duplicate item" )
-                wx.Bell()
                 dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
                                         style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
                 dlg.SetExtendedMessage( "Provider: %s\nAccount: %s" % ( provider, account ) )
@@ -260,7 +259,6 @@ class AuthFrame( wx.Frame ):
             self.update_entry_dialog = UpdateEntryDialog( self, wx.ID_ANY, "Edit Entry" )
         entry = None
         if self.selected_panel == None:
-            wx.Bell()
             dlg = wx.MessageDialog( self, "No entry selected.", "Error",
                                     style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
             dlg.SetExtendedMessage( "You must select an entry to edit." )
@@ -287,7 +285,6 @@ class AuthFrame( wx.Frame ):
                     logging.debug( "AF UE updating entry" )
                     status = self.auth_store.Update( entry.GetGroup(), provider, account, secret )
                     if status < 0:
-                        wx.Bell()
                         dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
                                                 style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
                         dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
@@ -334,8 +331,20 @@ class AuthFrame( wx.Frame ):
             
 
     def OnMenuCopyCode( self, event ):
-        logging.warning( "AF tool CopyCode command" )
-        # TODO Copy code from selected panel to clipboard
+        logging.debug( "AF tool CopyCode command" )
+        if self.selected_panel != None:
+            if not self.selected_panel.CopyCodeToClipboard():
+                dlg = wx.MessageDialog( self, "Problem copying code to clipboard.", "Error",
+                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                dlg.SetExtendedMessage( "An error was encountered copying the code to the clipboard." )
+                dlg.ShowModal()
+                dlg.Destroy()
+        else:
+            dlg = wx.MessageDialog( self, "No entry selected.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.SetExtendedMessage( "You must select an entry to copy the code from." )
+            dlg.ShowModal()
+            dlg.Destroy()
 
 
     def OnMenuMoveUp( self, event ):
@@ -458,7 +467,6 @@ class AuthFrame( wx.Frame ):
         mi_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_MENU )
         mi.SetBitmap( mi_icon )
         menu.AppendItem( mi )
-        menu.Enable( self.MENU_COPY_CODE, False )
         menu.AppendSeparator()
         menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected entry" )
         menu.Append( wx.ID_DELETE, "&Delete", "Delete the selected entry" )
@@ -506,7 +514,6 @@ class AuthFrame( wx.Frame ):
         tool = toolbar.AddTool( self.MENU_COPY_CODE, tool_icon,
                                 shortHelpString = "Copy selected code to clipboard" )
         self.tool_ids['COPYCODE'] = tool.GetId()
-        toolbar.EnableTool( self.tool_ids['COPYCODE'], False )
 
         toolbar.AddSeparator()
 

@@ -140,7 +140,10 @@ class AuthEntryPanel( wx.Panel ):
         gp = self.GetGrandParent()
         if gp != None:
             gp.SelectPanel( self, True )
-            # TODO Trigger an edit command on ourselves
+            # Copy current code to clipboard
+            logging.info( "%s copying code to the clipboard.", self.GetName() )
+            if not self.CopyCodeToClipboard():
+                wx.Bell()
         event.Skip()
 
     def OnMouseEnter( self, event ):
@@ -279,3 +282,17 @@ class AuthEntryPanel( wx.Panel ):
         for item in [ self, self.provider_text, self.account_text, self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( wx.NullColour )
             item.SetForegroundColour( wx.NullColour )
+
+    def CopyCodeToClipboard( self ):
+        sts = True
+        if wx.TheClipboard.Open():
+            if  wx.TheClipboard.SetData( wx.TextDataObject( self.code ) ):
+                wx.TheClipboard.Flush()
+            else:
+                logging.error( "%s encountered an error copying the code to the clipboard.", self.GetName() )
+                sts = False
+            wx.TheClipboard.Close()
+        else:
+            logging.error( "%s cannot open clipboard.", self.GetName() )
+            sts = False
+        return sts

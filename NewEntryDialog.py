@@ -84,7 +84,8 @@ class NewEntryDialog( wx.Dialog ):
         vbox.AddStretchSpacer( 1 )
 
         btnsizer = self.CreateButtonSizer( wx.OK | wx.CANCEL )
-        vbox.Add( btnsizer, 0, wx.ALL, 8 )
+        if btnsizer != None:
+            vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
         self.GetSizer().Fit( self )
 
