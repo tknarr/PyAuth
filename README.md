@@ -21,6 +21,11 @@ this program. If not, see
 * wxPython 3.x, which requires matching wxWidgets 3.x
 * otpauth package, [https://pypi.python.org/pypi/otpauth/](https://pypi.python.org/pypi/otpauth/)
 
+## Developers
+
+See [the Branches page](https://github.com/tknarr/PyAuth/wiki/Branches) for
+which branches are used for what and which ones you should pull from.
+
 ## Status
 
 Everything in the v0.0.x series is a development version. v0.0.1 includes the
