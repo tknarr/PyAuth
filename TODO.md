@@ -1,16 +1,5 @@
 # PyAuth to-do list
 
-* Basic functionality:
-  - Toolbar for main frame
-  - Select entry via keyboard
-  - Show/hide timers
-  - Show/hide all codes
-  - Click to show/hide code when all codes hidden
-  - Help system
-  - Menu accelerators
-  - Add icon to About dialog and for system use
-  - Minimize to the systray
-  - Start minimized, including starting minimized to the systray
 * Enhancements:
   - Pegging the window position relative to a corner of the screen so
     it maintains that relative position as the screen size changes. That'd
