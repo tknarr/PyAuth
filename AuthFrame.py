@@ -450,7 +450,7 @@ class AuthFrame( wx.Frame ):
         mb = wx.MenuBar()
 
         menu = wx.Menu()
-        menu.Append( wx.ID_NEW, "&New", "Create a new entry" )
+        menu.Append( wx.ID_NEW, "&New entry", "Create a new account entry" )
         mi = wx.MenuItem( menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
         self.MENU_REINDEX = mi.GetId()
         menu.AppendItem( mi )
@@ -462,7 +462,7 @@ class AuthFrame( wx.Frame ):
         mb.Append( menu, "&File" )
         
         menu = wx.Menu()
-        mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code", "Copy current code to clipboard" )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code", "Copy the current code to clipboard" )
         self.MENU_COPY_CODE = mi.GetId()
         mi_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_MENU )
         mi.SetBitmap( mi_icon )
@@ -512,7 +512,7 @@ class AuthFrame( wx.Frame ):
         
         tool_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_TOOLBAR, self.toolbar_icon_size )
         tool = toolbar.AddTool( self.MENU_COPY_CODE, tool_icon,
-                                shortHelpString = "Copy selected code to clipboard" )
+                                shortHelpString = "Copy the selected code to clipboard" )
         self.tool_ids['COPYCODE'] = tool.GetId()
 
         toolbar.AddSeparator()
