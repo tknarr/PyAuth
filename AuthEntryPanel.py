@@ -20,6 +20,7 @@ class AuthEntryPanel( wx.Panel ):
         self.selected = False
         self.totp_cycle = 0
         self.totp_period = 30
+        self.code_masked = False
 
         self.provider_text = None
         self.account_text = None
@@ -55,6 +56,7 @@ class AuthEntryPanel( wx.Panel ):
                                         name = 'code_text' )
         self.code_text.Wrap( -1 )
         self.code_text.SetFont( self.code_font )
+        self.code_text.SetLabelText( 'XXXXXX' )
         sizer.Add( self.code_text, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER | wx.FIXED_MINSIZE, 12 )
 
         # The countdown gauge has a 30-second range, 0-29
@@ -66,12 +68,12 @@ class AuthEntryPanel( wx.Panel ):
 
         # Initialize and size controls
 
+        self.provider_text.Fit()
+        self.account_text.Fit()
         self.provider_text.SetMinSize( self.provider_text.GetSize() )
         self.account_text.SetMinSize( self.account_text.GetSize() )
-        
-        te = self.code_text.GetTextExtent( '000000' )
-        self.code_text.SetClientSize( te )
-        self.code_text.SetMinClientSize( te )
+        self.code_text.Fit()
+        self.code_text.SetMinClientSize( self.code_text.GetClientSize() )
 
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
 
@@ -166,6 +168,10 @@ class AuthEntryPanel( wx.Panel ):
         if self.entry != None:
             self.entry.SetSortIndex( index )
 
+    def MaskCode( self, state ):
+        self.code_masked = state
+        self.UpdateContents()
+
 
     def GetPanelSize( self ):
         return self.GetSize()
@@ -207,41 +213,34 @@ class AuthEntryPanel( wx.Panel ):
     def UpdateContents( self ):
         if self.entry != None:
             ## logging.debug( "AEP UC updating %s", self.GetName() )
-
-            self.code_text.SetLabelText( self.code )
-
-            te_l = self.provider_text.GetTextExtent( self.entry.GetProvider() )
-            te_a = self.account_text.GetTextExtent( self.entry.GetAccount() )
-            self.label_width = te_l[0]
-            if te_a[0] > self.label_width:
-                self.label_width = te_a[0]
-                te_l = ( te_a[0], te_l[1] )
-
-            self.provider_text.SetLabelText( self.entry.GetProvider() )
-            self.provider_text.SetClientSize( te_l )
-            self.provider_text.SetMinClientSize( te_l )
-            self.account_text.SetLabelText( self.entry.GetAccount() )
-            self.account_text.SetClientSize( te_l )
-            self.account_text.SetMinClientSize( te_l )
-
+            if self.code_masked:
+                self.code_text.SetLabelText( 'XXXXXX' )
+            else:
+                self.code_text.SetLabelText( self.code )
         else:
             ## logging.debug( "AEP UC updating dummy entry panel" )
-
             self.code_text.SetLabelText( 'XXXXXX' )
+        
+        self.provider_text.Fit()
+        self.account_text.Fit()
+        sp = self.provider_text.GetClientSize()
+        sa = self.account_text.GetClientSize()
 
-            te_l = self.provider_text.GetTextExtent( "PROVIDER" )
-            te_a = self.account_text.GetTextExtent( "ACCOUNT" )
-            self.label_width = te_l[0]
-            if te_a[0] > self.label_width:
-                self.label_width = te_a[0]
-                te_l = ( te_a[0], te_l[1] )
+        w = sp.GetWidth()
+        if sa.GetWidth() > w:
+            w = sa.GetWidth()
+        if self.label_width > w:
+            w = self.label_width
+        sp.SetWidth( w )
+        sa.SetWidth( w )
+        self.label_width = w
 
-            self.provider_text.SetLabelText( "PROVIDER" )
-            self.provider_text.SetClientSize( te_l )
-            self.provider_text.SetMinClientSize( te_l )
-            self.account_text.SetLabelText( "ACCOUNT" )
-            self.account_text.SetClientSize( te_l )
-            self.account_text.SetMinClientSize( te_l )
+        self.provider_text.SetLabelText( self.entry.GetProvider() )
+        self.provider_text.SetClientSize( sp )
+        self.provider_text.SetMinClientSize( sp )
+        self.account_text.SetLabelText( self.entry.GetAccount() )
+        self.account_text.SetClientSize( sa )
+        self.account_text.SetMinClientSize( sa )
 
         self.GetSizer().Fit( self )
             
@@ -282,7 +281,10 @@ class AuthEntryPanel( wx.Panel ):
         # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
         if self.totp_cycle < last_cycle and self.entry != None:
             self.code = self.entry.GenerateNextCode()
-            self.code_text.SetLabelText( self.code )
+            if self.code_masked:
+                self.code_text.SetLabelText( 'XXXXXX' )
+            else:
+                self.code_text.SetLabelText( self.code )
         # Make our timer gauge count down to zero
         self.timer_gauge.SetValue( self.totp_period - self.totp_cycle - 1 )
 

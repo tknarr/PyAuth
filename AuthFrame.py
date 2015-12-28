@@ -242,6 +242,7 @@ class AuthFrame( wx.Frame ):
                     logging.debug( "AF NE replaced dummy panel with: %s", panel.GetName() )
                 else:
                     panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME, entry = entry )
+                    panel.MaskCode( not self.show_all_codes )
                     self.entry_panels.append( panel )
                     logging.debug( "AF NE add panel: %s", panel.GetName() )
                     self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
@@ -412,8 +413,10 @@ class AuthFrame( wx.Frame ):
         logging.warning( "Show Timers" )
 
     def OnMenuShowAllCodes( self, event ):
-        # TODO menu handler
-        logging.warning( "Show All Codes" )
+        logging.debug( "AF menu Show Codes command: %s", "Show" if event.IsChecked() else "Mask" )
+        self.show_all_codes = event.IsChecked()
+        for panel in self.entry_panels:
+            panel.MaskCode( not self.show_all_codes )
 
     def OnMenuShowToolbar( self, event ):
         logging.debug( "AF menu Show Toolbar command: %s", "Show" if event.IsChecked() else "Hide" )
@@ -493,7 +496,6 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
-        menu.Enable( self.MENU_SHOW_ALL_CODES, False )
         mb.Append( menu, "&View" )
         
         menu = wx.Menu()
@@ -571,6 +573,7 @@ class AuthFrame( wx.Frame ):
             ## logging.debug( "AF create panel: %d", entry.GetGroup() )
             panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
                                     entry = entry )
+            panel.MaskCode( not self.show_all_codes )
             self.entry_panels.append( panel )
         if len( self.entry_panels ) > 0:
             # Make sure they're sorted at the start
