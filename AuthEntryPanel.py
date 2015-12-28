@@ -21,6 +21,7 @@ class AuthEntryPanel( wx.Panel ):
         self.totp_cycle = 0
         self.totp_period = 30
         self.code_masked = False
+        self.timers_shown = True
 
         self.provider_text = None
         self.account_text = None
@@ -42,22 +43,27 @@ class AuthEntryPanel( wx.Panel ):
                                             name = 'provider_text' )
         self.provider_text.Wrap( -1 )
         self.provider_text.SetFont( self.provider_font )
-        label_sizer.Add( self.provider_text, 0, wx.EXPAND | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
+        label_sizer.Add( self.provider_text, 0,
+                         wx.EXPAND | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
         self.account_text = wx.StaticText( self, wx.ID_ANY, "ACCOUNT", style = wx.ALIGN_LEFT,
                                            name = 'account_text' )
         self.account_text.Wrap( -1 )
         self.account_text.SetFont( self.account_font )
-        label_sizer.Add( self.account_text, 0, wx.EXPAND | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
+        label_sizer.Add( self.account_text, 0,
+                         wx.EXPAND | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
-        sizer.Add( label_sizer, 1, wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
+        sizer.Add( label_sizer, 0, wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
         
-        self.code_text = wx.StaticText( self, wx.ID_ANY, '', style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
+        self.code_text = wx.StaticText( self, wx.ID_ANY, '',
+                                        style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
                                         name = 'code_text' )
         self.code_text.Wrap( -1 )
         self.code_text.SetFont( self.code_font )
         self.code_text.SetLabelText( 'XXXXXX' )
-        sizer.Add( self.code_text, 0, wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER | wx.FIXED_MINSIZE, 12 )
+        sizer.Add( self.code_text, 0,
+                   wx.LEFT | wx.RIGHT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
+                   12 )
 
         # The countdown gauge has a 30-second range, 0-29
         self.totp_period = entry.GetPeriod() if self.entry != None else 30
@@ -70,11 +76,10 @@ class AuthEntryPanel( wx.Panel ):
 
         self.provider_text.Fit()
         self.account_text.Fit()
+        self.code_text.Fit()
         self.provider_text.SetMinSize( self.provider_text.GetSize() )
         self.account_text.SetMinSize( self.account_text.GetSize() )
-        self.code_text.Fit()
-        self.code_text.SetMinClientSize( self.code_text.GetClientSize() )
-
+        self.code_text.SetMinSize( self.code_text.GetSize() )
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
 
         if entry != None:
@@ -93,7 +98,7 @@ class AuthEntryPanel( wx.Panel ):
         self.MouseBind( wx.EVT_LEFT_DOWN, self.OnLeftDown )
         self.MouseBind( wx.EVT_LEFT_UP, self.OnLeftUp )
 
-        ## logging.debug( "AEP init done" )
+        logging.debug( "AEP init done %s", self.GetName() )
 
 
     def MouseBind( self, event_type, func ):
@@ -111,7 +116,6 @@ class AuthEntryPanel( wx.Panel ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
         ## logging.debug( "AEP created" )
         self.ChangeContents()
-        self.Refresh()
 
     def OnTimerTick( self, event ):
         self.UpdateTimerGauge()
@@ -172,6 +176,14 @@ class AuthEntryPanel( wx.Panel ):
         self.code_masked = state
         self.UpdateContents()
 
+    def ShowTimer( self, state ):
+        self.show_timer = state
+        if self.show_timer:
+            self.timer_gauge.Show()
+        else:
+            self.timer_gauge.Hide()
+        self.GetSizer().Fit( self )
+        # AuthFrame knows to check panel sizes and resize after showing/hiding timers
 
     def GetPanelSize( self ):
         return self.GetSize()
@@ -180,7 +192,7 @@ class AuthEntryPanel( wx.Panel ):
         return self.label_width
 
 
-    def ResizePanel( self, panel_width, panel_height, label_width ):
+    def ResizePanel( self, label_width ):
         ## logging.debug( "AEP RP updating %s", self.GetName() )
         ## logging.debug( "AEP RP initial panel %s", str( self.GetSize() ) )
         ## logging.debug( "AEP RP initial label width %d", self.label_width )
@@ -191,20 +203,15 @@ class AuthEntryPanel( wx.Panel ):
             self.label_width = label_width
             s = self.provider_text.GetClientSize()
             s.SetWidth( self.label_width )
-            self.provider_text.SetClientSize( s )
             self.provider_text.SetMinClientSize( s )
+            self.provider_text.SetClientSize( s )
             s = self.account_text.GetClientSize()
             s.SetWidth( self.label_width )
-            self.account_text.SetClientSize( s )
             self.account_text.SetMinClientSize( s )
+            self.account_text.SetClientSize( s )
             changed = True
 
-        if panel_height != self.GetSize().GetHeight() or panel_width != self.GetSize().GetWidth():
-            ## logging.debug( "AEP RP panel size: %dx%d", panel_width, panel_height )
-            s = wx.Size( panel_width, panel_height )
-            self.SetSize( s )
-            self.SetMinSize( s )
-            changed = True
+        self.GetSizer().Fit( self )
 
         ## logging.debug( "AEP RP label width: %d", self.label_width )
         ## logging.debug( "AEP RP panel size: %s", str( self.GetSize() ) )
@@ -236,11 +243,11 @@ class AuthEntryPanel( wx.Panel ):
         self.label_width = w
 
         self.provider_text.SetLabelText( self.entry.GetProvider() )
-        self.provider_text.SetClientSize( sp )
         self.provider_text.SetMinClientSize( sp )
+        self.provider_text.SetClientSize( sp )
         self.account_text.SetLabelText( self.entry.GetAccount() )
-        self.account_text.SetClientSize( sa )
         self.account_text.SetMinClientSize( sa )
+        self.account_text.SetClientSize( sa )
 
         self.GetSizer().Fit( self )
             

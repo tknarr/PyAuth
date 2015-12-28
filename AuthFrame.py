@@ -108,7 +108,6 @@ class AuthFrame( wx.Frame ):
         logging.debug( "AF created" )
         self.iconized = self.IsIconized()
         self.timer.Start( 1000 )
-        self.Refresh()
 
 
     def OnSize( self, event ):
@@ -230,7 +229,6 @@ class AuthFrame( wx.Frame ):
                 original_label = provider + ':' + account
             logging.debug( "AF NE provider %s", provider )
             logging.debug( "AF NE account  %s", account )
-            logging.debug( "AF NE secret   %s", secret )
             logging.debug( "AF NE orig lbl %s", original_label )
             entry = self.auth_store.Add( provider, account,secret, original_label )
             if entry != None:
@@ -243,6 +241,7 @@ class AuthFrame( wx.Frame ):
                 else:
                     panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME, entry = entry )
                     panel.MaskCode( not self.show_all_codes )
+                    panel.ShowTimer( self.show_timers )
                     self.entry_panels.append( panel )
                     logging.debug( "AF NE add panel: %s", panel.GetName() )
                     self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
@@ -409,8 +408,13 @@ class AuthFrame( wx.Frame ):
                 wx.Bell()
 
     def OnMenuShowTimers( self, event ):
-        # TODO menu handler
-        logging.warning( "Show Timers" )
+        logging.debug( "AF menu Show Timers command: %s", "Show" if event.IsChecked() else "Hide" )
+        self.show_timers = event.IsChecked()
+        for panel in self.entry_panels:
+            panel.ShowTimer( self.show_timers )
+        # Panel size will have changed, so do this once after we've changed all
+        # panels instead of having each panel notify us individually.
+        self.UpdatePanelSize()
 
     def OnMenuShowAllCodes( self, event ):
         logging.debug( "AF menu Show Codes command: %s", "Show" if event.IsChecked() else "Mask" )
@@ -422,7 +426,6 @@ class AuthFrame( wx.Frame ):
         logging.debug( "AF menu Show Toolbar command: %s", "Show" if event.IsChecked() else "Hide" )
         self.set_toolbar_state( event.IsChecked() )
         self.AdjustWindowSizes()
-        self.Refresh()
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
@@ -491,7 +494,6 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_TIMERS = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TIMERS, self.show_timers )
-        menu.Enable( self.MENU_SHOW_TIMERS, False )
         mi = wx.MenuItem( menu, wx.ID_ANY, "All Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
@@ -574,6 +576,7 @@ class AuthFrame( wx.Frame ):
             panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
                                     entry = entry )
             panel.MaskCode( not self.show_all_codes )
+            panel.ShowTimer( self.show_timers )
             self.entry_panels.append( panel )
         if len( self.entry_panels ) > 0:
             # Make sure they're sorted at the start
@@ -658,10 +661,8 @@ class AuthFrame( wx.Frame ):
         ## logging.debug( "AF AWS EW client size %s min %s", entries_client_size, entries_min_client_size )
         
         # Set window sizes and minimum sizes for the entries window and the frame
-        self.entries_window.SetSize( entries_size )
-        self.entries_window.SetMinSize( entries_min_size )
-        self.SetSize( frame_size )
         self.SetMinSize( frame_min_size )
+        self.SetSize( frame_size )
 
 
     def AdjustPanelSizes( self ):
@@ -684,13 +685,15 @@ class AuthFrame( wx.Frame ):
         ## logging.debug( "AF APS entry size %dx%d label width %d", self.entry_width, self.entry_height,
         ##                self.label_width )
         for entry in self.entry_panels:
-            entry.ResizePanel( self.entry_width, self.entry_height, self.label_width )
+            entry.ResizePanel( self.label_width )
+            ## logging.debug( "AF APS %s: panel size now %s", entry.GetName(), entry.GetSize() )
+        self.entries_window.GetSizer().FitInside( self.entries_window )
                 
 
     def UpdatePanelSize( self ):
+        ## logging.debug( "AF UPS" )
         self.AdjustPanelSizes()
         self.AdjustWindowSizes()
-        self.Refresh()
         self.SendSizeEvent()
 
 
