@@ -2,7 +2,6 @@
 
 import os
 import errno
-import random
 import logging
 import wx
 from otpauth import OtpAuth
@@ -55,6 +54,7 @@ class AuthenticationStore:
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
+        logging.info( "%d entries in authentication database", len( self.entry_list ) )
         logging.debug( "AS next group %d", self.next_group )
         logging.debug( "AS next index %d", self.next_index )
 
