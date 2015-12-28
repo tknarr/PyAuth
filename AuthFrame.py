@@ -150,8 +150,10 @@ class AuthFrame( wx.Frame ):
     def OnIconize( self, event ):
         was_iconized = self.iconized
         self.iconized = event.IsIconized()
-        ## if was_iconized and not self.iconized:
-        # TODO Generate an immediate fake timer tick to update the countdown
+        if was_iconized and not self.iconized:
+            # Broadcast the event to all entry panels for processing
+            for panel in self.entry_panels:
+                panel.UpdateTimerGauge()
         event.Skip()
 
 

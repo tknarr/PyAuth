@@ -112,16 +112,7 @@ class AuthEntryPanel( wx.Panel ):
         self.Refresh()
 
     def OnTimerTick( self, event ):
-        current_time = wx.GetUTCTime()
-        ## logging.debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
-        last_cycle = self.totp_cycle
-        self.totp_cycle = current_time % self.totp_period
-        # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
-        if self.totp_cycle < last_cycle and self.entry != None:
-            self.code = self.entry.GenerateNextCode()
-            self.code_text.SetLabelText( self.code )
-        # Make our timer gauge count down to zero
-        self.timer_gauge.SetValue( self.totp_period - self.totp_cycle - 1 )
+        self.UpdateTimerGauge()
 
     def OnLeftDown( self, event ):
         self.left_down = True
@@ -282,6 +273,18 @@ class AuthEntryPanel( wx.Panel ):
         for item in [ self, self.provider_text, self.account_text, self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( wx.NullColour )
             item.SetForegroundColour( wx.NullColour )
+
+    def UpdateTimerGauge( self ):
+        current_time = wx.GetUTCTime()
+        ## logging.debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
+        last_cycle = self.totp_cycle
+        self.totp_cycle = current_time % self.totp_period
+        # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
+        if self.totp_cycle < last_cycle and self.entry != None:
+            self.code = self.entry.GenerateNextCode()
+            self.code_text.SetLabelText( self.code )
+        # Make our timer gauge count down to zero
+        self.timer_gauge.SetValue( self.totp_period - self.totp_cycle - 1 )
 
     def CopyCodeToClipboard( self ):
         sts = True
