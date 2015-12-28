@@ -43,17 +43,17 @@ class AuthEntryPanel( wx.Panel ):
                                             name = 'provider_text' )
         self.provider_text.Wrap( -1 )
         self.provider_text.SetFont( self.provider_font )
-        label_sizer.Add( self.provider_text, 0,
+        label_sizer.Add( self.provider_text, 1,
                          wx.EXPAND | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
         self.account_text = wx.StaticText( self, wx.ID_ANY, "ACCOUNT", style = wx.ALIGN_LEFT,
                                            name = 'account_text' )
         self.account_text.Wrap( -1 )
         self.account_text.SetFont( self.account_font )
-        label_sizer.Add( self.account_text, 0,
+        label_sizer.Add( self.account_text, 1,
                          wx.EXPAND | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
-        sizer.Add( label_sizer, 0, wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
+        sizer.Add( label_sizer, 1, wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
         
         self.code_text = wx.StaticText( self, wx.ID_ANY, '',
                                         style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
@@ -61,6 +61,9 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text.Wrap( -1 )
         self.code_text.SetFont( self.code_font )
         self.code_text.SetLabelText( 'XXXXXX' )
+        self.code_text.Fit()
+        self.code_text.SetInitialSize( self.code_text.GetSize() )
+        self.code_text.SetMinSize( self.code_text.GetSize() )
         sizer.Add( self.code_text, 0,
                    wx.LEFT | wx.RIGHT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
                    12 )
@@ -73,14 +76,6 @@ class AuthEntryPanel( wx.Panel ):
         sizer.Add( self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2 )
 
         # Initialize and size controls
-
-        self.provider_text.Fit()
-        self.account_text.Fit()
-        self.code_text.Fit()
-        self.provider_text.SetMinSize( self.provider_text.GetSize() )
-        self.account_text.SetMinSize( self.account_text.GetSize() )
-        self.code_text.SetMinSize( self.code_text.GetSize() )
-        self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
 
         if entry != None:
             self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
@@ -192,31 +187,6 @@ class AuthEntryPanel( wx.Panel ):
         return self.label_width
 
 
-    def ResizePanel( self, label_width ):
-        ## logging.debug( "AEP RP updating %s", self.GetName() )
-        ## logging.debug( "AEP RP initial panel %s", str( self.GetSize() ) )
-        ## logging.debug( "AEP RP initial label width %d", self.label_width )
-        changed = False
-
-        if label_width != self.label_width:
-            ## logging.debug( "AEP RP label width: %d", label_width )
-            self.label_width = label_width
-            s = self.provider_text.GetClientSize()
-            s.SetWidth( self.label_width )
-            self.provider_text.SetMinClientSize( s )
-            self.provider_text.SetClientSize( s )
-            s = self.account_text.GetClientSize()
-            s.SetWidth( self.label_width )
-            self.account_text.SetMinClientSize( s )
-            self.account_text.SetClientSize( s )
-            changed = True
-
-        self.GetSizer().Fit( self )
-
-        ## logging.debug( "AEP RP label width: %d", self.label_width )
-        ## logging.debug( "AEP RP panel size: %s", str( self.GetSize() ) )
-
-
     def UpdateContents( self ):
         if self.entry != None:
             ## logging.debug( "AEP UC updating %s", self.GetName() )
@@ -228,26 +198,8 @@ class AuthEntryPanel( wx.Panel ):
             ## logging.debug( "AEP UC updating dummy entry panel" )
             self.code_text.SetLabelText( 'XXXXXX' )
         
-        self.provider_text.Fit()
-        self.account_text.Fit()
-        sp = self.provider_text.GetClientSize()
-        sa = self.account_text.GetClientSize()
-
-        w = sp.GetWidth()
-        if sa.GetWidth() > w:
-            w = sa.GetWidth()
-        if self.label_width > w:
-            w = self.label_width
-        sp.SetWidth( w )
-        sa.SetWidth( w )
-        self.label_width = w
-
         self.provider_text.SetLabelText( self.entry.GetProvider() )
-        self.provider_text.SetMinClientSize( sp )
-        self.provider_text.SetClientSize( sp )
         self.account_text.SetLabelText( self.entry.GetAccount() )
-        self.account_text.SetMinClientSize( sa )
-        self.account_text.SetClientSize( sa )
 
         self.GetSizer().Fit( self )
             

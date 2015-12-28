@@ -23,7 +23,6 @@ class AuthFrame( wx.Frame ):
         logging.info( "Visible entries: %d", self.visible_entries )
         self.entry_height = 0    # Height of tallest panel
         self.entry_width = 0     # Width of widest panel
-        self.label_width = 0     # Width of widest label
 
         # Internal values
         self.entry_border = 2
@@ -590,7 +589,7 @@ class AuthFrame( wx.Frame ):
         for panel in self.entry_panels:
             ## logging.debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
             ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
-            self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
+            self.entries_window.GetSizer().Add( panel, 0, wx.EXPAND | wx.ALL | wx.ALIGN_LEFT, self.entry_border )
 
 
     def depopulate_entries_window( self ):
@@ -667,27 +666,18 @@ class AuthFrame( wx.Frame ):
 
     def AdjustPanelSizes( self ):
         ## logging.debug( "AF APS" )
+        self.entries_window.GetSizer().FitInside( self.entries_window )
         self.entry_height = 0
         self.entry_width = 0
-        self.label_width = 0
         for entry in self.entry_panels:
             # Update max entry panel sizes
             entry_size = entry.GetPanelSize()
-            label_width = entry.GetLabelWidth()
-            ## logging.debug( "AF APS %s: panel size %s label width %d", entry.GetName(),
-            ##                str( entry_size ), label_width )
+            ## logging.debug( "AF APS %s: panel size %s", entry.GetName(), str( entry_size ) )
             if entry_size.GetHeight() > self.entry_height:
                 self.entry_height = entry_size.GetHeight()
             if entry_size.GetWidth() > self.entry_width:
                 self.entry_width = entry_size.GetWidth()
-            if label_width > self.label_width:
-                self.label_width = label_width
-        ## logging.debug( "AF APS entry size %dx%d label width %d", self.entry_width, self.entry_height,
-        ##                self.label_width )
-        for entry in self.entry_panels:
-            entry.ResizePanel( self.label_width )
-            ## logging.debug( "AF APS %s: panel size now %s", entry.GetName(), entry.GetSize() )
-        self.entries_window.GetSizer().FitInside( self.entries_window )
+        ## logging.debug( "AF APS entry size %dx%d", self.entry_width, self.entry_height )
                 
 
     def UpdatePanelSize( self ):
