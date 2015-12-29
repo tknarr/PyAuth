@@ -9,7 +9,6 @@ class AuthEntryPanel( wx.Panel ):
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, entry = None ):
         wx.Panel.__init__ ( self, parent, id, pos, size, style, name )
-        ## logging.debug( "AEP init" )
 
         self.entry = entry
         self.sort_index = 0
@@ -28,6 +27,12 @@ class AuthEntryPanel( wx.Panel ):
         self.account_text = None
         self.code_text = None
         self.timer_gauge = None
+
+        if entry != None:
+            self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
+        else:
+            self.SetName( 'entry_panel_X' )
+        ## logging.debug( "AEP init %s", self.GetName() )
 
         # Create panel child controls
 
@@ -83,10 +88,7 @@ class AuthEntryPanel( wx.Panel ):
         self.UpdateContents()
 
         if entry != None:
-            self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
             self.code = self.entry.GenerateNextCode()
-        else:
-            self.SetName( 'entry_panel_X' )
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
@@ -96,7 +98,7 @@ class AuthEntryPanel( wx.Panel ):
         self.MouseBind( wx.EVT_LEFT_DOWN, self.OnLeftDown )
         self.MouseBind( wx.EVT_LEFT_UP, self.OnLeftUp )
 
-        logging.debug( "AEP init done %s", self.GetName() )
+        ## logging.debug( "AEP init done %s", self.GetName() )
 
 
     def MouseBind( self, event_type, func ):
@@ -113,7 +115,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
-        logging.debug( "AEP created" )
+        ## logging.debug( "AEP created" )
         self.ChangeContents()
 
     def OnTimerTick( self, event ):

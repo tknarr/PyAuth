@@ -4,7 +4,7 @@ import os
 import errno
 import logging
 import wx
-from otpauth import OtpAuth
+import pyotp
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -155,6 +155,9 @@ class AuthenticationStore:
         if account != None:
             logging.debug( "AS new account %s", account )
             entry.SetAccount( account )
+        if secret != None:
+            logging.debug( "AS new secret" )
+            entry.SetSecret( secret )
         if original_label != None:
             logging.debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
@@ -175,7 +178,8 @@ class AuthenticationEntry:
         else:
             self.original_label = provider + ':' + account
 
-        self.auth = OtpAuth( self.secret )
+        self.auth = pyotp.TOTP( self.secret )
+        self.otp_problem = False
 
 
     def __cmp__( self, other ):
@@ -229,12 +233,21 @@ class AuthenticationEntry:
     def SetSecret( self, secret ):
         self.secret = secret
         # Need a new auth object too
-        self.auth = OtpAuth( self.secret )
+        self.auth = pyotp.TOTP( self.secret )
+        self.otp_problem = False
 
 
     def GetPeriod( self ):
         return 30 # Google Authenticator uses a 30-second period
 
     def GenerateNextCode( self ):
-        c = self.auth.totp( 30 )
-        return "{:0>6d}".format( c )
+        if self.otp_problem:
+            c = '??????'
+        else:
+            try:
+                c = self.auth.now()
+            except StandardError as e:
+                c = '??????'
+                self.otp_problem = True
+                logging.error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
+        return c

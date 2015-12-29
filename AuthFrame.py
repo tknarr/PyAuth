@@ -102,7 +102,7 @@ class AuthFrame( wx.Frame ):
 
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
-        logging.debug( "AF created" )
+        ## logging.debug( "AF created" )
         self.iconized = self.IsIconized()
         self.timer.Start( 1000 )
 
