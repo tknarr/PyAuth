@@ -623,10 +623,7 @@ class AuthFrame( wx.Frame ):
         # The size calculations are broken out and made explicit to make sure everything's
         # calculated correctly. We end up not using the client sizes, but we need them
         # as intermediate steps to make sure the frame has a minimum size large enough
-        # for it's client area to hold the entries window. Setting the client sizes for
-        # the entries window and frame ends up causing glitches where the minimum height
-        # can be less than 1 entry panel and the minimum width is a few pixels short of
-        # accounting for the scrollbar.
+        # for it's client area to hold the entries window.
         
         # Calculate size needed in client area of scrolling entries window
         entries_client_size = wx.Size( column_width, column_height )
@@ -639,13 +636,21 @@ class AuthFrame( wx.Frame ):
         frame_size = self.ClientToWindowSize( entries_size )
         frame_min_size = self.ClientToWindowSize( entries_min_size )
         
-        ## logging.debug( "AF AWS FR window size %s min %s", frame_size, frame_min_size )
+        logging.debug( "AF AWS FR window size %s min %s", frame_size, frame_min_size )
         ## logging.debug( "AF AWS EW window size %s min %s", entries_size, entries_min_size )
         ## logging.debug( "AF AWS EW client size %s min %s", entries_client_size, entries_min_client_size )
+
+        # Clear the hints so we can resize the frame freely
+        self.SetSizeHints( -1, -1 )
         
         # Set window sizes and minimum sizes for the entries window and the frame
         self.SetMinSize( frame_min_size )
         self.SetSize( frame_size )
+
+        # Set hints so we can't be resized wider and resize in entry increments
+        self.SetSizeHints( frame_min_size.GetWidth(), frame_min_size.GetHeight(),
+                           maxW = frame_size.GetWidth(),
+                           incW = column_width, incH = min_height )
 
 
     def AdjustPanelSizes( self ):
