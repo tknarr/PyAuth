@@ -19,7 +19,7 @@ this program. If not, see
 ## Prerequisites
 
 * wxPython 3.x, which requires matching wxWidgets 3.x
-* otpauth package, [https://pypi.python.org/pypi/otpauth/](https://pypi.python.org/pypi/otpauth/)
+* pyotp 2.0.1 or higher, [https://pypi.python.org/pypi/pyotp](https://pypi.python.org/pypi/pyotp)
 
 ## Developers
 
