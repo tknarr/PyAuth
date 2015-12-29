@@ -510,7 +510,6 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_TOOLBAR = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TOOLBAR, self.show_toolbar )
-        ## menu.Enable( self.MENU_SHOW_TOOLBAR, False ) # TODO Reenable this when sizing issues resolved
         menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Timers", "Show timer bars", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TIMERS = mi.GetId()
