@@ -46,6 +46,7 @@ class AuthEntryPanel( wx.Panel ):
                                             name = 'provider_text' )
         self.provider_text.Wrap( -1 )
         self.provider_text.SetFont( self.provider_font )
+        self.provider_text.Fit()
         label_sizer.Add( self.provider_text, 1,
                          wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
@@ -53,17 +54,17 @@ class AuthEntryPanel( wx.Panel ):
                                            name = 'account_text' )
         self.account_text.Wrap( -1 )
         self.account_text.SetFont( self.account_font )
+        self.account_text.Fit()
         label_sizer.Add( self.account_text, 1,
                          wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
         sizer.Add( self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
 
-        self.code_text = wx.StaticText( self, wx.ID_ANY, '',
+        self.code_text = wx.StaticText( self, wx.ID_ANY, 'XXXXXX',
                                         style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
                                         name = 'code_text' )
         self.code_text.Wrap( -1 )
         self.code_text.SetFont( self.code_font )
-        self.code_text.SetLabelText( 'XXXXXX' )
         self.code_text.Fit()
         self.code_text.SetInitialSize( self.code_text.GetSize() )
         self.code_text.SetMinSize( self.code_text.GetSize() )
@@ -78,14 +79,13 @@ class AuthEntryPanel( wx.Panel ):
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
         sizer.Add( self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2 )
 
+        self.UpdateContents()
+
         if entry != None:
             self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
             self.code = self.entry.GenerateNextCode()
         else:
             self.SetName( 'entry_panel_X' )
-            self.code = 'XXXXXX'
-
-        self.UpdateContents()
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
@@ -213,14 +213,18 @@ class AuthEntryPanel( wx.Panel ):
                 self.code_text.SetLabelText( 'XXXXXX' )
             else:
                 self.code_text.SetLabelText( self.code )
-        else:
-            ## logging.debug( "AEP UC updating dummy entry panel" )
-            self.code_text.SetLabelText( 'XXXXXX' )
-        
-        self.provider_text.SetLabelText( self.entry.GetProvider() )
-        self.provider_text.Fit()
-        self.account_text.SetLabelText( self.entry.GetAccount() )
-        self.account_text.Fit()
+
+            self.provider_text.SetLabelText( self.entry.GetProvider() )
+            self.provider_text.Fit()
+            self.account_text.SetLabelText( self.entry.GetAccount() )
+            self.account_text.Fit()
+
+        ## else:
+        ##     ## logging.debug( "AEP UC updating dummy entry panel" )
+        ##     self.code_text.SetLabelText( 'XXXXXX' )
+
+        if self.label_width == 0:
+            self.label_width = self.GetLabelWidth()
 
         s = self.label_panel.GetClientSize()
         s.SetWidth( self.label_width )
