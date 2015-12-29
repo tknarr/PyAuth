@@ -172,7 +172,7 @@ class AuthenticationEntry:
         self.sort_index = index
         self.provider = provider
         self.account = account
-        self.secret = secret
+        self.SetSecret( secret )
         if original_label != None:
             self.original_label = original_label
         else:
@@ -232,6 +232,11 @@ class AuthenticationEntry:
     
     def SetSecret( self, secret ):
         self.secret = secret
+        # We shouldn't need to do this, but pyotp has a problem when the
+        # secret needs padding so we'll pad it ourselves which works right.
+        m = len( secret ) % 8
+        if m != 0:
+            self.secret += '=' * ( 8 - m )
         # Need a new auth object too
         self.auth = pyotp.TOTP( self.secret )
         self.otp_problem = False
