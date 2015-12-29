@@ -58,6 +58,7 @@ class AuthEntryPanel( wx.Panel ):
         label_sizer.Add( self.account_text, 1,
                          wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
+        self.label_panel.Fit()
         sizer.Add( self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
 
         self.code_text = wx.StaticText( self, wx.ID_ANY, 'XXXXXX',
@@ -202,8 +203,8 @@ class AuthEntryPanel( wx.Panel ):
 
         s = self.label_panel.GetClientSize()
         s.SetWidth( self.label_width )
-        self.label_panel.SetClientSize( s )
         self.label_panel.SetMinClientSize( s )
+        self.label_panel.SetClientSize( s )
         self.Fit()
 
     def UpdateContents( self ):
@@ -228,8 +229,9 @@ class AuthEntryPanel( wx.Panel ):
 
         s = self.label_panel.GetClientSize()
         s.SetWidth( self.label_width )
-        self.label_panel.SetClientSize( s )
         self.label_panel.SetMinClientSize( s )
+        self.label_panel.SetClientSize( s )
+        self.Fit()
 
         ## logging.debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )
         ## logging.debug( "AEP UC account size:  %s", str( self.account_text.GetSize() ) )

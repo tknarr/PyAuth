@@ -57,7 +57,7 @@ class AuthFrame( wx.Frame ):
         self.toolbar = self.create_toolbar()
         self.set_toolbar_state( self.show_toolbar )
         self.entries_window = self.create_entries_window()
-        self.GetSizer().Add( self.entries_window, 1, 0, 0 )
+        self.GetSizer().Add( self.entries_window, 1, wx.EXPAND, 0 )
 
         # Get scrollbar width so we can account for it in window sizing
         # Turns out for layout we don't need to adjust for this
@@ -239,7 +239,7 @@ class AuthFrame( wx.Frame ):
                     panel.ShowTimer( self.show_timers )
                     self.entry_panels.append( panel )
                     logging.debug( "AF NE add panel: %s", panel.GetName() )
-                    self.entries_window.GetSizer().Add( panel, 0, wx.EXPAND | wx.ALL | wx.ALIGN_LEFT,
+                    self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT,
                                                         self.entry_border )
                 ## logging.debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
                 self.UpdatePanelSize()
@@ -578,7 +578,7 @@ class AuthFrame( wx.Frame ):
         for panel in self.entry_panels:
             ## logging.debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
             ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
-            self.entries_window.GetSizer().Add( panel, 0, wx.EXPAND | wx.ALL | wx.ALIGN_LEFT, self.entry_border )
+            self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
 
 
     def depopulate_entries_window( self ):
