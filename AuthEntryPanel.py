@@ -56,7 +56,7 @@ class AuthEntryPanel( wx.Panel ):
         label_sizer.Add( self.account_text, 1,
                          wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0 )
 
-        sizer.Add( self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_TOP, 2 )
+        sizer.Add( self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
 
         self.code_text = wx.StaticText( self, wx.ID_ANY, '',
                                         style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
@@ -100,6 +100,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def MouseBind( self, event_type, func ):
         self.Bind( event_type, func )
+        self.label_panel.Bind( event_type, func )
         self.provider_text.Bind( event_type, func )
         self.account_text.Bind( event_type, func )
         self.code_text.Bind( event_type, func )
@@ -245,13 +246,15 @@ class AuthEntryPanel( wx.Panel ):
         self.selected = True
         bg = wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT )
         fg = wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHTTEXT )
-        for item in [ self, self.provider_text, self.account_text, self.code_text, self.timer_gauge ]:
+        for item in [ self, self.label_panel, self.provider_text, self.account_text,
+                      self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( bg )
             item.SetForegroundColour( fg )
 
     def Deselect( self ):
         self.selected = False
-        for item in [ self, self.provider_text, self.account_text, self.code_text, self.timer_gauge ]:
+        for item in [ self, self.label_panel, self.provider_text, self.account_text,
+                      self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( wx.NullColour )
             item.SetForegroundColour( wx.NullColour )
 
