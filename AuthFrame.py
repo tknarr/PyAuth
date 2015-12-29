@@ -636,7 +636,7 @@ class AuthFrame( wx.Frame ):
         frame_size = self.ClientToWindowSize( entries_size )
         frame_min_size = self.ClientToWindowSize( entries_min_size )
         
-        logging.debug( "AF AWS FR window size %s min %s", frame_size, frame_min_size )
+        ## logging.debug( "AF AWS FR window size %s min %s", frame_size, frame_min_size )
         ## logging.debug( "AF AWS EW window size %s min %s", entries_size, entries_min_size )
         ## logging.debug( "AF AWS EW client size %s min %s", entries_client_size, entries_min_client_size )
 
