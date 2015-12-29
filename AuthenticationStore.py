@@ -155,9 +155,6 @@ class AuthenticationStore:
         if account != None:
             logging.debug( "AS new account %s", account )
             entry.SetAccount( account )
-        if secret != None:
-            logging.debug( "AS new secret %s", secret )
-            entry.SetSecret( secret )
         if original_label != None:
             logging.debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )

@@ -23,7 +23,6 @@ class AuthFrame( wx.Frame ):
         logging.info( "Visible entries: %d", self.visible_entries )
         self.entry_height = 0    # Height of tallest panel
         self.entry_width = 0     # Width of widest panel
-        self.label_width = 0     # Width of widest label
 
         # Internal values
         self.entry_border = 2
@@ -35,7 +34,6 @@ class AuthFrame( wx.Frame ):
         self.show_toolbar = True # TODO Use config setting once sizing issues are fixed
 
         self.toolbar = None
-        self.toolbar_height = 0
         self.tool_ids = {}
         self.toolbar_icon_size = Configuration.GetToolIconSize()
         self.new_entry_dialog = None
@@ -67,8 +65,7 @@ class AuthFrame( wx.Frame ):
         ## logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
 
         self.populate_entries_window()
-        self.record_toolbar_height()
-        self.UpdatePanelSize()
+        ## self.UpdatePanelSize()
 
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
@@ -108,15 +105,13 @@ class AuthFrame( wx.Frame ):
         logging.debug( "AF created" )
         self.iconized = self.IsIconized()
         self.timer.Start( 1000 )
-        self.Refresh()
 
 
     def OnSize( self, event ):
         ## logging.debug( "OnSize event" )
-        if ( not self.show_toolbar ) or ( self.toolbar_height > 0 ):
-            # Need this to keep the size of the window in entries updated as it's resized
-            new_size = self.WindowToClientSize( event.GetSize() )
-            self.visible_entries = self.CalcItemsShown( new_size.GetHeight() )
+        # Need this to keep the size of the window in entries updated as it's resized
+        new_size = self.WindowToClientSize( event.GetSize() )
+        self.visible_entries = self.CalcItemsShown( new_size.GetHeight() )
         event.Skip()
 
 
@@ -143,15 +138,16 @@ class AuthFrame( wx.Frame ):
                            self.entries_window.GetSize(), self.entries_window.GetMinSize() )
             logging.debug( "IDLE EW client size %s min %s",
                            self.entries_window.GetClientSize(), self.entries_window.GetMinClientSize() )
-            logging.debug( "IDLE toolbar height recorded %d actual %d",
-                           self.toolbar_height, self.toolbar.GetSize().GetHeight() )
+            logging.debug( "IDLE toolbar size %s", self.toolbar.GetSize().GetHeight() )
 
 
     def OnIconize( self, event ):
         was_iconized = self.iconized
         self.iconized = event.IsIconized()
-        ## if was_iconized and not self.iconized:
-        # TODO Generate an immediate fake timer tick to update the countdown
+        if was_iconized and not self.iconized:
+            # Broadcast the event to all entry panels for processing
+            for panel in self.entry_panels:
+                panel.UpdateTimerGauge()
         event.Skip()
 
 
@@ -228,7 +224,6 @@ class AuthFrame( wx.Frame ):
                 original_label = provider + ':' + account
             logging.debug( "AF NE provider %s", provider )
             logging.debug( "AF NE account  %s", account )
-            logging.debug( "AF NE secret   %s", secret )
             logging.debug( "AF NE orig lbl %s", original_label )
             entry = self.auth_store.Add( provider, account,secret, original_label )
             if entry != None:
@@ -240,9 +235,12 @@ class AuthFrame( wx.Frame ):
                     logging.debug( "AF NE replaced dummy panel with: %s", panel.GetName() )
                 else:
                     panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME, entry = entry )
+                    panel.MaskCode( not self.show_all_codes )
+                    panel.ShowTimer( self.show_timers )
                     self.entry_panels.append( panel )
                     logging.debug( "AF NE add panel: %s", panel.GetName() )
-                    self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
+                    self.entries_window.GetSizer().Add( panel, 0, wx.EXPAND | wx.ALL | wx.ALIGN_LEFT,
+                                                        self.entry_border )
                 ## logging.debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
                 self.UpdatePanelSize()
             else:
@@ -406,18 +404,24 @@ class AuthFrame( wx.Frame ):
                 wx.Bell()
 
     def OnMenuShowTimers( self, event ):
-        # TODO menu handler
-        logging.warning( "Show Timers" )
+        logging.debug( "AF menu Show Timers command: %s", "Show" if event.IsChecked() else "Hide" )
+        self.show_timers = event.IsChecked()
+        for panel in self.entry_panels:
+            panel.ShowTimer( self.show_timers )
+        # Panel size will have changed, so do this once after we've changed all
+        # panels instead of having each panel notify us individually.
+        self.UpdatePanelSize()
 
     def OnMenuShowAllCodes( self, event ):
-        # TODO menu handler
-        logging.warning( "Show All Codes" )
+        logging.debug( "AF menu Show Codes command: %s", "Show" if event.IsChecked() else "Mask" )
+        self.show_all_codes = event.IsChecked()
+        for panel in self.entry_panels:
+            panel.MaskCode( not self.show_all_codes )
 
     def OnMenuShowToolbar( self, event ):
         logging.debug( "AF menu Show Toolbar command: %s", "Show" if event.IsChecked() else "Hide" )
         self.set_toolbar_state( event.IsChecked() )
         self.AdjustWindowSizes()
-        self.Refresh()
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
@@ -486,12 +490,10 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_TIMERS = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TIMERS, self.show_timers )
-        menu.Enable( self.MENU_SHOW_TIMERS, False )
         mi = wx.MenuItem( menu, wx.ID_ANY, "All Codes", "Show codes for all entries", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_ALL_CODES = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
-        menu.Enable( self.MENU_SHOW_ALL_CODES, False )
         mb.Append( menu, "&View" )
         
         menu = wx.Menu()
@@ -543,14 +545,6 @@ class AuthFrame( wx.Frame ):
         ## logging.debug( "AF STS toolbar size %s, button size %s, margin %s",
         ##                self.toolbar.GetSize(), self.toolbar.GetToolSize(), self.toolbar.GetMargins() )
 
-    def record_toolbar_height( self ):
-        button_height = self.toolbar.GetToolSize().GetHeight()
-        toolbar_height = self.toolbar.GetSize().GetHeight()
-        if ( toolbar_height > button_height ) and ( self.toolbar_height < toolbar_height ):
-            logging.debug( "Toolbar height set to %d", toolbar_height )
-            self.toolbar_height = toolbar_height
-        return self.toolbar_height
-
 
     def create_entries_window( self ):
         logging.debug( "AF create entries window" )
@@ -569,6 +563,8 @@ class AuthFrame( wx.Frame ):
             ## logging.debug( "AF create panel: %d", entry.GetGroup() )
             panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
                                     entry = entry )
+            panel.MaskCode( not self.show_all_codes )
+            panel.ShowTimer( self.show_timers )
             self.entry_panels.append( panel )
         if len( self.entry_panels ) > 0:
             # Make sure they're sorted at the start
@@ -582,7 +578,7 @@ class AuthFrame( wx.Frame ):
         for panel in self.entry_panels:
             ## logging.debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
             ## logging.debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
-            self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
+            self.entries_window.GetSizer().Add( panel, 0, wx.EXPAND | wx.ALL | wx.ALIGN_LEFT, self.entry_border )
 
 
     def depopulate_entries_window( self ):
@@ -596,19 +592,16 @@ class AuthFrame( wx.Frame ):
 
 
     def CalcItemsShown( self, height ):
-        ## logging.debug( "AF CIS wcs = %s, entry height = %d, toolbar = %d", height, self.entry_height,
-        ##                self.toolbar_height )
-        # Adjust for toolbar space if needed
-        h = height
-        # if self.show_toolbar:
-        #     h -= self.toolbar_height
-        # Doing integer math, so we can't cancel terms and add 1/2
-        n = h + ( self.entry_height + 2 * self.entry_border ) / 2
-        d = self.entry_height + 2 * self.entry_border
-        r = n / d
-        if r < 1:
-            r = 1
-        ## logging.debug( "AF CIS result = %d / %d = %d", n, d, r )
+        ## logging.debug( "AF CIS wcs = %s, entry height = %d", height, self.entry_height )
+        r = self.visible_entries
+        if self.entry_height > 0:
+            # Doing integer math, so we can't cancel terms and add 1/2
+            n = height + ( self.entry_height + 2 * self.entry_border ) / 2
+            d = self.entry_height + 2 * self.entry_border
+            r = n / d
+            if r < 1:
+                r = 1
+            ## logging.debug( "AF CIS result = %d / %d = %d", n, d, r )
         return r
 
 
@@ -630,10 +623,7 @@ class AuthFrame( wx.Frame ):
         # The size calculations are broken out and made explicit to make sure everything's
         # calculated correctly. We end up not using the client sizes, but we need them
         # as intermediate steps to make sure the frame has a minimum size large enough
-        # for it's client area to hold the entries window. Setting the client sizes for
-        # the entries window and frame ends up causing glitches where the minimum height
-        # can be less than 1 entry panel and the minimum width is a few pixels short of
-        # accounting for the scrollbar.
+        # for it's client area to hold the entries window.
         
         # Calculate size needed in client area of scrolling entries window
         entries_client_size = wx.Size( column_width, column_height )
@@ -645,47 +635,50 @@ class AuthFrame( wx.Frame ):
         # Generate correct frame size to hold the entries window plus toolbar
         frame_size = self.ClientToWindowSize( entries_size )
         frame_min_size = self.ClientToWindowSize( entries_min_size )
-        toolbar_height = self.record_toolbar_height()
-        ## logging.debug( "AF AWS Toolbar height %d, recorded %d", toolbar_height, self.toolbar_height )
         
         ## logging.debug( "AF AWS FR window size %s min %s", frame_size, frame_min_size )
         ## logging.debug( "AF AWS EW window size %s min %s", entries_size, entries_min_size )
         ## logging.debug( "AF AWS EW client size %s min %s", entries_client_size, entries_min_client_size )
+
+        # Clear the hints so we can resize the frame freely
+        self.SetSizeHints( -1, -1 )
         
         # Set window sizes and minimum sizes for the entries window and the frame
-        self.entries_window.SetSize( entries_size )
-        self.entries_window.SetMinSize( entries_min_size )
-        self.SetSize( frame_size )
         self.SetMinSize( frame_min_size )
+        self.SetSize( frame_size )
+
+        # Set hints so we can't be resized wider and resize in entry increments
+        self.SetSizeHints( frame_min_size.GetWidth(), frame_min_size.GetHeight(),
+                           maxW = frame_size.GetWidth(),
+                           incW = column_width, incH = min_height )
 
 
     def AdjustPanelSizes( self ):
         ## logging.debug( "AF APS" )
-        self.entry_height = 0
+        label_width = 0
         self.entry_width = 0
-        self.label_width = 0
+        self.entry_height = 0
         for entry in self.entry_panels:
-            # Update max entry panel sizes
-            entry_size = entry.GetPanelSize()
-            label_width = entry.GetLabelWidth()
-            ## logging.debug( "AF APS %s: panel size %s label width %d", entry.GetName(),
-            ##                str( entry_size ), label_width )
-            if entry_size.GetHeight() > self.entry_height:
-                self.entry_height = entry_size.GetHeight()
-            if entry_size.GetWidth() > self.entry_width:
-                self.entry_width = entry_size.GetWidth()
-            if label_width > self.label_width:
-                self.label_width = label_width
-        ## logging.debug( "AF APS entry size %dx%d label width %d", self.entry_width, self.entry_height,
-        ##                self.label_width )
+            w = entry.GetLabelWidth()
+            ## logging.debug( "AF APS %s: label width %d", entry.GetName(), w )
+            if w > label_width:
+                label_width = w
+        ## logging.debug( "AF APS label width %d", label_width )
         for entry in self.entry_panels:
-            entry.ResizePanel( self.entry_width, self.entry_height, self.label_width )
+            entry.SizeLabels( label_width )
+            s = entry.GetPanelSize()
+            ## logging.debug( "AF APS panel %s: size %s", entry.GetName(), s )
+            if s.GetWidth() > self.entry_width:
+                self.entry_width = s.GetWidth()
+            if s.GetHeight() > self.entry_height:
+                self.entry_height = s.GetHeight()
+        ## logging.debug( "AF APS entry width %d height %d", self.entry_width, self.entry_height )
                 
 
     def UpdatePanelSize( self ):
+        ## logging.debug( "AF UPS" )
         self.AdjustPanelSizes()
         self.AdjustWindowSizes()
-        self.Refresh()
         self.SendSizeEvent()
 
 

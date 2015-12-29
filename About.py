@@ -5,7 +5,7 @@ from wx.lib.wordwrap import wordwrap
 
 about_data = {
     'name': "PyAuth",
-    'version': '0.1.3',
+    'version': '0.1.4',
     'version-tag': 'dev',
     'copyright': "(C) 2015 Todd T Knarr",
     'website': 'https://github.com/tknarr/PyAuth.git',
