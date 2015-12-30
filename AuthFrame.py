@@ -5,10 +5,10 @@ import wx
 from wx.lib import newevent as NE
 import Configuration
 from AuthenticationStore import AuthenticationStore
-from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
-from About import GetAboutInfo
-from NewEntryDialog import NewEntryDialog as NewEntryDialog
-from UpdateEntryDialog import UpdateEntryDialog as UpdateEntryDialog
+from AuthEntryPanel import AuthEntryPanel
+from About import GetAboutInfo, GetIconBundle1
+from NewEntryDialog import NewEntryDialog
+from UpdateEntryDialog import UpdateEntryDialog
 
 ReadjustWindowSizeEvent, EVT_READJUST_WINDOW_SIZE = NE.NewEvent()
 
@@ -70,6 +70,10 @@ class AuthFrame( wx.Frame ):
         logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
 
         self.populate_entries_window()
+
+        icon_bundle = GetIconBundle1()
+        if icon_bundle != None:
+            self.SetIcons( icon_bundle )
 
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
