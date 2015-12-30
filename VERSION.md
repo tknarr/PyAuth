@@ -1,5 +1,7 @@
 # PyAuth versions:
 
+* 0.4.0 - Minimize-to-systray, icons
+
 * 0.3.2 - Got sizing working when the toolbar's shown or hidden. Messy.
 
 * 0.3.1 - Fix problem with pyOTP and base32 padding of secrets
