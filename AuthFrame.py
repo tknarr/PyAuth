@@ -6,7 +6,7 @@ from wx.lib import newevent as NE
 import Configuration
 from AuthenticationStore import AuthenticationStore
 from AuthEntryPanel import AuthEntryPanel
-from About import GetAboutInfo, GetIconBundle1
+from About import GetAboutInfo, GetIconBundle
 from NewEntryDialog import NewEntryDialog
 from UpdateEntryDialog import UpdateEntryDialog
 
@@ -71,9 +71,9 @@ class AuthFrame( wx.Frame ):
 
         self.populate_entries_window()
 
-        icon_bundle = GetIconBundle1()
-        if icon_bundle != None:
-            self.SetIcons( icon_bundle )
+        self.icon_bundle = GetIconBundle( 'white' )
+        if self.icon_bundle != None:
+            self.SetIcons( self.icon_bundle )
 
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
