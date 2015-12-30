@@ -71,7 +71,7 @@ class AuthFrame( wx.Frame ):
 
         self.populate_entries_window()
 
-        self.icon_bundle = GetIconBundle( 'white' )
+        self.icon_bundle = GetIconBundle( 'transparent' )
         if self.icon_bundle != None:
             self.SetIcons( self.icon_bundle )
 
