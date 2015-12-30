@@ -175,7 +175,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def MaskCode( self, state ):
         self.code_masked = state
-        if self.code_masked:
+        if self.code_masked and not self.selected:
             self.code_text.SetLabelText( 'XXXXXX' )
         else:
             self.code_text.SetLabelText( self.code )
@@ -212,7 +212,7 @@ class AuthEntryPanel( wx.Panel ):
     def UpdateContents( self ):
         if self.entry != None:
             ## logging.debug( "AEP UC updating %s", self.GetName() )
-            if self.code_masked:
+            if self.code_masked and not self.selected:
                 self.code_text.SetLabelText( 'XXXXXX' )
             else:
                 self.code_text.SetLabelText( self.code )
@@ -221,10 +221,6 @@ class AuthEntryPanel( wx.Panel ):
             self.provider_text.Fit()
             self.account_text.SetLabelText( self.entry.GetAccount() )
             self.account_text.Fit()
-
-        ## else:
-        ##     ## logging.debug( "AEP UC updating dummy entry panel" )
-        ##     self.code_text.SetLabelText( 'XXXXXX' )
 
         if self.label_width == 0:
             self.label_width = self.GetLabelWidth()
@@ -258,6 +254,8 @@ class AuthEntryPanel( wx.Panel ):
                       self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( bg )
             item.SetForegroundColour( fg )
+        # We always show the code when selected regardless of code_masked
+        self.code_text.SetLabelText( self.code )
 
     def Deselect( self ):
         self.selected = False
@@ -265,6 +263,12 @@ class AuthEntryPanel( wx.Panel ):
                       self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( wx.NullColour )
             item.SetForegroundColour( wx.NullColour )
+        # We can't be selected, so only code_masked matters
+        if self.code_masked:
+            self.code_text.SetLabelText( 'XXXXXX' )
+        else:
+            self.code_text.SetLabelText( self.code )
+        
 
     def UpdateTimerGauge( self ):
         current_time = wx.GetUTCTime()
@@ -274,7 +278,7 @@ class AuthEntryPanel( wx.Panel ):
         # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
         if self.totp_cycle < last_cycle and self.entry != None:
             self.code = self.entry.GenerateNextCode()
-            if self.code_masked:
+            if self.code_masked and not self.selected:
                 self.code_text.SetLabelText( 'XXXXXX' )
             else:
                 self.code_text.SetLabelText( self.code )
