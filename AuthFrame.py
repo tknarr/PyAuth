@@ -21,17 +21,21 @@ class AuthTaskbarIcon( wx.TaskBarIcon ):
         self.icon_bundle = icon_bundle
 
         # Find out our icon size and set the appropriate icon from our bundle
-        sz_x = wx.SystemSettings.GetMetric( wx.SYS_SMALLICON_X, self.frame )
-        sz_y = wx.SystemSettings.GetMetric( wx.SYS_SMALLICON_Y, self.frame )
+        sz_x = wx.SystemSettings.GetMetric( wx.SYS_ICON_X )
+        sz_y = wx.SystemSettings.GetMetric( wx.SYS_ICON_Y )
         logging.debug( "TBI icon size %dx%d", sz_x, sz_y )
-        icon = self.icon_bundle.GetIcon( wx.Size( sz_x, sz_y ) )
+        icon = self.icon_bundle.GetIcon( wx.Size( sz_x, sz_y ),
+                                         wx.IconBundle.FALLBACK_SYSTEM | wx.IconBundle.FALLBACK_NEAREST_LARGER )
+        if not icon.IsOk():
+            logging.debug( "Failed to load %dx%d icon", sz_x, sz_y )
+            icon = wx.ArtProvider.GetIcon( wx.ART_NEW, wx.ART_OTHER )
         self.SetIcon( icon, "PyAuth OTP" )
 
         # Popup menu actions
         self.Bind( wx.EVT_MENU, self.OnMenuExit,  id = wx.ID_EXIT )
         self.Bind( wx.EVT_MENU, self.OnMenuAbout, id = wx.ID_ABOUT )
         # Double-click on taskbar icon toggles window shown/hidden, handled by frame
-        self.Bind( EVT_TASKBAR_LEFT_DCLICK, self.frame.OnTaskbarDClick )
+        self.Bind( wx.EVT_TASKBAR_LEFT_DCLICK, self.frame.OnTaskbarDClick )
 
         logging.debug( "TBI init done" )
 
@@ -58,7 +62,7 @@ class AuthFrame( wx.Frame ):
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
-                  initial_systray = False, initial_minimized = False, iconset = None ):
+                  initial_systray = None, initial_minimized = None, iconset = None ):
 
         # We need to set up a few things before we know the style flags we should use
         # Our current icon set's the one specified on the command line, or the configured
@@ -67,16 +71,17 @@ class AuthFrame( wx.Frame ):
         self.icon_set = self.configured_icon_set
         if iconset != None: # Command line option overrides config
             self.icon_set = iconset
+        logging.debug( "Icon bundle %s selected", self.icon_set )
         self.icon_bundle = GetIconBundle( self.icon_set )
         if self.icon_bundle == None: # Fall back to white
+            logging.debug( "Icon bundle %s failed, trying white", self.icon_set )
             self.icon_bundle = GetIconBundle( 'white' )
-        # We need to keep this separate from initial_systray, the command-line option
-        # shouldn't change the config setting.
         self.use_systray_icon = Configuration.GetUseTaskbarIcon()
+        if initial_systray != None:
+            self.use_systray_icon = initial_systray
         # No maximize button, and no minimize button if we're using the systray icon
         my_style = style & ~wx.MAXIMIZE_BOX
-        if ( self.use_systray_icon or initial_systray ) and self.icon_bundle != None and
-           wx.TaskBarIcon.IsAvailable():
+        if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
             my_style = my_style & ~wx.MINIMIZE_BOX
 
         wx.Frame.__init__( self, parent, id, title, pos, size, style, name )
@@ -142,8 +147,7 @@ class AuthFrame( wx.Frame ):
 
         # Set up the taskbar icon if we're supposed to use it and can (have icons and
         # it's available).
-        if ( self.use_systray_icon or initial_systray ) and self.icon_bundle != None and
-             wx.TaskBarIcon.IsAvailable():
+        if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
             self.taskbar_icon = AuthTaskbarIcon( self, self.icon_bundle )
 
         # Window event handlers
@@ -168,7 +172,7 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = self.MENU_SHOW_TIMERS )
         self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = self.MENU_SHOW_ALL_CODES )
         self.Bind( wx.EVT_MENU, self.OnMenuShowToolbar,  id = self.MENU_SHOW_TOOLBAR )
-        self.Bind( wx.EVT_MENU, sefl.OnMenuUseSystray,   id = self.MENU_SHOW_TRAYICON )
+        self.Bind( wx.EVT_MENU, self.OnMenuUseSystray,   id = self.MENU_SHOW_TRAYICON )
         self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = wx.ID_HELP )
         self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = wx.ID_ABOUT )
         # Any toolbar tool handlers that aren't also menu item handlers go below here
@@ -307,7 +311,7 @@ class AuthFrame( wx.Frame ):
             Configuration.SetShowAllCodes( self.show_all_codes )
             Configuration.SetShowToolbar( self.show_toolbar )
             Configuration.SetUseTaskbarIcon( self.use_systray_icon )
-            Configuration.GetIconSet( self.configured_icon_set )
+            Configuration.SetIconSet( self.configured_icon_set )
             Configuration.Save()
             if self.new_entry_dialog != None:
                 self.new_entry_dialog.Destroy()
@@ -558,12 +562,13 @@ class AuthFrame( wx.Frame ):
         should_use = event.IsChecked()
         if should_use:
             if self.taskbar_icon == None:
-                if ( self.use_systray_icon or initial_systray ) and self.icon_bundle != None and
-                     wx.TaskBarIcon.IsAvailable():
+                if self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
+                    logging.debug( "AF menu Tray Icon creating taskbar icon" )
                     self.taskbar_icon = AuthTaskbarIcon( self, self.icon_bundle )
             self.use_systray_icon = True
         else:
             if self.taskbar_icon != None:
+                logging.debug( "AF menu Tray Icon removing taskbar icon" )
                 tbi = self.taskbar_icon
                 self.taskbar_icon = None
                 tbi.Destroy()
