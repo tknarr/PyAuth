@@ -58,10 +58,13 @@ class AuthFrame( wx.Frame ):
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
-                  initial_systray = False, iconset = None ):
+                  initial_systray = False, initial_minimized = False, iconset = None ):
 
         # We need to set up a few things before we know the style flags we should use
-        self.icon_set = Config.GetIconSet()
+        # Our current icon set's the one specified on the command line, or the configured
+        # set. The command line option doesn't change the configured set.
+        self.configured_icon_set = Configuration.GetIconSet()
+        self.icon_set = self.configured_icon_set
         if iconset != None: # Command line option overrides config
             self.icon_set = iconset
         self.icon_bundle = GetIconBundle( self.icon_set )
@@ -69,11 +72,11 @@ class AuthFrame( wx.Frame ):
             self.icon_bundle = GetIconBundle( 'white' )
         # We need to keep this separate from initial_systray, the command-line option
         # shouldn't change the config setting.
-        self.use_systray_icon = Config.GetUseTaskbarIcon()
+        self.use_systray_icon = Configuration.GetUseTaskbarIcon()
         # No maximize button, and no minimize button if we're using the systray icon
         my_style = style & ~wx.MAXIMIZE_BOX
         if ( self.use_systray_icon or initial_systray ) and self.icon_bundle != None and
-             wx.TaskBarIcon.IsAvailable():
+           wx.TaskBarIcon.IsAvailable():
             my_style = my_style & ~wx.MINIMIZE_BOX
 
         wx.Frame.__init__( self, parent, id, title, pos, size, style, name )
@@ -303,6 +306,8 @@ class AuthFrame( wx.Frame ):
             Configuration.SetShowTimers( self.show_timers )
             Configuration.SetShowAllCodes( self.show_all_codes )
             Configuration.SetShowToolbar( self.show_toolbar )
+            Configuration.SetUseTaskbarIcon( self.use_systray_icon )
+            Configuration.GetIconSet( self.configured_icon_set )
             Configuration.Save()
             if self.new_entry_dialog != None:
                 self.new_entry_dialog.Destroy()
@@ -629,6 +634,7 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_TRAYICON = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TRAYICON, self.use_systray_icon )
+        # NEED CODE select icon set background (white, grey, dark, transparent)
         menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Timers", "Show timer bars", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TIMERS = mi.GetId()
