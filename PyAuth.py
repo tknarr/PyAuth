@@ -8,6 +8,13 @@ import wx
 from AuthFrame import AuthFrame as AuthFrame
 import Configuration
 
+# Command line options:
+#   --systray, -s                            Start with the systray icon if possible
+#   --minimized, -m                          Start minimized
+#   --icons=[white|grey|dark|transparent]    Use icons with the given background, default white
+
+# TODO Implement command-line parsing and options
+
 class PyAuthApp( wx.App ):
 
     def OnInit( self ):
@@ -44,7 +51,7 @@ class PyAuthApp( wx.App ):
             self.frame.SetPosition( wpos )
 
         # Display main frame and start running
-        self.frame.Show()
+        self.frame.Show( True ) # TODO Show( False ) if starting minimized
         return True
 
 
