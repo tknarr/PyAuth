@@ -21231,7 +21231,7 @@ l1OjRSSe/h9KIy0nF7jhxAAAAABJRU5ErkJggg==
 '''
     }
 
-# TODO possibly other color sets
+# TODO other color sets
 taskbar_icon_data = {
     'white': '''\
 ''',

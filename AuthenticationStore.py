@@ -3,6 +3,7 @@
 import os
 import errno
 import logging
+import string
 import wx
 import pyotp
 
@@ -232,6 +233,10 @@ class AuthenticationEntry:
     
     def SetSecret( self, secret ):
         self.secret = secret
+        # Strip out whitespace characters that're sometimes put in the
+        # text given to the user.
+        # TODO Unicode object needs deletechars done in table
+        ## self.secret = secret.translate( None, string.whitespace )
         # We shouldn't need to do this, but pyotp has a problem when the
         # secret needs padding so we'll pad it ourselves which works right.
         m = len( secret ) % 8

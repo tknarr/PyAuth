@@ -4,8 +4,10 @@
 import sys
 import os.path
 import logging
+import argparse
 import wx
 from AuthFrame import AuthFrame as AuthFrame
+from About import about_data
 import Configuration
 
 # Command line options:
@@ -18,6 +20,33 @@ import Configuration
 class PyAuthApp( wx.App ):
 
     def OnInit( self ):
+        initial_systray = None
+        initial_minimized = None
+        iconset = None
+        
+        # Set up command-line argument parser
+        parser = argparse.ArgumentParser( description="OTP authentication client" )
+        parser.add_argument( "-s", "--systray", action = 'store_true', dest = 'systray',
+                             help = "Start the program with the notification icon showing" )
+        parser.add_argument( "-m", "--minimized", action = 'store_true', dest = 'minimized',
+                             help = "Start the program minimized" )
+        parser.add_argument( "--icons", metavar = "ICONSET", dest = 'iconset',
+                             choices = [ "white", "grey", "dark", "transparent" ],
+                             help = "Select a given background for the program icons: %(choices)s" )
+        version_string = about_data['name'] + ' ' + about_data['version']
+        if 'version-tag' in about_data:
+            vt = about_data['version-tag']
+            if vt != None and vt != '':
+                version_string += ' ' + vt
+        parser.add_argument( "--version", action = 'version', version = version_string )
+        args = parser.parse_args()
+        if args.systray:
+            initial_systray = True
+        if args.minimized:
+            initial_minimized = True
+        if args.iconset != None:
+            iconset = args.iconset
+        
         # Set our configuration file up to be the default configuration source
         cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = 'pyauth.cfg',
                              style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
@@ -41,7 +70,8 @@ class PyAuthApp( wx.App ):
         logging.info( "Configuration file: %s", cfgfile )
 
         # Create and position main frame
-        self.frame = AuthFrame( None, wx.ID_ANY, "PyAuth", name = 'main_frame' )
+        self.frame = AuthFrame( None, wx.ID_ANY, "PyAuth", name = 'main_frame',
+                                initial_systray = initial_systray, iconset = iconset )
         if self.frame == None:
             logging.critical( "Cannot create main program window" )
             return False
@@ -51,7 +81,7 @@ class PyAuthApp( wx.App ):
             self.frame.SetPosition( wpos )
 
         # Display main frame and start running
-        self.frame.Show( True ) # TODO Show( False ) if starting minimized
+        self.frame.Show( True ) # TODO Hidden if using systray and starting minimized (need to query frame object)
         return True
 
 
