@@ -72,6 +72,23 @@ def GetIconBundle( name ):
         logging.debug( "Icon count: %d", icon_bundle.GetIconCount() )
     return icon_bundle
 
+def GetTaskbarIcon( name ):
+    icon = None
+    try:
+        raw_data = base64.b64decode( taskbar_icon_data[name] )
+    except StandardError as e:
+        raw_data = None
+        logging.error( "Error decoding %s taskbar icon: %s", name, str( e ) )
+    if raw_data != None:
+        input_strm = wx.InputStream( io.BytesIO( raw_data ) )
+        img = wx.ImageFromStream( input_strm, wx.BITMAP_TYPE_PNG )
+        if img != None:
+            bm = img.ConvertToBitmap()
+            if bm != None:
+                icon = wx.IconFromBitmap( bm )
+    return icon
+
+
 icon_bundle_data = {
     'white': '''\
 AAABAAkAEBAAAAEAIABoBAAAlgAAABgYAAABACAAiAkAAP4EAAAgIAAAAQAgAKgQAACGDgAAMDAA
@@ -21211,5 +21228,34 @@ jJbtCewAFmHHZ1WG3SyRCfQDm4DPM8mYfyQFwFiyIbAV2323AdudV0MCiZI08BK2U/S3Gede/0T0
 hp5M9jit64GPAEvQ7VMJV6bw1wP3er8u7OAYjwIgHxYCCaz4r8NO2pkFzEW9KAlOD9CHDU+/ArzM
 FAs/QwFQiOw5e3OxAFiNBYJ6BeKXFHZG5E5swdouLAR6inGArAJgqob3Cj6Anc4jUmz9wEPAPqDX
 l1OjRSSe/h9KIy0nF7jhxAAAAABJRU5ErkJggg==
+'''
+    }
+
+# TODO possibly other color sets
+taskbar_icon_data = {
+    'white': '''\
+''',
+    'grey': '''\
+''',
+    'dark': '''\
+''',
+    'transparent': '''\
+iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAACXBI
+WXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AEBAAMioQHt0AAAA1ZJREFUWMO1lmtIU2EYx3/vOWeW
+syJrJl0sCIrsBqGYrSj6EkgXqCi7InShy7IW4YcyKLp9KMsRLrIQsgv1TaIiCCSLLCnFYkWLwBIk
+60tZmLHtzLcPbmOzzZ217YEHDuc85/n/3+f6ChIQqVEGLAVmATnA6MAnL9ANuIA7Quc+qRSpMVlq
+eKSGNKjNqSbwJgHwoF5LJYEBpz+7pZRSyoI8QyRSS2CCKkPyod1oFJTURqDDNUBgbm7KCAgD4Cqg
+/yd3Vej0D2WgGXDSDzQBf9i7uQSAS7ceDrBDx884zMz/56y9IBga3FAEYsr+Q6NRRBWwAZSsqLw9
+3scoSgVOR1ssN0pYqPOkxj0juf2YZ5b4PD/w6dvx6Vn4vPyrOijKUqAVm/1EzBwFwAuB98D0eAf3
+j4Kc0v2RwVM10BRQw1RGdOESioq7edXSFjUFUqMPyIwbdj/kr1+H2zIxBLzzbQvnXc0MCwMUQH3e
+NHZaV0DkOFBxOiLqQpEaaw2BA4wA9/ipIZhjbY1cefyMkT8kGT2E1NQDO1wfIdsyb5CHbdFqoMRo
+3T0dnwN6oCNNJo63tAeSGFUucqryNfA27N2iaG041yiB36qJUGd5vOCP2cgPhM6BwHM5MCnw/Cka
+gRxD6BYYU7YLunqCsZPAnsAq9gWsfECz0OkK/ed0NMUbRPFnwZkjUHF6oEX2HQwvttr/npFBH1Lj
+MzAlpkX5NrhQR21nF7vPnX8OWIOjA6gHTAngeYBfQDtOx/UgARcwO/oigAaXmzXOy6RBWnA6FqjH
+FZYBM6KamOmbKc0m+v3pIDCJouLPCvAslkXjxFwzelrAQ22pALdiffUKFQMLLRkxKULnK3DX6B+L
+i4v4XlNNb001G0pKkmYQ3IargZfxjO2bSnmyZSPZQBZwe/kyGk6dIGNsNpkWC4jEt7sYdPspBPKB
+4UBmhbWosGrOwq3BhSJrqhNynl9Ti9vtHsqkPuIeI3Rahc4NoXNV6FysmmN9RBKX27NlWwynIC2y
+6vDRb/FstEQcWutv8nzQqXY0NlHXELOGc5MlENGDL161Mayjgxvl5WRoGrardXzp7EwmSP1Dl63N
+XgC0pjFLlfH7xmZvDltAqRQPMNJY49rsJ4GVKQIWwDvABvT8BQQzlwiYKYrIAAAAAElFTkSuQmCC
 '''
     }

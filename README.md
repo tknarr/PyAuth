@@ -74,13 +74,13 @@ In the View menu are options for showing/hiding the toolbar, putting an icon
 in the system notification area (systray), showing the timer bars and masking
 codes for unselected entries. If the notification icon is visible, the
 minimize button on the window frame is removed as you can simply close the
-window and leave the notification icon. Double-clicking the notification icon
-toggles the main window off and on. Right-clicking the notification icon
-brings up a menu with the option to completely exit the program.
+window and leave the notification icon. Clicking the notification icon toggles
+the main window off and on. Right-clicking the notification icon brings up a
+menu with the option to completely exit the program.
 
 When using the notification icon, the program will not appear in the taskbar
 list of active applications. When starting minimized and using the
 notification icon, the program's window will initially be hidden and can be
-shown by double-clicking the notification icon. When starting minimized
-without using the notification icon, the program will start with it's window
-shown and minimized.
+shown by clicking the notification icon. When starting minimized without using
+the notification icon, the program will start with it's window shown and
+minimized.

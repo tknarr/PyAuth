@@ -1,6 +1,6 @@
 # PyAuth versions:
 
-* 0.4.0 - Minimize-to-systray, icons
+* 0.4.0 - Notification/systray icon, icons
 
 * 0.3.2 - Got sizing working when the toolbar's shown or hidden. Messy.
 
