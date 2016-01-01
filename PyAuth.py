@@ -81,7 +81,7 @@ class PyAuthApp( wx.App ):
             self.frame.SetPosition( wpos )
 
         # Display main frame and start running
-        self.frame.Show( True ) # TODO Hidden if using systray and starting minimized (need to query frame object)
+        self.frame.Show( self.frame.ShouldShow() )
         return True
 
 

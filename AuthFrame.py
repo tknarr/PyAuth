@@ -60,7 +60,7 @@ class AuthFrame( wx.Frame ):
         # Our current icon set's the one specified on the command line, or the configured
         # set. The command line option doesn't change the configured set.
         self.configured_icon_set = Configuration.GetIconSet()
-        self.icon_set = self.configured_icon_set
+        self.icon_set = Configuration.GetIconSet()
         if iconset != None: # Command line option overrides config
             self.icon_set = iconset
         logging.debug( "Icon bundle %s selected", self.icon_set )
@@ -69,6 +69,7 @@ class AuthFrame( wx.Frame ):
             logging.debug( "Icon bundle %s failed, trying white", self.icon_set )
             self.icon_bundle = GetIconBundle( 'white' )
         self.use_systray_icon = Configuration.GetUseTaskbarIcon()
+        self.configured_use_systray_icon = Configuration.GetUseTaskbarIcon()
         if initial_systray != None:
             self.use_systray_icon = initial_systray
         # No maximize button, and no minimize button if we're using the systray icon
@@ -304,7 +305,7 @@ class AuthFrame( wx.Frame ):
             Configuration.SetShowTimers( self.show_timers )
             Configuration.SetShowAllCodes( self.show_all_codes )
             Configuration.SetShowToolbar( self.show_toolbar )
-            Configuration.SetUseTaskbarIcon( self.use_systray_icon )
+            Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
             Configuration.SetIconSet( self.configured_icon_set )
             Configuration.Save()
             if self.new_entry_dialog != None:
@@ -560,6 +561,7 @@ class AuthFrame( wx.Frame ):
                     logging.debug( "AF menu Tray Icon creating taskbar icon" )
                     self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
             self.use_systray_icon = True
+            self.configured_use_systray_icon = True
         else:
             if self.taskbar_icon != None:
                 logging.debug( "AF menu Tray Icon removing taskbar icon" )
@@ -567,6 +569,7 @@ class AuthFrame( wx.Frame ):
                 self.taskbar_icon = None
                 tbi.Destroy()
             self.use_systray_icon = False
+            self.configured_use_systray_icon = False
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
@@ -875,3 +878,12 @@ class AuthFrame( wx.Frame ):
             if self.selected_panel != None:
                 self.selected_panel.Deselect()
             self.selected_panel = None
+
+
+    def ShouldShow( self ):
+        # TODO implement when start-minimized is in place
+        return True
+
+    def ShouldMinimize( self ):
+        # TODO implement when start-minimized is in place
+        return False
