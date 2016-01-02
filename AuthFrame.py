@@ -54,7 +54,7 @@ class AuthFrame( wx.Frame ):
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
-                  initial_systray = None, initial_minimized = None, iconset = None ):
+                  initial_systray = None, initial_minimized = False, iconset = None ):
 
         # We need to set up a few things before we know the style flags we should use
         # Our current icon set's the one specified on the command line, or the configured
@@ -76,6 +76,7 @@ class AuthFrame( wx.Frame ):
         my_style = style & ~wx.MAXIMIZE_BOX
         if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
             my_style = my_style & ~wx.MINIMIZE_BOX
+
 
         wx.Frame.__init__( self, parent, id, title, pos, size, my_style, name )
         logging.debug( "AF init" )
@@ -144,6 +145,11 @@ class AuthFrame( wx.Frame ):
         if self.use_systray_icon and self.taskbar_icon_image != None and wx.TaskBarIcon.IsAvailable():
             logging.debug( "AF creating taskbar icon" )
             self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
+        # If we're in the systray and not starting minimized, don't show us in
+        # the taskbar.
+        if self.taskbar_icon != None and not initial_minimized:
+            window_style = self.GetWindowStyle()
+            self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
 
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
@@ -285,7 +291,6 @@ class AuthFrame( wx.Frame ):
         if self.taskbar_icon != None and event.CanVeto():
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
-            self.Refresh()
             self.Hide()
             event.Veto( True )
         else:
@@ -322,13 +327,11 @@ class AuthFrame( wx.Frame ):
             logging.debug( "AF taskbar double-clicked Hide" )
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
-            self.Refresh()
             self.Hide()
         else:
             logging.debug( "AF taskbar double-clicked Show" )
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style & ~wx.FRAME_NO_TASKBAR )
-            self.Refresh()
             self.Show()
 
 
@@ -880,10 +883,5 @@ class AuthFrame( wx.Frame ):
             self.selected_panel = None
 
 
-    def ShouldShow( self ):
-        # TODO implement when start-minimized is in place
-        return True
-
-    def ShouldMinimize( self ):
-        # TODO implement when start-minimized is in place
-        return False
+    def InSystray( self ):
+        return self.taskbar_icon != None
