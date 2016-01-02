@@ -10,7 +10,7 @@ about_data = {
     'name': "PyAuth",
     'version': '0.4.0',
     'version-tag': 'dev',
-    'copyright': "(C) 2015 Todd T Knarr",
+    'copyright': "(C) 2016 Todd T Knarr",
     'website': 'https://github.com/tknarr/PyAuth.git',
     'developers': [ 'Todd T Knarr' ],
     'description': "Google Authenticator desktop application",
