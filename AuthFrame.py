@@ -396,43 +396,43 @@ class AuthFrame( wx.Frame ):
             dlg.Destroy()
         else:
             entry = self.selected_panel.GetEntry()
-        if entry == None:
-            self.OnMenuNewEntry( event ) # Dummy panel selected, create a new entry instead
-        else:
-            self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(), entry.GetSecret() )
-            result = self.update_entry_dialog.ShowModal()
-            if result == wx.ID_OK:
-                provider = self.update_entry_dialog.GetProviderValue()
-                account = self.update_entry_dialog.GetAccountValue()
-                secret = self.update_entry_dialog.GetSecretValue()
-                if provider == entry.GetProvider():
-                    provider = None
-                if account == entry.GetAccount():
-                    account = None
-                if secret == entry.GetSecret():
-                    secret = None
-                if provider != None or account != None or secret != None:
-                    logging.debug( "AF UE updating entry" )
-                    status = self.auth_store.Update( entry.GetGroup(), provider, account, secret )
-                    if status < 0:
-                        dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
-                                                style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                        dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
-                                                "The database is likely corrupted and needs repaired." )
-                        dlg.ShowModal()
-                        dlg.Destroy()
-                    elif status == 0:
-                        dlg = wx.MessageDialog( self, "Entry not found.", "Error",
-                                                style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                        dlg.SetExtendedMessage( "The entry was not found in the database.\n" +
-                                                "This should not have happened." )
-                        dlg.ShowModal()
-                        dlg.Destroy()
-                    else:
-                        self.selected_panel.ChangeContents()
-                        ## logging.debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
-                        ##                str( panel.GetMinSize() ) )
-                        self.UpdatePanelSize()
+            if entry == None:
+                self.OnMenuNewEntry( event ) # Dummy panel selected, create a new entry instead
+            else:
+                self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(), entry.GetSecret() )
+                result = self.update_entry_dialog.ShowModal()
+                if result == wx.ID_OK:
+                    provider = self.update_entry_dialog.GetProviderValue()
+                    account = self.update_entry_dialog.GetAccountValue()
+                    secret = self.update_entry_dialog.GetSecretValue()
+                    if provider == entry.GetProvider():
+                        provider = None
+                    if account == entry.GetAccount():
+                        account = None
+                    if secret == entry.GetSecret():
+                        secret = None
+                    if provider != None or account != None or secret != None:
+                        logging.debug( "AF UE updating entry" )
+                        status = self.auth_store.Update( entry.GetGroup(), provider, account, secret )
+                        if status < 0:
+                            dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
+                                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                            dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
+                                                    "The database is likely corrupted and needs repaired." )
+                            dlg.ShowModal()
+                            dlg.Destroy()
+                        elif status == 0:
+                            dlg = wx.MessageDialog( self, "Entry not found.", "Error",
+                                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                            dlg.SetExtendedMessage( "The entry was not found in the database.\n" +
+                                                    "This should not have happened." )
+                            dlg.ShowModal()
+                            dlg.Destroy()
+                        else:
+                            self.selected_panel.ChangeContents()
+                            ## logging.debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
+                            ##                str( panel.GetMinSize() ) )
+                            self.UpdatePanelSize()
 
     def OnMenuDeleteEntry( self, event ):
         logging.debug( "AF menu Delete Entry command" )
