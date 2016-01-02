@@ -44,12 +44,18 @@ enhancements listed in TODO.md will occur after v1.0.0 is released.
 * Encryption of the database. Right now it's a plain wxWidgets configuration
   file with one section per entry. The code sets permissions to keep the file
   readable only by the user themselves. That's problematic on Windows, but I'm
-  not really targetting that platform since it's got a good option in
+  not really targeting that platform since it's got a good option in
   WinAuth. I'm considering adding encryption to keep the secret strings in the
   database from being easily read by malware, at the cost of having to
   manually enter a password when the program starts.
 
 ## Using
+
+Command line:
+    PyAuth [-s] [-m] [--icons=(white|grey|dark|transparent)]
+* `-s` enables use of the notification (systray) icon if possible.
+* `-m` acts as `-s` plus hides the main window on startup (minimized to systray).
+* `--icons` selects a set of icons with the named background (default white).
 
 The GUI interface should be fairly straightforward at this point. Each entry
 is displayed in a pane in a scrolling list showing the service provider and

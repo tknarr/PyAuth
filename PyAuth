@@ -13,7 +13,7 @@ import Configuration
 # Command line options:
 #   --systray, -s                            Start with the systray icon if possible
 #   --minimized, -m                          Start minimized to the systray (implies -s)
-#   --icons=[white|grey|dark|transparent]    Use icons with the given background, default white
+#   --icons=(white|grey|dark|transparent)    Use icons with the given background, default white
 
 class PyAuthApp( wx.App ):
 
