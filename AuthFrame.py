@@ -5,19 +5,84 @@ import wx
 from wx.lib import newevent as NE
 import Configuration
 from AuthenticationStore import AuthenticationStore
-from AuthEntryPanel import AuthEntryPanel as AuthEntryPanel
-from About import GetAboutInfo
-from NewEntryDialog import NewEntryDialog as NewEntryDialog
-from UpdateEntryDialog import UpdateEntryDialog as UpdateEntryDialog
+from AuthEntryPanel import AuthEntryPanel
+from About import GetAboutInfo, GetIconBundle, GetTaskbarIcon
+from NewEntryDialog import NewEntryDialog
+from UpdateEntryDialog import UpdateEntryDialog
 
 ReadjustWindowSizeEvent, EVT_READJUST_WINDOW_SIZE = NE.NewEvent()
+
+class AuthTaskbarIcon( wx.TaskBarIcon ):
+
+    def __init__( self, frame, icon ):
+        wx.TaskBarIcon.__init__( self )
+
+        self.frame = frame
+        self.icon = icon
+
+        # Find out our icon size and set the appropriate icon from our bundle
+        self.SetIcon( self.icon, "PyAuth OTP" )
+
+        # Popup menu actions
+        self.Bind( wx.EVT_MENU, self.OnMenuExit,  id = wx.ID_EXIT )
+        self.Bind( wx.EVT_MENU, self.OnMenuAbout, id = wx.ID_ABOUT )
+        # Double-click on taskbar icon toggles window shown/hidden, handled by frame
+        self.Bind( wx.EVT_TASKBAR_LEFT_DCLICK, self.frame.OnTaskbarDClick )
+
+        logging.debug( "TBI init done" )
+
+
+    def CreatePopupMenu( self ):
+        logging.debug( "TBI popup menu created" )
+        menu = wx.Menu()
+        menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
+        menu.Append( wx.ID_EXIT, "Exit", "Exit the program" )
+        return menu
+
+    def OnMenuAbout( self, event ):
+        logging.debug( "TBI menu about" )
+        info = GetAboutInfo( wx.ClientDC( self.frame ) )
+        wx.AboutBox( info )
+
+    def OnMenuExit( self, event ):
+        logging.debug( "TBI menu exit" )
+        # Pass this on to the frame as a forced-close operation
+        self.frame.Close( True )
+
 
 class AuthFrame( wx.Frame ):
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
-                  style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr ):
-        wx.Frame.__init__( self, parent, id, title, pos, size, style, name )
+                  style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
+                  initial_systray = None, initial_minimized = False, iconset = None ):
+
+        # We need to set up a few things before we know the style flags we should use
+        # Our current icon set's the one specified on the command line, or the configured
+        # set. The command line option doesn't change the configured set.
+        self.configured_icon_set = Configuration.GetIconSet()
+        self.icon_set = Configuration.GetIconSet()
+        if iconset != None: # Command line option overrides config
+            self.icon_set = iconset
+        logging.debug( "Icon bundle %s selected", self.icon_set )
+        self.icon_bundle = GetIconBundle( self.icon_set )
+        if self.icon_bundle == None: # Fall back to white
+            logging.debug( "Icon bundle %s failed, trying white", self.icon_set )
+            self.icon_bundle = GetIconBundle( 'white' )
+        self.use_systray_icon = Configuration.GetUseTaskbarIcon()
+        self.configured_use_systray_icon = Configuration.GetUseTaskbarIcon()
+        if initial_systray != None:
+            self.use_systray_icon = initial_systray
+        # No maximize button, and no minimize button if we're using the systray icon
+        my_style = style & ~wx.MAXIMIZE_BOX
+        if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
+            my_style = my_style & ~wx.MINIMIZE_BOX
+
+
+        wx.Frame.__init__( self, parent, id, title, pos, size, my_style, name )
         logging.debug( "AF init" )
+
+        if self.icon_bundle != None:
+            self.SetIcons( self.icon_bundle )
 
         self.entries_window = None
         self.auth_store = None
@@ -34,6 +99,7 @@ class AuthFrame( wx.Frame ):
         self.show_timers = Configuration.GetShowTimers()
         self.show_all_codes = Configuration.GetShowAllCodes()
         self.show_toolbar = Configuration.GetShowToolbar()
+        self.taskbar_icon = None
 
         self.toolbar = None
         self.tool_ids = {}
@@ -54,7 +120,9 @@ class AuthFrame( wx.Frame ):
         # ticks the precision isn't horribly critical beyond being good enough to keep the UI
         # from being too far out-of-sync with the wall clock second hand.
         self.timer = wx.Timer( self )
-        self.iconized = True # Start off iconized for timer purposes, set correctly in OnCreate
+        # Start off iconized so timer ticks don't modify controls before they exist. We'll
+        # set this to our actual state in OnCreate()
+        self.iconized = True
 
         self.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         menu_bar = self.create_menu_bar()
@@ -70,6 +138,18 @@ class AuthFrame( wx.Frame ):
         logging.debug( "AF scrollbar width = %d", self.scrollbar_width )
 
         self.populate_entries_window()
+
+        # Set up the taskbar icon if we're supposed to use it and can (have icons and
+        # it's available).
+        self.taskbar_icon_image = GetTaskbarIcon( 'transparent' )
+        if self.use_systray_icon and self.taskbar_icon_image != None and wx.TaskBarIcon.IsAvailable():
+            logging.debug( "AF creating taskbar icon" )
+            self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
+        # If we're in the systray and not starting minimized, don't show us in
+        # the taskbar.
+        if self.taskbar_icon != None and not initial_minimized:
+            window_style = self.GetWindowStyle()
+            self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
 
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
@@ -93,6 +173,7 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnMenuShowTimers,   id = self.MENU_SHOW_TIMERS )
         self.Bind( wx.EVT_MENU, self.OnMenuShowAllCodes, id = self.MENU_SHOW_ALL_CODES )
         self.Bind( wx.EVT_MENU, self.OnMenuShowToolbar,  id = self.MENU_SHOW_TOOLBAR )
+        self.Bind( wx.EVT_MENU, self.OnMenuUseSystray,   id = self.MENU_SHOW_TRAYICON )
         self.Bind( wx.EVT_MENU, self.OnMenuHelpContents, id = wx.ID_HELP )
         self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = wx.ID_ABOUT )
         # Any toolbar tool handlers that aren't also menu item handlers go below here
@@ -205,33 +286,58 @@ class AuthFrame( wx.Frame ):
 
     def OnCloseWindow( self, event ):
         logging.debug( "AF close window" )
-        self.timer.Stop()
-        self.Unbind( wx.EVT_TIMER )
-        self.timer = None
-        self.auth_store.Save()
-        wp = self.GetPosition()
-        Configuration.SetLastWindowPosition( wp )
-        ## logging.debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
-        ##             self.entries_window.GetMinSize() )
-        ## logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
-        ##             self.GetMinClientSize() )
-        self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
-        logging.info( "Items visible: %d", self.visible_entries )
-        Configuration.SetNumberOfItemsShown( self.visible_entries )
-        Configuration.SetShowTimers( self.show_timers )
-        Configuration.SetShowAllCodes( self.show_all_codes )
-        Configuration.SetShowToolbar( self.show_toolbar )
-        Configuration.Save()
-        if self.new_entry_dialog != None:
-            self.new_entry_dialog.Destroy()
-        if self.update_entry_dialog != None:
-            self.update_entry_dialog.Destroy()
-        self.Destroy()
+        # If we're using the taskbar icon and not being forced to close, just hide the
+        # window and remove it's entry from the taskbar list of active applications.
+        if self.taskbar_icon != None and event.CanVeto():
+            window_style = self.GetWindowStyle()
+            self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
+            self.Hide()
+            event.Veto( True )
+        else:
+            self.timer.Stop()
+            self.Unbind( wx.EVT_TIMER )
+            self.timer = None
+            self.auth_store.Save()
+            wp = self.GetPosition()
+            Configuration.SetLastWindowPosition( wp )
+            ## logging.debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
+            ##             self.entries_window.GetMinSize() )
+            ## logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
+            ##             self.GetMinClientSize() )
+            self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
+            logging.info( "Items visible: %d", self.visible_entries )
+            Configuration.SetNumberOfItemsShown( self.visible_entries )
+            Configuration.SetShowTimers( self.show_timers )
+            Configuration.SetShowAllCodes( self.show_all_codes )
+            Configuration.SetShowToolbar( self.show_toolbar )
+            Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
+            Configuration.SetIconSet( self.configured_icon_set )
+            Configuration.Save()
+            if self.new_entry_dialog != None:
+                self.new_entry_dialog.Destroy()
+            if self.update_entry_dialog != None:
+                self.update_entry_dialog.Destroy()
+            if self.taskbar_icon != None:
+                self.taskbar_icon.Destroy()
+            self.Destroy()
+
+
+    def OnTaskbarDClick( self, event ):
+        if self.IsShown():
+            logging.debug( "AF taskbar double-clicked Hide" )
+            window_style = self.GetWindowStyle()
+            self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
+            self.Hide()
+        else:
+            logging.debug( "AF taskbar double-clicked Show" )
+            window_style = self.GetWindowStyle()
+            self.SetWindowStyle( window_style & ~wx.FRAME_NO_TASKBAR )
+            self.Show()
 
 
     def OnMenuQuit( self, event ):
         logging.debug( "AF menu Quit command" )
-        self.Close()
+        self.Close( True )
 
     def OnMenuNewEntry( self, event ):
         logging.debug( "AF menu New Entry command" )
@@ -449,6 +555,25 @@ class AuthFrame( wx.Frame ):
         self.set_toolbar_state( event.IsChecked() )
         self.AdjustWindowSizes( toolbar_state_changed = True )
 
+    def OnMenuUseSystray( self, event ):
+        logging.debug( "AF menu Tray Icon command: %s", "Use" if event.IsChecked() else "None" )
+        should_use = event.IsChecked()
+        if should_use:
+            if self.taskbar_icon == None:
+                if self.taskbar_icon_image != None and wx.TaskBarIcon.IsAvailable():
+                    logging.debug( "AF menu Tray Icon creating taskbar icon" )
+                    self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
+            self.use_systray_icon = True
+            self.configured_use_systray_icon = True
+        else:
+            if self.taskbar_icon != None:
+                logging.debug( "AF menu Tray Icon removing taskbar icon" )
+                tbi = self.taskbar_icon
+                self.taskbar_icon = None
+                tbi.Destroy()
+            self.use_systray_icon = False
+            self.configured_use_systray_icon = False
+
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
         logging.warning( "Help Contents" )
@@ -510,6 +635,11 @@ class AuthFrame( wx.Frame ):
         self.MENU_SHOW_TOOLBAR = mi.GetId()
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_TOOLBAR, self.show_toolbar )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "Tray Icon", "Show the system tray icon", kind = wx.ITEM_CHECK )
+        self.MENU_SHOW_TRAYICON = mi.GetId()
+        menu.AppendItem( mi )
+        menu.Check( self.MENU_SHOW_TRAYICON, self.use_systray_icon )
+        # NEED CODE select icon set background (white, grey, dark, transparent)
         menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Timers", "Show timer bars", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TIMERS = mi.GetId()
@@ -751,3 +881,7 @@ class AuthFrame( wx.Frame ):
             if self.selected_panel != None:
                 self.selected_panel.Deselect()
             self.selected_panel = None
+
+
+    def InSystray( self ):
+        return self.taskbar_icon != None

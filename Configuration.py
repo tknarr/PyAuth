@@ -88,6 +88,18 @@ def GetShowToolbar():
 def SetShowToolbar( state ):
     wx.Config.Get().WriteBool( '/window/show_toolbar', state )
 
+def GetUseTaskbarIcon():
+    return wx.Config.Get().ReadBool( '/window/use_taskbar_icon', False )
+
+def SetUseTaskbarIcon( state ):
+    wx.Config.Get().WriteBool( '/window/use_taskbar_icon', state )
+
+def GetIconSet():
+    return wx.Config.Get().Read( '/window/icon_set', 'white' )
+
+def SetIconSet( setname ):
+    wx.Config.Get().Write( '/window/icon_set', setname )
+
 def GetToolIconSize():
     size_string = wx.Config.Get().Read( '/window/tool_icon_size', 'default' )
     s = wx.DefaultSize

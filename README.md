@@ -32,11 +32,12 @@ Everything in the v0.0.x series is a development version. v0.0.1 includes the
 minimal functionality to be usable. The commit messages up to this point aren't
 too useful.
 
-Basic functionality (listed in TODO.md) will get added as v0.1.x. Once that's
-complete and it's stable enough for testing, the version will get bumped to
-v0.9.x until any final glitches are cleaned up. v1.0.0 will be a hopefully
-stable release ready for regular users. I don't intend any of the enhancements
-listed in TODO.md to be added until v1.0.0 is done.
+Basic functionality (listed in TODO.md) will get added as versions v0.1.x
+through v0.4.x. v0.5.0 is expected to have all functionality checked and
+working with the possible exception of the help system. Once I've made sure
+any loose ends are taken care of, the version will jump to v0.9.x for
+testing. v1.0.0 is planned to be a stable release ready for normal use. The
+enhancements listed in TODO.md will occur after v1.0.0 is released.
 
 #### Known areas of concern
 
@@ -55,15 +56,31 @@ is displayed in a pane in a scrolling list showing the service provider and
 account, the current OTP (Google Authenticator) code and a timer bar counting
 down the time to the next code.
 
-You can select an entry by clicking on it with the mouse so it's highlighted.
-Clicking toggles the selection of the entry on and off, and clicking on one
-entry deselects any other selected entries. Currently you can only select one
-entry. You can edit or delete an entry by selecting it and using Edit or
-Delete from the Edit menu. You can create a new entry using New from the File
-menu. The new entry will be added at the bottom of the list.
+Clicking on an entry selects it. If codes are being masked, selecting an entry
+also unmasks it's code while it's selected. Clicking on a selected entry
+deselects it. Double-clicking on an entry selects it and copies the current
+code for it to the clipboard. The toolbar contains a tool for copying the
+code of the currently-selected entry to the clipboard, and tools to move the
+currently-selected entry up and down in the list so you can order entries the
+way you want them
 
 When you run PyAuth with an empty database of authentication entries, it'll
 display a single dummy entry with a fake code that won't change. The first new
 real entry you create will replace it. If you select and edit it, you'll be
 given the new-entry dialog instead and your new entry will replace the dummy
 one.
+
+In the View menu are options for showing/hiding the toolbar, putting an icon
+in the system notification area (systray), showing the timer bars and masking
+codes for unselected entries. If the notification icon is visible, the
+minimize button on the window frame is removed as you can simply close the
+window and leave the notification icon. Clicking the notification icon toggles
+the main window off and on. Right-clicking the notification icon brings up a
+menu with the option to completely exit the program.
+
+When using the notification icon, the program will not appear in the taskbar
+list of active applications. When starting minimized and using the
+notification icon, the program's window will initially be hidden and can be
+shown by clicking the notification icon. When starting minimized without using
+the notification icon, the program will start with it's window shown and
+minimized.
