@@ -7,15 +7,13 @@ import logging
 import argparse
 import wx
 from AuthFrame import AuthFrame as AuthFrame
-from About import about_data
+from About import GetProgramVersionString
 import Configuration
 
 # Command line options:
 #   --systray, -s                            Start with the systray icon if possible
 #   --minimized, -m                          Start minimized
 #   --icons=[white|grey|dark|transparent]    Use icons with the given background, default white
-
-# TODO Implement command-line parsing and options
 
 class PyAuthApp( wx.App ):
 
@@ -33,11 +31,7 @@ class PyAuthApp( wx.App ):
         parser.add_argument( "--icons", metavar = "ICONSET", dest = 'iconset',
                              choices = [ "white", "grey", "dark", "transparent" ],
                              help = "Select a given background for the program icons: %(choices)s" )
-        version_string = about_data['name'] + ' ' + about_data['version']
-        if 'version-tag' in about_data:
-            vt = about_data['version-tag']
-            if vt != None and vt != '':
-                version_string += ' ' + vt
+        version_string = GetProgramVersionString()
         parser.add_argument( "--version", action = 'version', version = version_string )
         args = parser.parse_args()
         if args.systray:

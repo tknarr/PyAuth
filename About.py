@@ -36,6 +36,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     }
 
+def GetProgramVersionString():
+    version_string = about_data['name'] + ' ' + about_data['version']
+    if 'version-tag' in about_data:
+        vt = about_data['version-tag']
+        if vt != None and vt != '':
+            version_string += ' ' + vt
+    return version_string
+
 def GetAboutInfo( dc, desc_width = 350 ):
     about_info = wx.AboutDialogInfo()
     about_info.SetName( about_data['name'] )
