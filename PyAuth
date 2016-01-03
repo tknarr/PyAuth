@@ -14,6 +14,7 @@ import Configuration
 #   --systray, -s                            Start with the systray icon if possible
 #   --minimized, -m                          Start minimized to the systray (implies -s)
 #   --icons=(white|grey|dark|transparent)    Use icons with the given background, default white
+#   --log=<filename>                         Redirect log to named file
 
 class PyAuthApp( wx.App ):
 
@@ -31,6 +32,9 @@ class PyAuthApp( wx.App ):
         parser.add_argument( "--icons", metavar = "ICONSET", dest = 'iconset',
                              choices = [ "white", "grey", "dark", "transparent" ],
                              help = "Select a given background for the program icons: %(choices)s" )
+        parser.add_argument( "--log", metavar = "FILENAME", dest = 'logfile', nargs = '?',
+                             const = "~/PyAuth.log", default = None,
+                             help = "Redirect logging to the named file (default: ~/PyAuth.log)" )
         version_string = GetProgramVersionString()
         parser.add_argument( "--version", action = 'version', version = version_string )
         args = parser.parse_args()
@@ -41,6 +45,11 @@ class PyAuthApp( wx.App ):
             initial_systray = True
         if args.iconset != None:
             iconset = args.iconset
+        log_filename = None
+        if args.logfile != None:
+            log_filename = os.path.expandvars( os.path.expanduser( args.logfile ) )
+        if log_filename != None:
+            self.RedirectStdio( log_filename )
         
         # Set our configuration file up to be the default configuration source
         cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = 'pyauth.cfg',
@@ -62,6 +71,8 @@ class PyAuthApp( wx.App ):
         loglevel = Configuration.GetLoggingLevel()
         l = logging.getLogger()
         l.setLevel( loglevel )
+        if log_filename != None:
+            logging.info( "Log file: %s", log_filename )
         logging.info( "Configuration file: %s", cfgfile )
 
         # Create and position main frame

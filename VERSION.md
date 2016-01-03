@@ -1,5 +1,7 @@
 # PyAuth versions:
 
+* 0.4.3 - Add redirection of logging to a file
+
 * 0.4.2 - Additional database file saves
 
 * 0.4.1 - Bug fixes
