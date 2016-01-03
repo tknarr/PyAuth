@@ -91,9 +91,11 @@ class AuthenticationStore:
         i = 1;
         for e in self.entry_list:
             e.SetSortIndex( i )
+            e.Save( self.cfg )
             i += 1
         self.next_index = i
         logging.debug( "AS next index = %d", self.next_index )
+        self.cfg.Flush()
 
     
     def Regroup( self ):
@@ -110,6 +112,7 @@ class AuthenticationStore:
         self.next_group = i
         self.next_index = i
         logging.debug( "AS next group and index = %d", i )
+        self.cfg.Flush()
 
 
     def Add( self, provider, account, secret, original_label = None ):
@@ -125,6 +128,7 @@ class AuthenticationStore:
         self.next_index += 1
         self.next_group += 1
         entry.Save( self.cfg )
+        self.cfg.Flush()
         return entry
 
 
@@ -137,6 +141,7 @@ class AuthenticationStore:
             removed = self.entry_list.pop( index )
             logging.debug( "AS deleted entry %d", removed.entry_group )
             self.cfg.DeleteGroup( '/entries/%s' % removed.entry_group )
+        self.cfg.Flush()
 
 
     def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
@@ -163,6 +168,7 @@ class AuthenticationStore:
             logging.debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
         entry.Save( self.cfg )
+        self.cfg.Flush()
         return 1
     
 
