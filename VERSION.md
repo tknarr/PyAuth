@@ -1,5 +1,9 @@
 # PyAuth versions:
 
+* 0.4.2 - Additional database file saves
+
+* 0.4.1 - Bug fixes
+
 * 0.4.0 - Notification/systray icon, icons
 
 * 0.3.2 - Got sizing working when the toolbar's shown or hidden. Messy.
