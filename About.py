@@ -8,7 +8,7 @@ from wx.lib.wordwrap import wordwrap
 
 about_data = {
     'name': "PyAuth",
-    'version': '0.4.3',
+    'version': '0.4.4',
     'version-tag': 'dev',
     'copyright': "(C) 2016 Todd T Knarr",
     'website': 'https://github.com/tknarr/PyAuth.git',
@@ -35,6 +35,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
     }
+
+def GetProgramName():
+    return about_data['name']
 
 def GetProgramVersionString():
     version_string = about_data['name'] + ' ' + about_data['version']

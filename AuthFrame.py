@@ -56,6 +56,10 @@ class AuthFrame( wx.Frame ):
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
                   initial_systray = None, initial_minimized = False, iconset = None ):
 
+        # Flag so we don't save anything if the user asked us to abort in the face
+        # of a lockfile problem.
+        self.do_not_save = False
+
         # We need to set up a few things before we know the style flags we should use
         # Our current icon set's the one specified on the command line, or the configured
         # set. The command line option doesn't change the configured set.
@@ -192,6 +196,16 @@ class AuthFrame( wx.Frame ):
         self.iconized = self.IsIconized()
         self.timer.Start( 1000 )
         self.record_toolbar_height()
+        if  wx.GetApp().instance_check.IsAnotherRunning():
+            dlg = wx.MessageDialog( self, "Another instance may be running.", "Error",
+                                    style = wx.YES_NO | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.SetExtendedMessage( "Another instance of this application may be running. "
+                                    "Do you wish to run this application anyway?" )
+            result = dlg.ShowModal()
+            dlg.Destroy()
+            if result != wx.ID_YES:
+                self.do_not_save = True
+                self.Close( True )
 
 
     def OnSize( self, event ):
@@ -297,22 +311,23 @@ class AuthFrame( wx.Frame ):
             self.timer.Stop()
             self.Unbind( wx.EVT_TIMER )
             self.timer = None
-            self.auth_store.Save()
-            wp = self.GetPosition()
-            Configuration.SetLastWindowPosition( wp )
-            ## logging.debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
-            ##             self.entries_window.GetMinSize() )
-            ## logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
-            ##             self.GetMinClientSize() )
-            self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
-            logging.info( "Items visible: %d", self.visible_entries )
-            Configuration.SetNumberOfItemsShown( self.visible_entries )
-            Configuration.SetShowTimers( self.show_timers )
-            Configuration.SetShowAllCodes( self.show_all_codes )
-            Configuration.SetShowToolbar( self.show_toolbar )
-            Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
-            Configuration.SetIconSet( self.configured_icon_set )
-            Configuration.Save()
+            if not self.do_not_save:
+                self.auth_store.Save()
+                wp = self.GetPosition()
+                Configuration.SetLastWindowPosition( wp )
+                ## logging.debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
+                ##             self.entries_window.GetMinSize() )
+                ## logging.debug( "AF window client size = %s, min = %s", self.GetClientSize(),
+                ##             self.GetMinClientSize() )
+                self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
+                logging.info( "Items visible: %d", self.visible_entries )
+                Configuration.SetNumberOfItemsShown( self.visible_entries )
+                Configuration.SetShowTimers( self.show_timers )
+                Configuration.SetShowAllCodes( self.show_all_codes )
+                Configuration.SetShowToolbar( self.show_toolbar )
+                Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
+                Configuration.SetIconSet( self.configured_icon_set )
+                Configuration.Save()
             if self.new_entry_dialog != None:
                 self.new_entry_dialog.Destroy()
             if self.update_entry_dialog != None:

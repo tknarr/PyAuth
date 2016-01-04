@@ -172,7 +172,17 @@ class AuthenticationStore:
         return 1
     
 
+# Helper to create our deletion table for SetSecret()
+def make_deltbl():
+    tbl = { ord( '-' ) : None }
+    for c in string.whitespace:
+        tbl[ ord(c) ] = None
+    return tbl
+
 class AuthenticationEntry:
+
+    # Never changed, so just make it once
+    del_tbl = make_deltbl()
 
     def __init__( self, group, index, provider, account, secret, original_label = None ):
         self.entry_group = group
@@ -239,13 +249,12 @@ class AuthenticationEntry:
     
     def SetSecret( self, secret ):
         self.secret = secret
-        # Strip out whitespace characters that're sometimes put in the
+        # Strip out dashes and whitespace characters that're sometimes put in the
         # text given to the user.
-        # TODO Unicode object needs deletechars done in table
-        ## self.secret = secret.translate( None, string.whitespace )
+        self.secret = secret.translate( AuthenticationEntry.del_tbl )
         # We shouldn't need to do this, but pyotp has a problem when the
         # secret needs padding so we'll pad it ourselves which works right.
-        m = len( secret ) % 8
+        m = len( self.secret ) % 8
         if m != 0:
             self.secret += '=' * ( 8 - m )
         # Need a new auth object too
