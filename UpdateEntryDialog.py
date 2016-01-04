@@ -36,7 +36,8 @@ class UpdateEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.provider_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
+        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.provider_text = txt
 
@@ -48,7 +49,8 @@ class UpdateEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.account_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
+        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.account_text = txt
 
@@ -60,7 +62,8 @@ class UpdateEntryDialog( wx.Dialog ):
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.secret_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        txt.SetMinSize( wx.DLG_SZE( self, txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' ) ) )
+        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.secret_text = txt
 
@@ -69,7 +72,7 @@ class UpdateEntryDialog( wx.Dialog ):
         vbox.AddStretchSpacer( 1 )
 
         btnsizer = self.CreateButtonSizer( wx.OK | wx.CANCEL )
-        if btnSizer != None:
+        if btnsizer != None:
             vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
         self.GetSizer().Fit( self )

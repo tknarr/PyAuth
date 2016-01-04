@@ -2,10 +2,10 @@
 
 import os
 import errno
-import random
 import logging
+import string
 import wx
-from otpauth import OtpAuth
+import pyotp
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -55,6 +55,7 @@ class AuthenticationStore:
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
+        logging.info( "%d entries in authentication database", len( self.entry_list ) )
         logging.debug( "AS next group %d", self.next_group )
         logging.debug( "AS next index %d", self.next_index )
 
@@ -90,9 +91,11 @@ class AuthenticationStore:
         i = 1;
         for e in self.entry_list:
             e.SetSortIndex( i )
+            e.Save( self.cfg )
             i += 1
         self.next_index = i
         logging.debug( "AS next index = %d", self.next_index )
+        self.cfg.Flush()
 
     
     def Regroup( self ):
@@ -109,6 +112,7 @@ class AuthenticationStore:
         self.next_group = i
         self.next_index = i
         logging.debug( "AS next group and index = %d", i )
+        self.cfg.Flush()
 
 
     def Add( self, provider, account, secret, original_label = None ):
@@ -124,6 +128,7 @@ class AuthenticationStore:
         self.next_index += 1
         self.next_group += 1
         entry.Save( self.cfg )
+        self.cfg.Flush()
         return entry
 
 
@@ -136,6 +141,7 @@ class AuthenticationStore:
             removed = self.entry_list.pop( index )
             logging.debug( "AS deleted entry %d", removed.entry_group )
             self.cfg.DeleteGroup( '/entries/%s' % removed.entry_group )
+        self.cfg.Flush()
 
 
     def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
@@ -156,29 +162,41 @@ class AuthenticationStore:
             logging.debug( "AS new account %s", account )
             entry.SetAccount( account )
         if secret != None:
-            logging.debug( "AS new secret %s", secret )
+            logging.debug( "AS new secret" )
             entry.SetSecret( secret )
         if original_label != None:
             logging.debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
         entry.Save( self.cfg )
+        self.cfg.Flush()
         return 1
     
 
+# Helper to create our deletion table for SetSecret()
+def make_deltbl():
+    tbl = { ord( '-' ) : None }
+    for c in string.whitespace:
+        tbl[ ord(c) ] = None
+    return tbl
+
 class AuthenticationEntry:
+
+    # Never changed, so just make it once
+    del_tbl = make_deltbl()
 
     def __init__( self, group, index, provider, account, secret, original_label = None ):
         self.entry_group = group
         self.sort_index = index
         self.provider = provider
         self.account = account
-        self.secret = secret
+        self.SetSecret( secret )
         if original_label != None:
             self.original_label = original_label
         else:
             self.original_label = provider + ':' + account
 
-        self.auth = OtpAuth( self.secret )
+        self.auth = pyotp.TOTP( self.secret )
+        self.otp_problem = False
 
 
     def __cmp__( self, other ):
@@ -231,13 +249,30 @@ class AuthenticationEntry:
     
     def SetSecret( self, secret ):
         self.secret = secret
+        # Strip out dashes and whitespace characters that're sometimes put in the
+        # text given to the user.
+        self.secret = secret.translate( AuthenticationEntry.del_tbl )
+        # We shouldn't need to do this, but pyotp has a problem when the
+        # secret needs padding so we'll pad it ourselves which works right.
+        m = len( self.secret ) % 8
+        if m != 0:
+            self.secret += '=' * ( 8 - m )
         # Need a new auth object too
-        self.auth = OtpAuth( self.secret )
+        self.auth = pyotp.TOTP( self.secret )
+        self.otp_problem = False
 
 
     def GetPeriod( self ):
         return 30 # Google Authenticator uses a 30-second period
 
     def GenerateNextCode( self ):
-        c = self.auth.totp( 30 )
-        return "{:0>6d}".format( c )
+        if self.otp_problem:
+            c = '??????'
+        else:
+            try:
+                c = self.auth.now()
+            except StandardError as e:
+                c = '??????'
+                self.otp_problem = True
+                logging.error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
+        return c
