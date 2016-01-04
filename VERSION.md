@@ -1,5 +1,7 @@
 # PyAuth versions:
 
+* 0.4.4 - Single-instance via lockfile
+
 * 0.4.3 - Add redirection of logging to a file
 
 * 0.4.2 - Additional database file saves
