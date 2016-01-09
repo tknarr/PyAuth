@@ -7,7 +7,7 @@ import logging
 import argparse
 import wx
 from AuthFrame import AuthFrame as AuthFrame
-from About import GetProgramVersionString, GetProgramName
+from About import GetProgramVersionString, GetProgramName, GetVendorName
 import Configuration
 
 # Command line options:
@@ -22,8 +22,9 @@ class PyAuthApp( wx.App ):
         initial_systray = None
         initial_minimized = None
         iconset = None
-        
+
         # Set up command-line argument parser
+        program_name = GetProgramName()
         parser = argparse.ArgumentParser( description="OTP authentication client" )
         parser.add_argument( "-s", "--systray", action = 'store_true', dest = 'systray',
                              help = "Start the program with the notification icon showing" )
@@ -33,10 +34,9 @@ class PyAuthApp( wx.App ):
                              choices = [ "white", "grey", "dark", "transparent" ],
                              help = "Select a given background for the program icons: %(choices)s" )
         parser.add_argument( "--log", metavar = "FILENAME", dest = 'logfile', nargs = '?',
-                             const = "~/PyAuth.log", default = None,
-                             help = "Redirect logging to the named file (default: ~/PyAuth.log)" )
-        version_string = GetProgramVersionString()
-        parser.add_argument( "--version", action = 'version', version = version_string )
+                             const = "~/." + program_name + "/error.log", default = None,
+                             help = "Redirect logging to the named file (default: ~/." + program_name + "/error.log)" )
+        parser.add_argument( "--version", action = 'version', version = GetProgramVersionString() )
         args = parser.parse_args()
         if args.systray:
             initial_systray = True
@@ -49,10 +49,10 @@ class PyAuthApp( wx.App ):
         if args.logfile != None:
             log_filename = os.path.expandvars( os.path.expanduser( args.logfile ) )
         
-        self.SetAppName( GetProgramName() )
+        self.SetAppName( program_name )
 
         # Set our configuration file up to be the default configuration source
-        cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = 'pyauth.cfg',
+        cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = 'pyauth.cfg',
                              style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfg.SetRecordDefaults( True )
         wx.Config.Set( cfg )
@@ -95,6 +95,9 @@ class PyAuthApp( wx.App ):
         if wpos != None:
             self.frame.SetPosition( wpos )
 
+        self.Bind( wx.EVT_QUERY_END_SESSION, self.OnQES )
+        self.Bind( wx.EVT_END_SESSION, self.OnES )
+
         # Display main frame and start running
         # If we're starting minimized and are in the systray, leave the frame
         # hidden. If we're starting minimized and aren't in the systray, minimize
@@ -102,6 +105,15 @@ class PyAuthApp( wx.App ):
         # the frame.
         self.frame.Show( not ( initial_minimized and self.frame.InSystray() ) )
         return True
+
+
+    def OnQES( self, event ):
+        logging.info( "Event: query end session" )
+        event.Skip()
+
+    def OnES( self, event ):
+        logging.info( "Event: end session" )
+        event.Skip()
 
 
     def OnExit( self ):

@@ -8,8 +8,9 @@ from wx.lib.wordwrap import wordwrap
 
 about_data = {
     'name': "PyAuth",
-    'version': '0.4.4',
-    'version-tag': 'dev',
+    'version': '0.5.0',
+    'version-tag': '',
+    'version-status': 'alpha',
     'copyright': "(C) 2016 Todd T Knarr",
     'website': 'https://github.com/tknarr/PyAuth.git',
     'developers': [ 'Todd T Knarr' ],
@@ -39,23 +40,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 def GetProgramName():
     return about_data['name']
 
-def GetProgramVersionString():
-    version_string = about_data['name'] + ' ' + about_data['version']
-    if 'version-tag' in about_data:
-        vt = about_data['version-tag']
-        if vt != None and vt != '':
-            version_string += ' ' + vt
-    return version_string
-
-def GetAboutInfo( dc, desc_width = 350 ):
-    about_info = wx.AboutDialogInfo()
-    about_info.SetName( about_data['name'] )
+def GetProgramVersion():
     version_string = about_data['version']
     if 'version-tag' in about_data:
         vt = about_data['version-tag']
         if vt != None and vt != '':
-            version_string += ' ' + vt
-    about_info.SetVersion( version_string )
+            version_string += vt
+    return version_string
+
+def GetProgramVersionString():
+    version_string = about_data['name'] + ' ' + GetProgramVersion()
+    if 'version-status' in about_data:
+        version_status = about_data['version-status']
+        if version_status != None and version_status != '':
+            version_string += ' (' + version_status + ')'
+    return version_string
+
+def GetVendorName():
+    return "Silverglass Technical"
+
+def GetAboutInfo( dc, desc_width = 350 ):
+    about_info = wx.AboutDialogInfo()
+    about_info.SetName( about_data['name'] )
+    about_info.SetVersion( GetProgramVersion() )
     about_info.SetCopyright( about_data['copyright'] )
     about_info.SetWebSite( about_data['website'] )
     about_info.SetLicense( wordwrap( about_data['license'], desc_width, dc ) )

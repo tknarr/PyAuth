@@ -6,6 +6,7 @@ import logging
 import string
 import wx
 import pyotp
+from About import GetProgramName, GetVendorName
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -19,7 +20,7 @@ import pyotp
 class AuthenticationStore:
 
     def __init__( self, filename ):
-        self.cfg = wx.FileConfig( 'PyAuth', "Silverglass Technical", localFilename = filename,
+        self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         logging.info( "Database file: %s", cfgfile )
