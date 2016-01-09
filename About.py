@@ -46,15 +46,14 @@ def GetProgramVersion():
         vt = about_data['version-tag']
         if vt != None and vt != '':
             version_string += vt
-    return version_string
-
-def GetProgramVersionString():
-    version_string = about_data['name'] + ' ' + GetProgramVersion()
     if 'version-status' in about_data:
         version_status = about_data['version-status']
         if version_status != None and version_status != '':
             version_string += ' (' + version_status + ')'
     return version_string
+
+def GetProgramVersionString():
+    return about_data['name'] + ' ' + GetProgramVersion()
 
 def GetVendorName():
     return "Silverglass Technical"
