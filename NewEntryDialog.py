@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import logging
 import wx
+from Logging import GetLogger
 
 class NewEntryDialog( wx.Dialog ):
 
@@ -9,7 +9,7 @@ class NewEntryDialog( wx.Dialog ):
                   style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        logging.debug( "NED init" )
+        GetLogger().debug( "NED init" )
         
         self.provider_label = None
         self.provider_text = None
@@ -95,7 +95,7 @@ class NewEntryDialog( wx.Dialog ):
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        logging.debug( "NED init done" )
+        GetLogger().debug( "NED init done" )
 
 
     def OnOK( self, event ):
@@ -110,10 +110,10 @@ class NewEntryDialog( wx.Dialog ):
         err = err or f
         self.ColorLabel( self.secret_label, f )
         if err:
-            logging.debug( "NED OK button missing required items" )
+            GetLogger().debug( "NED OK button missing required items" )
             wx.Bell()
         else:
-            logging.debug( "NED OK button" )
+            GetLogger().debug( "NED OK button" )
             event.Skip( True )
 
                 
@@ -130,7 +130,7 @@ class NewEntryDialog( wx.Dialog ):
         return self.original_label_text.GetValue()
 
     def Reset( self ):
-        logging.debug( "NED reset" )
+        GetLogger().debug( "NED reset" )
         self.ColorLabel( self.provider_label, False )
         self.ColorLabel( self.account_label, False )
         self.ColorLabel( self.secret_label, False )

@@ -18,6 +18,7 @@
 #   Logging level name, will be converted to the correct value for use
 
 import logging
+import os.path
 import wx
 
 def Save():
@@ -137,6 +138,11 @@ def SetToolIconSize( s ):
         size_string = 'extra-large'
     wx.Config.Get().Write( '/window/tool_icon_size', size_string )
 
+def GetConfigDirectory():
+    cfgfile = wx.FileConfig.GetLocalFileName( 'pyauth.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+    cfgdir = os.path.dirname( cfgfile )
+    return cfgdir
+
 def GetDatabaseFilename():
     return wx.Config.Get().Read( '/database/file_name', 'database.cfg' )
 
@@ -150,6 +156,12 @@ def GetLoggingLevel():
 
 def GetLogFilename():
     return wx.Config.Get().Read( '/logging/filename' )
+
+def GetLogMaxSize():
+    return wx.Config.Get().ReadInt( '/logging/max_size', 1024 * 1024 )
+
+def GetLogBackupCount():
+    return wx.Config.Get().ReadInt( 'logging/backup_count', 5 )
 
 
 def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):

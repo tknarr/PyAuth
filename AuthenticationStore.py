@@ -2,11 +2,11 @@
 
 import os
 import errno
-import logging
 import string
 import wx
 import pyotp
 from About import GetProgramName, GetVendorName
+from Logging import GetLogger
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -23,7 +23,7 @@ class AuthenticationStore:
         self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-        logging.info( "Database file: %s", cfgfile )
+        GetLogger().info( "Database file: %s", cfgfile )
         self.entry_list = []
         self.next_group = 1
         self.next_index = 1
@@ -35,19 +35,19 @@ class AuthenticationStore:
         more, value, index = self.cfg.GetFirstGroup()
         while more:
             entry_group = int( value )
-            ## logging.debug( "AS reading group %d", entry_group )
+            ## GetLogger().debug( "AS reading group %d", entry_group )
             if entry_group > 0:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
                 cfgpath = '%s/' % entry_group
                 sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
-                ## logging.debug( "AS   sort index %d", sort_index )
+                ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
                     self.next_index = sort_index + 1
                 provider = self.cfg.Read( cfgpath + 'provider' )
                 account = self.cfg.Read( cfgpath + 'account' )
-                ## logging.debug( "AS   provider %s", provider )
-                ## logging.debug( "AS   account %s", account )
+                ## GetLogger().debug( "AS   provider %s", provider )
+                ## GetLogger().debug( "AS   account %s", account )
                 secret = self.cfg.Read( cfgpath + 'secret' )
                 original_label = self.cfg.Read( cfgpath + 'original_label', '' )
                 if original_label == '':
@@ -56,9 +56,9 @@ class AuthenticationStore:
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
-        logging.info( "%d entries in authentication database", len( self.entry_list ) )
-        logging.debug( "AS next group %d", self.next_group )
-        logging.debug( "AS next index %d", self.next_index )
+        GetLogger().info( "%d entries in authentication database", len( self.entry_list ) )
+        GetLogger().debug( "AS next group %d", self.next_group )
+        GetLogger().debug( "AS next index %d", self.next_index )
 
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()
@@ -70,7 +70,7 @@ class AuthenticationStore:
 
 
     def Save( self ):
-        logging.debug( "AS saving all" )
+        GetLogger().debug( "AS saving all" )
         for entry in self.entry_list:
             entry.Save( self.cfg )
         self.cfg.Flush()
@@ -81,12 +81,12 @@ class AuthenticationStore:
             os.chmod( cfgfile, 0600 )
         except OSError as e:
             if e.errno != errno.ENOENT:
-                logging.warning( "Problem with database file %s", cfgfile )
-                logging.warning( "Error code %d: %s ", e.errno, e.strerror )
+                GetLogger().warning( "Problem with database file %s", cfgfile )
+                GetLogger().warning( "Error code %d: %s ", e.errno, e.strerror )
 
 
     def Reindex( self ):
-        logging.debug( "AS reindexing" )
+        GetLogger().debug( "AS reindexing" )
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
         i = 1;
@@ -95,12 +95,12 @@ class AuthenticationStore:
             e.Save( self.cfg )
             i += 1
         self.next_index = i
-        logging.debug( "AS next index = %d", self.next_index )
+        GetLogger().debug( "AS next index = %d", self.next_index )
         self.cfg.Flush()
 
     
     def Regroup( self ):
-        logging.debug( "AS regroup" )
+        GetLogger().debug( "AS regroup" )
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
         self.cfg.DeleteGroup( '/entries' )
@@ -112,7 +112,7 @@ class AuthenticationStore:
             i += 1
         self.next_group = i
         self.next_index = i
-        logging.debug( "AS next group and index = %d", i )
+        GetLogger().debug( "AS next group and index = %d", i )
         self.cfg.Flush()
 
 
@@ -120,10 +120,10 @@ class AuthenticationStore:
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
         elist = filter( f, self.entry_list )
         if len( elist ) > 0:
-            logging.warning( "Entry already exists for %s:%s", provider, account )
+            GetLogger().warning( "Entry already exists for %s:%s", provider, account )
             return None
-        logging.debug( "AS adding new entry %s:%s, group %d, sort index %d",
-                       provider, account, self.next_group, self.next_index )
+        GetLogger().debug( "AS adding new entry %s:%s, group %d, sort index %d",
+                           provider, account, self.next_group, self.next_index )
         entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret, original_label )
         self.entry_list.append( entry )
         self.next_index += 1
@@ -134,39 +134,39 @@ class AuthenticationStore:
 
 
     def Delete( self, entry_group ):
-        logging.debug( "AS deleting entry %d", entry_group )
+        GetLogger().debug( "AS deleting entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
         elist = filter( f, self.entry_list )
         for entry in elist:
             index = self.entry_list.index( entry )
             removed = self.entry_list.pop( index )
-            logging.debug( "AS deleted entry %d", removed.entry_group )
+            GetLogger().debug( "AS deleted entry %d", removed.entry_group )
             self.cfg.DeleteGroup( '/entries/%s' % removed.entry_group )
         self.cfg.Flush()
 
 
     def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
-        logging.debug( "AS updating entry %d", entry_group )
+        GetLogger().debug( "AS updating entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
         elist = filter( f, self.entry_list )
         if len( elist ) < 1:
             return 0 # No entry found
         if len( elist ) > 1:
-            logging.error( "AS %d duplicates of entry %d found, database likely corrupt",
-                           len( elist ), entry_group )
+            GetLogger().error( "AS %d duplicates of entry %d found, database likely corrupt",
+                               len( elist ), entry_group )
             return -1
         entry = elist[0]
         if provider != None:
-            logging.debug( "AS new provider %s", provider )
+            GetLogger().debug( "AS new provider %s", provider )
             entry.SetProvider( provider )
         if account != None:
-            logging.debug( "AS new account %s", account )
+            GetLogger().debug( "AS new account %s", account )
             entry.SetAccount( account )
         if secret != None:
-            logging.debug( "AS new secret" )
+            GetLogger().debug( "AS new secret" )
             entry.SetSecret( secret )
         if original_label != None:
-            logging.debug( "AS new original label %s", original_label )
+            GetLogger().debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
         entry.Save( self.cfg )
         self.cfg.Flush()
@@ -275,5 +275,5 @@ class AuthenticationEntry:
             except StandardError as e:
                 c = '??????'
                 self.otp_problem = True
-                logging.error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
+                GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
         return c

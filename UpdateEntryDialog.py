@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import logging
 import wx
+from Logging import GetLogger
 
 class UpdateEntryDialog( wx.Dialog ):
 
@@ -9,7 +9,7 @@ class UpdateEntryDialog( wx.Dialog ):
                   style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        logging.debug( "UED init" )
+        GetLogger().debug( "UED init" )
         
         self.provider_label = None
         self.provider_text = None
@@ -79,7 +79,7 @@ class UpdateEntryDialog( wx.Dialog ):
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        logging.debug( "UED init done" )
+        GetLogger().debug( "UED init done" )
 
 
     def OnOK( self, event ):
@@ -94,10 +94,10 @@ class UpdateEntryDialog( wx.Dialog ):
         err = err or f
         self.ColorLabel( self.secret_label, f )
         if err:
-            logging.debug( "UED OK button missing required items" )
+            GetLogger().debug( "UED OK button missing required items" )
             wx.Bell()
         else:
-            logging.debug( "UED OK button" )
+            GetLogger().debug( "UED OK button" )
             event.Skip( True )
 
                 
@@ -111,7 +111,7 @@ class UpdateEntryDialog( wx.Dialog ):
         return self.secret_text.GetValue()
 
     def Reset( self, provider, account, secret ):
-        logging.debug( "UED reset" )
+        GetLogger().debug( "UED reset" )
         self.provider_text.SetValue( provider )
         self.ColorLabel( self.provider_label, self.provider_text.IsEmpty() )
         self.account_text.SetValue( account )
