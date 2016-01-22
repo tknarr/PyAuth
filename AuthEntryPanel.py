@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import logging
 import wx
 from AuthenticationStore import AuthenticationEntry
+from Logging import GetLogger
 
 class AuthEntryPanel( wx.Panel ):
 
@@ -32,7 +32,7 @@ class AuthEntryPanel( wx.Panel ):
             self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
         else:
             self.SetName( 'entry_panel_X' )
-        ## logging.debug( "AEP init %s", self.GetName() )
+        ## GetLogger().debug( "AEP init %s", self.GetName() )
 
         # Create panel child controls
 
@@ -98,7 +98,7 @@ class AuthEntryPanel( wx.Panel ):
         self.MouseBind( wx.EVT_LEFT_DOWN, self.OnLeftDown )
         self.MouseBind( wx.EVT_LEFT_UP, self.OnLeftUp )
 
-        ## logging.debug( "AEP init done %s", self.GetName() )
+        ## GetLogger().debug( "AEP init done %s", self.GetName() )
 
 
     def MouseBind( self, event_type, func ):
@@ -115,7 +115,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def OnCreate( self, event ):
         self.Unbind( wx.EVT_WINDOW_CREATE )
-        ## logging.debug( "AEP created" )
+        ## GetLogger().debug( "AEP created" )
         self.ChangeContents()
 
     def OnTimerTick( self, event ):
@@ -139,7 +139,7 @@ class AuthEntryPanel( wx.Panel ):
         if gp != None:
             gp.SelectPanel( self, True )
             # Copy current code to clipboard
-            logging.info( "%s copying code to the clipboard.", self.GetName() )
+            GetLogger().info( "%s copying code to the clipboard.", self.GetName() )
             if not self.CopyCodeToClipboard():
                 wx.Bell()
         event.Skip()
@@ -160,7 +160,7 @@ class AuthEntryPanel( wx.Panel ):
         self.sort_index = entry.GetSortIndex()
         self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
         self.code = self.entry.GenerateNextCode()
-        ## logging.debug( "AEP SE on %s", self.GetName() )
+        ## GetLogger().debug( "AEP SE on %s", self.GetName() )
         self.ChangeContents()
 
     def GetSortIndex( self ):
@@ -200,7 +200,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def SizeLabels( self, label_width ):
-        ## logging.debug( "AEP SL new label width %d", label_width )
+        ## GetLogger().debug( "AEP SL new label width %d", label_width )
         self.label_width = label_width
 
         s = self.label_panel.GetClientSize()
@@ -211,7 +211,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def UpdateContents( self ):
         if self.entry != None:
-            ## logging.debug( "AEP UC updating %s", self.GetName() )
+            ## GetLogger().debug( "AEP UC updating %s", self.GetName() )
             if self.code_masked and not self.selected:
                 self.code_text.SetLabelText( 'XXXXXX' )
             else:
@@ -231,18 +231,18 @@ class AuthEntryPanel( wx.Panel ):
         self.label_panel.SetClientSize( s )
         self.Fit()
 
-        ## logging.debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )
-        ## logging.debug( "AEP UC account size:  %s", str( self.account_text.GetSize() ) )
-        ## logging.debug( "AEP UC label width:   %d", self.label_width )
-        ## logging.debug( "AEP UC panel size:    %s", str( self.GetSize() ) )
+        ## GetLogger().debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )
+        ## GetLogger().debug( "AEP UC account size:  %s", str( self.account_text.GetSize() ) )
+        ## GetLogger().debug( "AEP UC label width:   %d", self.label_width )
+        ## GetLogger().debug( "AEP UC panel size:    %s", str( self.GetSize() ) )
 
 
     def ChangeContents( self ):
-        ## logging.debug( "AEP CC" )
+        ## GetLogger().debug( "AEP CC" )
         self.UpdateContents()
         gp = self.GetGrandParent()
         if gp != None:
-            ## logging.debug( "AEP CC notifying frame" )
+            ## GetLogger().debug( "AEP CC notifying frame" )
             gp.UpdatePanelSize()
 
 
@@ -272,7 +272,7 @@ class AuthEntryPanel( wx.Panel ):
 
     def UpdateTimerGauge( self ):
         current_time = wx.GetUTCTime()
-        ## logging.debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
+        ## GetLogger().debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
         last_cycle = self.totp_cycle
         self.totp_cycle = current_time % self.totp_period
         # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
@@ -291,10 +291,10 @@ class AuthEntryPanel( wx.Panel ):
             if  wx.TheClipboard.SetData( wx.TextDataObject( self.code ) ):
                 wx.TheClipboard.Flush()
             else:
-                logging.error( "%s encountered an error copying the code to the clipboard.", self.GetName() )
+                GetLogger().error( "%s encountered an error copying the code to the clipboard.", self.GetName() )
                 sts = False
             wx.TheClipboard.Close()
         else:
-            logging.error( "%s cannot open clipboard.", self.GetName() )
+            GetLogger().error( "%s cannot open clipboard.", self.GetName() )
             sts = False
         return sts

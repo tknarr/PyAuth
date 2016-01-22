@@ -2,13 +2,12 @@
 
 import base64
 import io
-import logging
 import wx
 from wx.lib.wordwrap import wordwrap
 
 about_data = {
     'name': "PyAuth",
-    'version': '0.5.0',
+    'version': '0.6.0',
     'version-tag': '',
     'version-status': 'alpha',
     'copyright': "(C) 2016 Todd T Knarr",
@@ -86,7 +85,6 @@ def GetIconBundle( name ):
     if raw_data != None:
         input_strm = wx.InputStream( io.BytesIO( raw_data ) )
         icon_bundle = wx.IconBundleFromStream( input_strm, wx.BITMAP_TYPE_ICO )
-        logging.debug( "Icon count: %d", icon_bundle.GetIconCount() )
     return icon_bundle
 
 def GetTaskbarIcon( name ):

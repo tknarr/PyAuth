@@ -1,6 +1,8 @@
-# PyAuth versions:
+# PyAuth version history:
 
-* 0.0.5 - Cleanup, first alpha
+* 0.6.0 - Logging improvements
+
+* 0.5.0 - Cleanup, first alpha
 
 * 0.4.4 - Single-instance via lockfile
 
