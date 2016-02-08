@@ -1,6 +1,7 @@
-# PyAuth
+PyAuth
+======
 
-### Copyright 2015 Todd T Knarr
+Copyright 2016 Todd T Knarr <tknarr@silverglass.org>
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -10,23 +11,41 @@ version.
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE. See the GNU General Public License (included in
-LICENSE.md) for more details.
+LICENSE.html) for more details.
 
 You should have received a copy of the GNU General Public License along with
-this program. If not, see
-[http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
+this program. If not, see `http://www.gnu.org/licenses/ <http://www.gnu.org/licenses/>`_
 
-## Prerequisites
+Summary
+-------
 
-* wxPython 3.x, which requires matching wxWidgets 3.x
-* pyotp 2.0.1 or higher, [https://pypi.python.org/pypi/pyotp](https://pypi.python.org/pypi/pyotp)
+PyAuth is a two-factor authentication program compatible with Google Authenticator
+and other software and hardware using the standard TOTP algorithm outlined in
+`RFC 6238 <https://tools.ietf.org/html/rfc6238>`_ (support for the HOTP algorithm
+outlined in `RFC 4226 <https://tools.ietf.org/html/rfc4226>`_ is planned).
 
-## Developers
 
-See [the Branches page](https://github.com/tknarr/PyAuth/wiki/Branches) for
-which branches are used for what and which ones you should pull from.
+Prerequisites
+-------------
 
-## Status
+* `wxPython <http://www.wxpython.org/>`_ 3.0 or higher, which requires matching
+  `wxWidgets <http://www.wxwidgets.org/>`_
+* `pyotp 2.0.1 <https://pypi.python.org/pypi/pyotp>`_ or higher
+
+wxPython isn't automatically pulled in by ``pip`` because the version at PyPI is
+still 2.9. Your distribution probably includes a pre-packaged version, or you can
+download it directly from the wxPython web site.
+
+Developers
+----------
+
+See the
+`Branches page of the project Wiki on GitHub <https://github.com/tknarr/PyAuth/wiki/Branches>`_
+for details on which branches are used for what and which ones you should pull from. The
+project follows the Git Flow branching scheme.
+
+Status
+------
 
 Everything in the v0.0.x series is a development version. v0.0.1 includes the
 minimal functionality to be usable. The commit messages up to this point aren't
@@ -39,23 +58,42 @@ any loose ends are taken care of, the version will jump to v0.9.x for
 testing. v1.0.0 is planned to be a stable release ready for normal use. The
 enhancements listed in TODO.md will occur after v1.0.0 is released.
 
-#### Known areas of concern
+Known areas of concern
+----------------------
 
-* Encryption of the database. Right now it's a plain wxWidgets configuration
-  file with one section per entry. The code sets permissions to keep the file
-  readable only by the user themselves. That's problematic on Windows, but I'm
-  not really targeting that platform since it's got a good option in
-  WinAuth. I'm considering adding encryption to keep the secret strings in the
-  database from being easily read by malware, at the cost of having to
-  manually enter a password when the program starts.
+Currently the TOTP implementation is coded to use a 30-second time period
+compatible with Google Authenticator. Future work will include allowing for
+different time periods.
 
-## Using
+Encryption of the database. Right now it's a plain wxWidgets configuration
+file with one section per entry. The code sets permissions to keep the file
+readable only by the user themselves. That's problematic on Windows, but I'm
+not really targeting that platform since it's got a good option in
+WinAuth. I'm planning on adding encryption to keep the secret strings in the
+database from being easily read by malware, at the cost of having to
+manually enter a password when the program starts (with the user having the
+option of leaving the password blank and the secrets unencrypted).
+
+Usage
+-----
 
 Command line:
-    PyAuth [-s] [-m] [--icons=(white|grey|dark|transparent)]
-* `-s` enables use of the notification (systray) icon if possible.
-* `-m` acts as `-s` plus hides the main window on startup (minimized to systray).
-* `--icons` selects a set of icons with the named background (default white).
+
+``PyAuth [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME]``
+
+* ``-s`` enables use of the notification (systray) icon if possible.
+
+* ``-m`` acts as ``-s`` plus hides the main window on startup (minimized to systray).
+
+* ``--icons`` selects a set of icons with the named background (default white).
+
+* ``--logfile`` allows you to set a log file for errors and messages logged by
+  the program. Errors always appear on the console regardless. You may use variable
+  and user expansions in the filename.
+  
+* ``--version`` requests that the program print out it's version number.
+
+* ``--help`` requests help on the command-line syntax.
 
 The GUI interface should be fairly straightforward at this point. Each entry
 is displayed in a pane in a scrolling list showing the service provider and

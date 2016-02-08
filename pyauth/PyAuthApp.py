@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import sys
@@ -6,10 +5,10 @@ import os.path
 import logging
 import argparse
 import wx
-from AuthFrame import AuthFrame as AuthFrame
-from About import GetProgramVersionString, GetProgramName, GetVendorName
-import Configuration
-from Logging import ConfigureLogging, GetLogger
+from . import Configuration
+from .AuthFrame import AuthFrame as AuthFrame
+from .About import GetProgramVersionString, GetProgramName, GetVendorName
+from .Logging import ConfigureLogging, GetLogger
 
 # Command line options:
 #   --systray, -s                            Start with the systray icon if possible
@@ -72,6 +71,9 @@ class PyAuthApp( wx.App ):
 
         # Only allow one instance pointed at a given config/database directory to run
         self.instance_check = wx.SingleInstanceChecker( '.lock', cfgdir )
+        if self.instance_check.IsAnotherRunning():
+            logging.critical( "A copy of " + GetProgramName() + " is already running." )
+            return False
 
         # Configure logging
         ConfigureLogging( log_filename )
@@ -115,8 +117,3 @@ class PyAuthApp( wx.App ):
         GetLogger().info( "Exiting" )
         logging.shutdown()
         return 0
-
-
-if __name__ == '__main__':
-    app = PyAuthApp( False )
-    app.MainLoop()

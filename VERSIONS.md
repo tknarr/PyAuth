@@ -1,6 +1,13 @@
 # PyAuth version history:
 
-* 0.6.0 - Logging improvements
+* 0.6.1 - Full license text in separate dialog
+  - Fix bug in instance-already-running test
+  - Add item to show the full license text to the help menu
+  - Python 3 compatibility changes
+
+* 0.6.0 - Logging and packaging
+  - Improve logging, log to file as well as console
+  - Package for PyPI/pip
 
 * 0.5.0 - Cleanup, first alpha
 

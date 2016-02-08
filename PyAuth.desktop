@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=PyAuth
+Comment=Google Authenticator (TOTP) desktop client
+Exec=PyAuth -m
+Icon=${ICONDIR}/PyAuth.png
+Path=
+Terminal=false
+StartupNotify=false

@@ -4,12 +4,12 @@ import base64
 import io
 import wx
 from wx.lib.wordwrap import wordwrap
+import pyauth
 
 about_data = {
-    'name': "PyAuth",
-    'version': '0.6.0',
-    'version-tag': '',
-    'version-status': 'alpha',
+    'name': pyauth.__program_name__,
+    'version': pyauth.__version__,
+    'version-tag': pyauth.__version_tag__,
     'copyright': "(C) 2016 Todd T Knarr",
     'website': 'https://github.com/tknarr/PyAuth.git',
     'developers': [ 'Todd T Knarr' ],
@@ -17,7 +17,7 @@ about_data = {
 
     'license': """\
 PyAuth - Google Authenticator desktop application
-Copyright (C) 2015 Todd T Knarr
+Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
 
 This program is free software: you can redistribute it and/or modify \
 it under the terms of the GNU General Public License as published by \
@@ -30,8 +30,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License \
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+along with this program.  If not, see http://www.gnu.org/licenses/
 """
 
     }
@@ -40,16 +39,7 @@ def GetProgramName():
     return about_data['name']
 
 def GetProgramVersion():
-    version_string = about_data['version']
-    if 'version-tag' in about_data:
-        vt = about_data['version-tag']
-        if vt != None and vt != '':
-            version_string += vt
-    if 'version-status' in about_data:
-        version_status = about_data['version-status']
-        if version_status != None and version_status != '':
-            version_string += ' (' + version_status + ')'
-    return version_string
+    return about_data['version'] + about_data['version-tag']
 
 def GetProgramVersionString():
     return about_data['name'] + ' ' + GetProgramVersion()
@@ -57,7 +47,7 @@ def GetProgramVersionString():
 def GetVendorName():
     return "Silverglass Technical"
 
-def GetAboutInfo( dc, desc_width = 350 ):
+def GetAboutInfo( dc, desc_width = 600 ):
     about_info = wx.AboutDialogInfo()
     about_info.SetName( about_data['name'] )
     about_info.SetVersion( GetProgramVersion() )
@@ -79,7 +69,7 @@ def GetIconBundle( name ):
     icon_bundle = None
     try:
         raw_data = base64.b64decode( icon_bundle_data[name] )
-    except StandardError as e:
+    except Exception as e:
         raw_data = None
         logging.error( "Error decoding %s icon bundle: %s", name, str( e ) )
     if raw_data != None:
@@ -91,7 +81,7 @@ def GetTaskbarIcon( name ):
     icon = None
     try:
         raw_data = base64.b64decode( taskbar_icon_data[name] )
-    except StandardError as e:
+    except Exception as e:
         raw_data = None
         logging.error( "Error decoding %s taskbar icon: %s", name, str( e ) )
     if raw_data != None:

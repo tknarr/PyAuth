@@ -5,8 +5,8 @@ import errno
 import string
 import wx
 import pyotp
-from About import GetProgramName, GetVendorName
-from Logging import GetLogger
+from .About import GetProgramName, GetVendorName
+from .Logging import GetLogger
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -78,7 +78,7 @@ class AuthenticationStore:
         # This should be handled via SetUmask(), but it's not implemented in the Python bindings
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         try:
-            os.chmod( cfgfile, 0600 )
+            os.chmod( cfgfile, 0o600 )
         except OSError as e:
             if e.errno != errno.ENOENT:
                 GetLogger().warning( "Problem with database file %s", cfgfile )
@@ -118,7 +118,7 @@ class AuthenticationStore:
 
     def Add( self, provider, account, secret, original_label = None ):
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
-        elist = filter( f, self.entry_list )
+        elist = list( filter( f, self.entry_list ) )
         if len( elist ) > 0:
             GetLogger().warning( "Entry already exists for %s:%s", provider, account )
             return None
@@ -136,7 +136,7 @@ class AuthenticationStore:
     def Delete( self, entry_group ):
         GetLogger().debug( "AS deleting entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
-        elist = filter( f, self.entry_list )
+        elist = list( filter( f, self.entry_list ) )
         for entry in elist:
             index = self.entry_list.index( entry )
             removed = self.entry_list.pop( index )
@@ -148,7 +148,7 @@ class AuthenticationStore:
     def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
         GetLogger().debug( "AS updating entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
-        elist = filter( f, self.entry_list )
+        elist = list( filter( f, self.entry_list ) )
         if len( elist ) < 1:
             return 0 # No entry found
         if len( elist ) > 1:
@@ -272,7 +272,7 @@ class AuthenticationEntry:
         else:
             try:
                 c = self.auth.now()
-            except StandardError as e:
+            except Exception as e:
                 c = '??????'
                 self.otp_problem = True
                 GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )

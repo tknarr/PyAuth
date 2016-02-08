@@ -3,8 +3,8 @@
 import os.path
 import logging
 import logging.handlers
-import Configuration
-from About import GetProgramName
+from . import Configuration
+from .About import GetProgramName
 
 def GetLogger():
     return logging.getLogger( GetProgramName() )
