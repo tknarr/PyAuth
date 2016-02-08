@@ -3,11 +3,10 @@
 import sysconfig
 import wx
 from wx.lib import newevent as NE
-import pyauth
 from . import Configuration
 from .AuthenticationStore import AuthenticationStore
 from .AuthEntryPanel import AuthEntryPanel
-from .About import GetAboutInfo, GetIconBundle, GetTaskbarIcon
+from .About import GetProgramName, GetAboutInfo, GetIconBundle, GetTaskbarIcon
 from .NewEntryDialog import NewEntryDialog
 from .UpdateEntryDialog import UpdateEntryDialog
 from .HTMLTextDialog import HTMLTextDialog
@@ -609,10 +608,10 @@ class AuthFrame( wx.Frame ):
         scheme = wx.GetApp().install_scheme
         if scheme != None:
             filepath = sysconfig.get_path( 'data', scheme ) + '/share/doc/' + \
-                pyauth.__program_name__ + '/LICENSE.html'
+                GetProgramName() + '/LICENSE.html'
         else:
             filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + \
-                pyauth.__program_name__ + '/LICENSE.html'
+                GetProgramName() + '/LICENSE.html'
         self.license_dialog.LoadFile( filepath )
         self.license_dialog.ShowModal()
 

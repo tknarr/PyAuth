@@ -16,11 +16,11 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 image_files = []
 # Icon bundles
 files = glob( 'images/*.ico' )
-entry = ( 'share/icons/hicolor', files )
+entry = ( 'share/' + pyauth.__program_name__, files )
 image_files.append( entry )
 # Large program icons
 files = glob( 'images/*.png' )
-entry = ( 'share/icons/hicolor/512x512/', files )
+entry = ( 'share/icons/hicolor/512x512/apps', files )
 image_files.append( entry )
 # Specific sizes of icons
 for s in [ 16, 24, 32, 48, 64, 128, 256 ]:

@@ -3,6 +3,9 @@
 import os.path
 import logging
 import logging.handlers
+# NOTE: We need to get the program name directly from the package, because
+# the About module whose GetProgramName() function we'd normally use needs
+# to use Logger and that sets up an import loop.
 import pyauth
 from . import Configuration
 

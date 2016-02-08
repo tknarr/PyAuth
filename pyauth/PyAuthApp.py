@@ -7,7 +7,6 @@ import logging
 import argparse
 import pkg_resources
 import wx
-import pyauth
 from . import Configuration
 from .AuthFrame import AuthFrame as AuthFrame
 from .About import GetProgramVersionString, GetProgramName, GetVendorName
@@ -28,7 +27,7 @@ class PyAuthApp( wx.App ):
         log_filename = None
 
         self.install_scheme = None
-        distribution = pkg_resources.get_distribution( pyauth.__program_name__ )
+        distribution = pkg_resources.get_distribution( GetProgramName() )
         lib_path = distribution.location
         schemes = sysconfig.get_scheme_names()
         for s in schemes:
