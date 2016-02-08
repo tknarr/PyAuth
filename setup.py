@@ -14,14 +14,18 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 
 # Collect icon images for use in data_files
 image_files = []
-# Large program icons and icon bundles
-files = glob( 'images/*.png' ) + glob( 'images/*.ico' )
+# Icon bundles
+files = glob( 'images/*.ico' )
 entry = ( 'share/icons/hicolor', files )
+image_files.append( entry )
+# Large program icons
+files = glob( 'images/*.png' )
+entry = ( 'share/icons/hicolor/512x512/', files )
 image_files.append( entry )
 # Specific sizes of icons
 for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
     files = glob( 'images/{0}x{0}/*.png'.format( str(s) ) )
-    entry = ( 'share/icons/hicolor/{0}x{0}'.format( str(s) ), files )
+    entry = ( 'share/icons/hicolor/{0}x{0}/apps'.format( str(s) ), files )
     image_files.append( entry )
 
 setup(
