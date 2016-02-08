@@ -12,6 +12,7 @@ about_data = {
     'name': pyauth.__program_name__,
     'version': pyauth.__version__,
     'version-tag': pyauth.__version_tag__,
+    'version-status': pyauth.__version_status__,
     'copyright': "(C) 2016 Todd T Knarr",
     'website': 'https://github.com/tknarr/PyAuth.git',
     'developers': [ 'Todd T Knarr' ],
@@ -41,7 +42,10 @@ def GetProgramName():
     return about_data['name']
 
 def GetProgramVersion():
-    return about_data['version'] + about_data['version-tag']
+    v = about_data['version'] + about_data['version-tag']
+    if about_data['version-status'] != '':
+        v += ' (' + about_data['version-status'] + ')'
+    return v
 
 def GetProgramVersionString():
     return about_data['name'] + ' ' + GetProgramVersion()

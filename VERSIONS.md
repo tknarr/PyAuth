@@ -1,6 +1,6 @@
 # PyAuth version history:
 
-* 0.6.2 - Packaging of icons and desktop shortcut  file
+* 0.6.2 - Packaging of icons and desktop shortcut file
 
 * 0.6.1 - Full license text in separate dialog
   - Fix bug in instance-already-running test
