@@ -3,6 +3,7 @@
 import sysconfig
 import wx
 from wx.lib import newevent as NE
+import pyauth
 from . import Configuration
 from .AuthenticationStore import AuthenticationStore
 from .AuthEntryPanel import AuthEntryPanel
@@ -605,7 +606,14 @@ class AuthFrame( wx.Frame ):
         if self.license_dialog == None:
             self.license_dialog = HTMLTextDialog( self, wx.ID_ANY, "License" )
         # NOTE Should look for license file in editable installation too
-        self.license_dialog.LoadFile( sysconfig.get_path( 'data' ) + '/share/doc/pyauth/LICENSE.html' )
+        scheme = wx.GetApp().install_scheme
+        if scheme != None:
+            filepath = sysconfig.get_path( 'data', scheme ) + '/share/doc/' + \
+                pyauth.__program_name__ + '/LICENSE.html'
+        else:
+            filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + \
+                pyauth.__program_name__ + '/LICENSE.html'
+        self.license_dialog.LoadFile( filepath )
         self.license_dialog.ShowModal()
 
     def OnMenuAbout( self, event ):

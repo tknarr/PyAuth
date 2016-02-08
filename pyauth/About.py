@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import sysconfig
 import base64
 import io
 import wx
 from wx.lib.wordwrap import wordwrap
 import pyauth
+from .Logging import GetLogger
 
 about_data = {
     'name': pyauth.__program_name__,
@@ -71,7 +73,7 @@ def GetIconBundle( name ):
         raw_data = base64.b64decode( icon_bundle_data[name] )
     except Exception as e:
         raw_data = None
-        logging.error( "Error decoding %s icon bundle: %s", name, str( e ) )
+        GetLogger().error( "Error decoding %s icon bundle: %s", name, str( e ) )
     if raw_data != None:
         input_strm = wx.InputStream( io.BytesIO( raw_data ) )
         icon_bundle = wx.IconBundleFromStream( input_strm, wx.BITMAP_TYPE_ICO )
@@ -79,18 +81,27 @@ def GetIconBundle( name ):
 
 def GetTaskbarIcon( name ):
     icon = None
+    scheme = wx.GetApp().install_scheme
+    if scheme != None:
+        filename = sysconfig.get_path( 'data', scheme ) + \
+            '/share/icons/hicolor/32x32/apps/PyAuth-systray'
+    else:
+        filename = sysconfig.get_path( 'data' ) + \
+            '/share/icons/hicolor/32x32/apps/PyAuth-systray'
+    if name != 'transparent':
+        filename += '-' + name
+    filename += '.png'
     try:
-        raw_data = base64.b64decode( taskbar_icon_data[name] )
-    except Exception as e:
-        raw_data = None
-        logging.error( "Error decoding %s taskbar icon: %s", name, str( e ) )
-    if raw_data != None:
-        input_strm = wx.InputStream( io.BytesIO( raw_data ) )
+        input_strm = wx.InputStream( io.FileIO( filename ) )
         img = wx.ImageFromStream( input_strm, wx.BITMAP_TYPE_PNG )
-        if img != None:
-            bm = img.ConvertToBitmap()
-            if bm != None:
-                icon = wx.IconFromBitmap( bm )
+    except Exception as e:
+        img = None
+        GetLogger().error( "Error reading %s taskbar icon: %s", name, filename )
+        GetLogger().error( "%s", str(e) )
+    if img != None:
+        bm = img.ConvertToBitmap()
+        if bm != None:
+            icon = wx.IconFromBitmap( bm )
     return icon
 
 
@@ -21236,7 +21247,6 @@ l1OjRSSe/h9KIy0nF7jhxAAAAABJRU5ErkJggg==
 '''
     }
 
-# TODO other color sets
 taskbar_icon_data = {
     'white': '''\
 iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBI

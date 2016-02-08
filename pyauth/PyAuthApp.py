@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import sysconfig
 import os.path
 import logging
 import argparse
+import pkg_resources
 import wx
+import pyauth
 from . import Configuration
 from .AuthFrame import AuthFrame as AuthFrame
 from .About import GetProgramVersionString, GetProgramName, GetVendorName
@@ -23,6 +26,15 @@ class PyAuthApp( wx.App ):
         initial_minimized = None
         iconset = None
         log_filename = None
+
+        self.install_scheme = None
+        distribution = pkg_resources.get_distribution( pyauth.__program_name__ )
+        lib_path = distribution.location
+        schemes = sysconfig.get_scheme_names()
+        for s in schemes:
+            p = sysconfig.get_path( 'purelib', s )
+            if p == lib_path:
+                self.install_scheme = s
 
         # Default root logging for startup messages
         logging.basicConfig( level = logging.WARNING )
@@ -77,6 +89,8 @@ class PyAuthApp( wx.App ):
 
         # Configure logging
         ConfigureLogging( log_filename )
+        if self.install_scheme != None:
+            GetLogger().info( "Installation scheme: %s", self.install_scheme )
         GetLogger().info( "Configuration file: %s", cfgfile )
 
         # Create and position main frame

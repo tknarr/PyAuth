@@ -3,11 +3,11 @@
 import os.path
 import logging
 import logging.handlers
+import pyauth
 from . import Configuration
-from .About import GetProgramName
 
 def GetLogger():
-    return logging.getLogger( GetProgramName() )
+    return logging.getLogger( pyauth.__program_name__ )
 
 def ConfigureLogging( log_filename_args ):
     log_lvl = Configuration.GetLoggingLevel()
@@ -22,7 +22,7 @@ def ConfigureLogging( log_filename_args ):
     else:
         log_filename = None
 
-    app_logger = logging.getLogger( GetProgramName() )
+    app_logger = logging.getLogger( pyauth.__program_name__ )
 
     # Console logger with just serious errors
     formatter = logging.Formatter( '%(levelname)s:%(name)s:%(message)s' )
