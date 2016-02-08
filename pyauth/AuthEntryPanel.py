@@ -29,7 +29,7 @@ class AuthEntryPanel( wx.Panel ):
         self.timer_gauge = None
 
         if entry != None:
-            self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
+            self.SetName( 'entry_panel_{0:d}'.format( self.entry.GetGroup() ) )
         else:
             self.SetName( 'entry_panel_X' )
         ## GetLogger().debug( "AEP init %s", self.GetName() )
@@ -158,7 +158,7 @@ class AuthEntryPanel( wx.Panel ):
     def SetEntry( self, entry ):
         self.entry = entry
         self.sort_index = entry.GetSortIndex()
-        self.SetName( 'entry_panel_%s' % self.entry.GetGroup() )
+        self.SetName( 'entry_panel_{0:d}'.format( self.entry.GetGroup() ) )
         self.code = self.entry.GenerateNextCode()
         ## GetLogger().debug( "AEP SE on %s", self.GetName() )
         self.ChangeContents()

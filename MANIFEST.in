@@ -2,7 +2,7 @@ include README.rst
 include LICENSE.html
 include TODO.md
 include VERSIONS.md
-include PyAuth.desktop
+include PyAuth.desktop.in PyAuth.desktop
 recursive-include images *.png *.ico
 
 # The following are needed only in sdists

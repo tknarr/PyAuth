@@ -1,5 +1,10 @@
 # PyAuth version history:
 
+* 0.9.0 - Ready for beta testing
+  - Post-install updates PyAuth.desktop from PyAuth.desktop.in replacing variables
+    with paths from sysconfig
+  - Final Python 3 compatibility changes
+
 * 0.6.2 - Packaging of icons and desktop shortcut file
 
 * 0.6.1 - Full license text in separate dialog

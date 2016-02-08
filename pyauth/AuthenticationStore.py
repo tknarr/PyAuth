@@ -39,7 +39,7 @@ class AuthenticationStore:
             if entry_group > 0:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
-                cfgpath = '%s/' % entry_group
+                cfgpath = '{0:d}/'.format( entry_group )
                 sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
                 ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
@@ -141,7 +141,7 @@ class AuthenticationStore:
             index = self.entry_list.index( entry )
             removed = self.entry_list.pop( index )
             GetLogger().debug( "AS deleted entry %d", removed.entry_group )
-            self.cfg.DeleteGroup( '/entries/%s' % removed.entry_group )
+            self.cfg.DeleteGroup( '/entries/{0:d}'.format( removed.entry_group ) )
         self.cfg.Flush()
 
 
@@ -205,7 +205,7 @@ class AuthenticationEntry:
 
 
     def Save( self, cfg ):
-        cfgpath = '/entries/%s/' % self.entry_group
+        cfgpath = '/entries/{0:d}/'.format( self.entry_group )
         cfg.Write( cfgpath + 'type', 'totp' )
         cfg.WriteInt( cfgpath + 'sort_index', self.sort_index )
         cfg.Write( cfgpath + 'provider', self.provider )

@@ -401,7 +401,7 @@ class AuthFrame( wx.Frame ):
                 GetLogger().debug( "AF NE duplicate item" )
                 dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
                                         style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                dlg.SetExtendedMessage( "Provider: %s\nAccount: %s" % ( provider, account ) )
+                dlg.SetExtendedMessage( "Provider: {0}\nAccount: {1}".format( provider, account ) )
                 dlg.ShowModal()
                 dlg.Destroy()
 

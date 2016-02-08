@@ -9,7 +9,7 @@ Future enhancements:
 * Subclass authentication entry classes and panels
 * Different intervals for TOTP
 * HOTP entries and code generation
-* Change databases
+* Allow opening of other databases
 * Read QR codes
 * Generate QR codes
 * Import/export databases:

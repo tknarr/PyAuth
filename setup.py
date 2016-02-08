@@ -96,6 +96,7 @@ setup(
             'LICENSE.html',
             'TODO.md',
             'VERSIONS.md',
+            'PyAuth.desktop.in',
             'PyAuth.desktop'
           ] )
         ],
