@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
 from os import path
+from glob import glob
 import pyauth
 
 here = path.abspath(path.dirname(__file__))
@@ -10,6 +11,18 @@ here = path.abspath(path.dirname(__file__))
 # Get the long description from the README file
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+# Collect icon images for use in data_files
+image_files = []
+# Large program icons and icon bundles
+files = glob( 'images/*.png' ) + glob( 'images/*.ico' )
+entry = ( 'share/icons/hicolor', files )
+image_files.append( entry )
+# Specific sizes of icons
+for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
+    files = glob( 'images/{0}x{0}/*.png'.format( str(s) ) )
+    entry = ( 'share/icons/hicolor/{0}x{0}'.format( str(s) ), files )
+    image_files.append( entry )
 
 setup(
     name=pyauth.__program_name__,
@@ -73,22 +86,14 @@ setup(
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
-    data_files=[
-        ( 'share/icons', [ 'images/PyAuth-512.png',
-                           'images/PyAuth.ico',
-                           'images/PyAuth-D-512.png',
-                           'images/PyAuth-D.ico',
-                           'images/PyAuth-G-512.png',
-                           'images/PyAuth-G.ico',
-                           'images/PyAuth-W-512.png',
-                           'images/PyAuth-W.ico'
-                           ] ),
-        ( 'share/doc/pyauth', [ 'README.rst',
-                                'LICENSE.html',
-                                'TODO.md',
-                                'VERSIONS.md',
-                                'PyAuth.desktop'
-                                ] )
+    data_files= image_files + [
+        ( 'share/doc/' + pyauth.__program_name__,
+          [ 'README.rst',
+            'LICENSE.html',
+            'TODO.md',
+            'VERSIONS.md',
+            'PyAuth.desktop'
+          ] )
         ],
 
     # To provide executable scripts, use entry points in preference to the
