@@ -480,7 +480,7 @@ class AuthFrame( wx.Frame ):
             dlg.SetExtendedMessage( "You must select an entry to delete." )
             dlg.ShowModal()
             dlg.Destroy()
-            
+
 
     def OnMenuCopyCode( self, event ):
         GetLogger().debug( "AF tool CopyCode command" )
@@ -641,18 +641,25 @@ class AuthFrame( wx.Frame ):
         GetLogger().debug( "AF create menu bar" )
         mb = wx.MenuBar()
 
-        menu = wx.Menu()
-        menu.Append( wx.ID_NEW, "&New entry", "Create a new account entry" )
+        # Database maintenance submenu
+        db_menu = wx.Menu()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
         self.MENU_REINDEX = mi.GetId()
-        menu.AppendItem( mi )
+        db_menu.AppendItem( mi )
         mi = wx.MenuItem( menu, wx.ID_ANY, "Regroup", "Completely compact database in current order" )
         self.MENU_REGROUP = mi.GetId()
-        menu.AppendItem( mi )
+        db_menu.AppendItem( mi )
+
+        # File menu
+        menu = wx.Menu()
+        menu.Append( wx.ID_NEW, "&New entry", "Create a new account entry" )
+        menu.appendSeparator()
+        menu.Append( db_menu, "DB Maintenance" )
         menu.AppendSeparator()
         menu.Append( wx.ID_EXIT, "E&xit", "Exit the program" )
         mb.Append( menu, "&File" )
-        
+
+        # Edit menu
         menu = wx.Menu()
         mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code", "Copy the current code to clipboard" )
         self.MENU_COPY_CODE = mi.GetId()
@@ -666,7 +673,8 @@ class AuthFrame( wx.Frame ):
         menu.Append( wx.ID_UP, "Move Up", "Move the selected entry up one position" )
         menu.Append( wx.ID_DOWN, "Move Down", "Move the selected entry down one position" )
         mb.Append( menu, "Edit" )
-        
+
+        # View menu
         menu = wx.Menu()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Toolbar", "Show the toolbar", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TOOLBAR = mi.GetId()
@@ -687,16 +695,18 @@ class AuthFrame( wx.Frame ):
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
         mb.Append( menu, "&View" )
-        
+
+        # Help menu
         menu = wx.Menu()
         menu.Append( wx.ID_HELP, "&Help", "Help index" )
-        menu.Enable( wx.ID_HELP, False )
+        menu.Enable( wx.ID_HELP, False ) # TODO enable after help implemented
+        menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "License", "Show license" )
         self.MENU_LICENSE = mi.GetId()
         menu.AppendItem( mi )
         menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
         mb.Append( menu, "Help" )
-        
+
         return mb
 
 
@@ -706,7 +716,7 @@ class AuthFrame( wx.Frame ):
         toolbar.SetToolBitmapSize( self.toolbar_icon_size )
 
         self.tool_ids = {}
-        
+
         tool_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_TOOLBAR, self.toolbar_icon_size )
         tool = toolbar.AddTool( self.MENU_COPY_CODE, tool_icon,
                                 shortHelpString = "Copy the selected code to clipboard" )
@@ -726,7 +736,7 @@ class AuthFrame( wx.Frame ):
 
         toolbar.Realize()
         ## GetLogger().debug( "AF toolbar initial size %s", toolbar.GetSize() )
-        
+
         return toolbar
 
     def set_toolbar_state( self, show ):
@@ -759,7 +769,7 @@ class AuthFrame( wx.Frame ):
                 ## GetLogger().debug( "AF RTH %s new toolbar height %d", code, self.toolbar_height )
         return changed
 
-            
+
     def create_entries_window( self ):
         GetLogger().debug( "AF create entries window" )
         sw = wx.ScrolledWindow( self, wx.ID_ANY, style = wx.VSCROLL, name = 'entries_window' )
@@ -839,7 +849,7 @@ class AuthFrame( wx.Frame ):
         # calculated correctly. We end up not using the client sizes, but we need them
         # as intermediate steps to make sure the frame has a minimum size large enough
         # for it's client area to hold the entries window.
-        
+
         # Calculate size needed in client area of scrolling entries window
         entries_client_size = wx.Size( column_width, column_height )
         entries_min_client_size = wx.Size( column_width, min_height )
@@ -869,7 +879,7 @@ class AuthFrame( wx.Frame ):
 
         # Clear the hints so we can resize the frame freely
         self.SetSizeHints( -1, -1 )
-        
+
         # Set window sizes and minimum sizes for the entries window and the frame
         self.SetMinSize( frame_min_size )
         self.SetSize( frame_size )
@@ -900,7 +910,7 @@ class AuthFrame( wx.Frame ):
             if s.GetHeight() > self.entry_height:
                 self.entry_height = s.GetHeight()
         ## GetLogger().debug( "AF APS entry width %d height %d", self.entry_width, self.entry_height )
-                
+
 
     def UpdatePanelSize( self ):
         ## GetLogger().debug( "AF UPS" )
