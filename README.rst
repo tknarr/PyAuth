@@ -24,7 +24,7 @@ and other software and hardware using the standard TOTP algorithm outlined in
 `RFC 6238 <https://tools.ietf.org/html/rfc6238>`_ (support for the HOTP algorithm
 outlined in `RFC 4226 <https://tools.ietf.org/html/rfc4226>`_ is planned).
 
-PyPI page: `https://pypi.python.org/pypi/PyAuth`_
+PyPI page: `https://pypi.python.org/pypi/PyAuth <https://pypi.python.org/pypi/PyAuth>`_
 
 
 Prerequisites
