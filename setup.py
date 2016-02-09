@@ -105,6 +105,10 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+
+        # Other classifiers
+        'Environment :: X11 Applications',
+        'Operating System :: Unix',
     ],
 
     # What does your project relate to?
