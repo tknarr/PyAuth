@@ -72,7 +72,7 @@ class AuthEntryPanel( wx.Panel ):
         sizer.Add( self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
 
         self.code_text = wx.StaticText( self, wx.ID_ANY, self.code_mask_char * self.code_max_digits,
-                                        style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
+                                        style = wx.ALIGN_RIGHT | wx.ST_NO_AUTORESIZE,
                                         name = 'code_text' )
         self.code_text.Wrap( -1 )
         self.code_text.SetFont( self.code_font )
@@ -80,7 +80,7 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text.SetInitialSize( self.code_text.GetSize() )
         self.code_text.SetMinSize( self.code_text.GetSize() )
         sizer.Add( self.code_text, 0,
-                   wx.EXPAND | wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
+                   wx.LEFT | wx.RIGHT | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
                    12 )
 
         self.totp_period = entry.GetPeriod() if self.entry != None else 30
@@ -93,7 +93,8 @@ class AuthEntryPanel( wx.Panel ):
         self.UpdateContents()
 
         if entry != None:
-            self.code = self.entry.GenerateNextCode()
+            tmp_code = self.entry.GenerateNextCode()
+            self.code = ( ( 8 - len( tmp_code ) ) * ' ' ) + tmp_code
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
@@ -165,7 +166,8 @@ class AuthEntryPanel( wx.Panel ):
         self.sort_index = entry.GetSortIndex()
         self.code_digits = entry.GetDigits()
         self.SetName( 'entry_panel_{0:d}'.format( self.entry.GetGroup() ) )
-        self.code = self.entry.GenerateNextCode()
+        tmp_code = self.entry.GenerateNextCode()
+        self.code = ( ( 8 - len( tmp_code ) ) * ' ' ) + tmp_code
         ## GetLogger().debug( "AEP SE on %s", self.GetName() )
         self.ChangeContents()
 
@@ -283,7 +285,8 @@ class AuthEntryPanel( wx.Panel ):
         self.totp_cycle = current_time % self.totp_period
         # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
         if self.totp_cycle < last_cycle and self.entry != None:
-            self.code = self.entry.GenerateNextCode()
+            tmp_code = self.entry.GenerateNextCode()
+            self.code = ( ( 8 - len( tmp_code ) ) * ' ' ) + tmp_code
             if self.code_masked and not self.selected:
                 self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
             else:

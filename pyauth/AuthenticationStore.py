@@ -290,12 +290,12 @@ class AuthenticationEntry:
 
     def GenerateNextCode( self ):
         if self.otp_problem:
-            c = '??????'
+            c = '?' * self.digits
         else:
             try:
                 c = self.auth.now()
             except Exception as e:
-                c = '??????'
+                c = '?' * self.digits
                 self.otp_problem = True
                 GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
         return c
