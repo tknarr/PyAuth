@@ -27,6 +27,7 @@ class AuthenticationStore:
         self.entry_list = []
         self.next_group = 1
         self.next_index = 1
+        self.max_digits = 8
 
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter
@@ -49,10 +50,14 @@ class AuthenticationStore:
                 ## GetLogger().debug( "AS   provider %s", provider )
                 ## GetLogger().debug( "AS   account %s", account )
                 secret = self.cfg.Read( cfgpath + 'secret' )
+                digits = self.cfg.ReadInt( cfgpath + 'digits', 6 )
+                if digits > self.max_digits:
+                    self.max_digits = digits
                 original_label = self.cfg.Read( cfgpath + 'original_label', '' )
                 if original_label == '':
                     original_label = provider + ':' + account
-                entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret, original_label )
+                entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret,
+                                             digits, original_label )
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
@@ -63,10 +68,13 @@ class AuthenticationStore:
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
-        
+
 
     def EntryList( self ):
         return self.entry_list
+
+    def MaxDigits( self ):
+        return self.max_digits
 
 
     def Save( self ):
@@ -98,7 +106,7 @@ class AuthenticationStore:
         GetLogger().debug( "AS next index = %d", self.next_index )
         self.cfg.Flush()
 
-    
+
     def Regroup( self ):
         GetLogger().debug( "AS regroup" )
         keyfunc = lambda x: x.GetSortIndex()
@@ -116,7 +124,7 @@ class AuthenticationStore:
         self.cfg.Flush()
 
 
-    def Add( self, provider, account, secret, original_label = None ):
+    def Add( self, provider, account, secret, digits = 6, original_label = None ):
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
         elist = list( filter( f, self.entry_list ) )
         if len( elist ) > 0:
@@ -124,7 +132,8 @@ class AuthenticationStore:
             return None
         GetLogger().debug( "AS adding new entry %s:%s, group %d, sort index %d",
                            provider, account, self.next_group, self.next_index )
-        entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret, original_label )
+        entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret,
+                                     digits, original_label )
         self.entry_list.append( entry )
         self.next_index += 1
         self.next_group += 1
@@ -145,7 +154,8 @@ class AuthenticationStore:
         self.cfg.Flush()
 
 
-    def Update( self, entry_group, provider = None, account = None, secret = None, original_label = None ):
+    def Update( self, entry_group, provider = None, account = None, secret = None, digits = None,
+                original_label = None ):
         GetLogger().debug( "AS updating entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
         elist = list( filter( f, self.entry_list ) )
@@ -165,13 +175,16 @@ class AuthenticationStore:
         if secret != None:
             GetLogger().debug( "AS new secret" )
             entry.SetSecret( secret )
+        if digits != None:
+            GetLogger().debug( "AS new digits %d", digits )
+            entry.SetDigits( digits )
         if original_label != None:
             GetLogger().debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
         entry.Save( self.cfg )
         self.cfg.Flush()
         return 1
-    
+
 
 # Helper to create our deletion table for SetSecret()
 def make_deltbl():
@@ -185,18 +198,19 @@ class AuthenticationEntry:
     # Never changed, so just make it once
     del_tbl = make_deltbl()
 
-    def __init__( self, group, index, provider, account, secret, original_label = None ):
+    def __init__( self, group, index, provider, account, secret, digits = 6, original_label = None ):
         self.entry_group = group
         self.sort_index = index
         self.provider = provider
         self.account = account
         self.SetSecret( secret )
+        self.digits = digits
         if original_label != None:
             self.original_label = original_label
         else:
             self.original_label = provider + ':' + account
 
-        self.auth = pyotp.TOTP( self.secret )
+        self.auth = pyotp.TOTP( self.secret, self.digits )
         self.otp_problem = False
 
 
@@ -211,6 +225,7 @@ class AuthenticationEntry:
         cfg.Write( cfgpath + 'provider', self.provider )
         cfg.Write( cfgpath + 'account', self.account )
         cfg.Write( cfgpath + 'secret', self.secret )
+        cfg.WriteInt( cfgpath + 'digits', self.digits )
         cfg.Write( cfgpath + 'original_label', self.original_label )
 
 
@@ -219,7 +234,7 @@ class AuthenticationEntry:
 
     def SetGroup( self, g ):
         self.entry_group = g
-        
+
 
     def GetSortIndex( self ):
         return self.sort_index
@@ -229,15 +244,21 @@ class AuthenticationEntry:
 
     def GetProvider( self ):
         return self.provider
-    
+
     def SetProvider( self, provider ):
         self.provider = provider
 
     def GetAccount( self ):
         return self.account
-    
+
     def SetAccount( self, account ):
         self.account = account
+
+    def GetDigits( self ):
+        return self.digits
+
+    def SetDigits( self, digits ):
+        self.digits = digits
 
     def GetOriginalLabel( self ):
         return self.original_label
@@ -247,7 +268,7 @@ class AuthenticationEntry:
 
     def GetSecret( self ):
         return self.secret
-    
+
     def SetSecret( self, secret ):
         self.secret = secret
         # Strip out dashes and whitespace characters that're sometimes put in the
@@ -266,14 +287,15 @@ class AuthenticationEntry:
     def GetPeriod( self ):
         return 30 # Google Authenticator uses a 30-second period
 
+
     def GenerateNextCode( self ):
         if self.otp_problem:
-            c = '??????'
+            c = '?' * self.digits
         else:
             try:
                 c = self.auth.now()
             except Exception as e:
-                c = '??????'
+                c = '?' * self.digits
                 self.otp_problem = True
                 GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
         return c
