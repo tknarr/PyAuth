@@ -7,12 +7,15 @@ from .Logging import GetLogger
 class AuthEntryPanel( wx.Panel ):
 
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.DefaultSize,
-                  style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, entry = None ):
+                  style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, entry = None, code_max_digits = 6 ):
         wx.Panel.__init__ ( self, parent, id, pos, size, style, name )
 
         self.entry = entry
         self.sort_index = 0
         self.code = ''
+        self.code_digits = 6
+        self.code_max_digits = code_max_digits
+        self.code_mask_char = 'X'
         self.label_width = 0
 
         self.left_down = False
@@ -30,8 +33,10 @@ class AuthEntryPanel( wx.Panel ):
 
         if entry != None:
             self.SetName( 'entry_panel_{0:d}'.format( self.entry.GetGroup() ) )
+            self.code_digits = self.entry.GetDigits()
         else:
             self.SetName( 'entry_panel_X' )
+            self.code_digits = 6
         ## GetLogger().debug( "AEP init %s", self.GetName() )
 
         # Create panel child controls
@@ -66,7 +71,7 @@ class AuthEntryPanel( wx.Panel ):
         self.label_panel.Fit()
         sizer.Add( self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2 )
 
-        self.code_text = wx.StaticText( self, wx.ID_ANY, 'XXXXXX',
+        self.code_text = wx.StaticText( self, wx.ID_ANY, self.code_mask_char * self.code_max_digits,
                                         style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
                                         name = 'code_text' )
         self.code_text.Wrap( -1 )
@@ -75,7 +80,7 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text.SetInitialSize( self.code_text.GetSize() )
         self.code_text.SetMinSize( self.code_text.GetSize() )
         sizer.Add( self.code_text, 0,
-                   wx.EXPAND | wx.LEFT | wx.RIGHT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
+                   wx.EXPAND | wx.LEFT | wx.RIGHT | wx.ALIGN_CENTER | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
                    12 )
 
         self.totp_period = entry.GetPeriod() if self.entry != None else 30
@@ -158,6 +163,7 @@ class AuthEntryPanel( wx.Panel ):
     def SetEntry( self, entry ):
         self.entry = entry
         self.sort_index = entry.GetSortIndex()
+        self.code_digits = entry.GetDigits()
         self.SetName( 'entry_panel_{0:d}'.format( self.entry.GetGroup() ) )
         self.code = self.entry.GenerateNextCode()
         ## GetLogger().debug( "AEP SE on %s", self.GetName() )
@@ -176,7 +182,7 @@ class AuthEntryPanel( wx.Panel ):
     def MaskCode( self, state ):
         self.code_masked = state
         if self.code_masked and not self.selected:
-            self.code_text.SetLabelText( 'XXXXXX' )
+            self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
         else:
             self.code_text.SetLabelText( self.code )
 
@@ -213,7 +219,7 @@ class AuthEntryPanel( wx.Panel ):
         if self.entry != None:
             ## GetLogger().debug( "AEP UC updating %s", self.GetName() )
             if self.code_masked and not self.selected:
-                self.code_text.SetLabelText( 'XXXXXX' )
+                self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
             else:
                 self.code_text.SetLabelText( self.code )
 
@@ -265,10 +271,10 @@ class AuthEntryPanel( wx.Panel ):
             item.SetForegroundColour( wx.NullColour )
         # We can't be selected, so only code_masked matters
         if self.code_masked:
-            self.code_text.SetLabelText( 'XXXXXX' )
+            self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
         else:
             self.code_text.SetLabelText( self.code )
-        
+
 
     def UpdateTimerGauge( self ):
         current_time = wx.GetUTCTime()
@@ -279,7 +285,7 @@ class AuthEntryPanel( wx.Panel ):
         if self.totp_cycle < last_cycle and self.entry != None:
             self.code = self.entry.GenerateNextCode()
             if self.code_masked and not self.selected:
-                self.code_text.SetLabelText( 'XXXXXX' )
+                self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
             else:
                 self.code_text.SetLabelText( self.code )
         # Make our timer gauge count down to zero

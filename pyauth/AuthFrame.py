@@ -373,13 +373,15 @@ class AuthFrame( wx.Frame ):
             provider = self.new_entry_dialog.GetProviderValue()
             account = self.new_entry_dialog.GetAccountValue()
             secret = self.new_entry_dialog.GetSecretValue()
+            digits = self.new_entry_dialog.GetDigitsValue()
             original_label = self.new_entry_dialog.GetOriginalLabel()
             if original_label == '':
                 original_label = provider + ':' + account
             GetLogger().debug( "AF NE provider %s", provider )
             GetLogger().debug( "AF NE account  %s", account )
+            GetLogger().debug( "AF NE digits   %d", digits )
             GetLogger().debug( "AF NE orig lbl %s", original_label )
-            entry = self.auth_store.Add( provider, account,secret, original_label )
+            entry = self.auth_store.Add( provider, account, secret, digits, original_label )
             if entry != None:
                 GetLogger().debug( "AF NE new panel: %d", entry.GetGroup() )
                 # If all we have is the dummy entry then replace it, otherwise add the new entry at the end
@@ -388,7 +390,8 @@ class AuthFrame( wx.Frame ):
                     panel.SetEntry( entry )
                     GetLogger().debug( "AF NE replaced dummy panel with: %s", panel.GetName() )
                 else:
-                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME, entry = entry )
+                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
+                                            entry = entry, code_max_digits = self.auth_store.MaxDigits() )
                     panel.MaskCode( not self.show_all_codes )
                     panel.ShowTimer( self.show_timers )
                     self.entry_panels.append( panel )
@@ -421,21 +424,25 @@ class AuthFrame( wx.Frame ):
             if entry == None:
                 self.OnMenuNewEntry( event ) # Dummy panel selected, create a new entry instead
             else:
-                self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(), entry.GetSecret() )
+                self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(),
+                                                entry.GetSecret(), entry.GetDigits() )
                 result = self.update_entry_dialog.ShowModal()
                 if result == wx.ID_OK:
                     provider = self.update_entry_dialog.GetProviderValue()
                     account = self.update_entry_dialog.GetAccountValue()
                     secret = self.update_entry_dialog.GetSecretValue()
+                    digits = self.update_entry_dialog.GetDigitsValue()
                     if provider == entry.GetProvider():
                         provider = None
                     if account == entry.GetAccount():
                         account = None
                     if secret == entry.GetSecret():
                         secret = None
-                    if provider != None or account != None or secret != None:
+                    if digits == entry.GetDigits():
+                        digits = None
+                    if provider != None or account != None or secret != None or digits != None:
                         GetLogger().debug( "AF UE updating entry" )
-                        status = self.auth_store.Update( entry.GetGroup(), provider, account, secret )
+                        status = self.auth_store.Update( entry.GetGroup(), provider, account, secret, digits )
                         if status < 0:
                             dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
                                                     style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
@@ -464,6 +471,7 @@ class AuthFrame( wx.Frame ):
             self.selected_panel = None
             # Remove the panel from the entries list and the entries window
             self.entry_panels.remove( panel )
+            panel.ClearBackground()
             status = self.entries_window.GetSizer().Detach( panel )
             if not status:
                 GetLogger().warning( "Could not remove %s from entries window", panel.GetName() )
@@ -643,18 +651,18 @@ class AuthFrame( wx.Frame ):
 
         # Database maintenance submenu
         db_menu = wx.Menu()
-        mi = wx.MenuItem( menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
+        mi = wx.MenuItem( db_menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
         self.MENU_REINDEX = mi.GetId()
         db_menu.AppendItem( mi )
-        mi = wx.MenuItem( menu, wx.ID_ANY, "Regroup", "Completely compact database in current order" )
+        mi = wx.MenuItem( db_menu, wx.ID_ANY, "Regroup", "Completely compact database in current order" )
         self.MENU_REGROUP = mi.GetId()
         db_menu.AppendItem( mi )
 
         # File menu
         menu = wx.Menu()
         menu.Append( wx.ID_NEW, "&New entry", "Create a new account entry" )
-        menu.appendSeparator()
-        menu.Append( db_menu, "DB Maintenance" )
+        menu.AppendSeparator()
+        menu.AppendSubMenu( db_menu, "DB Maintenance" )
         menu.AppendSeparator()
         menu.Append( wx.ID_EXIT, "E&xit", "Exit the program" )
         mb.Append( menu, "&File" )
@@ -786,7 +794,7 @@ class AuthFrame( wx.Frame ):
         for entry in self.auth_store.EntryList():
             ## GetLogger().debug( "AF create panel: %d", entry.GetGroup() )
             panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
-                                    entry = entry )
+                                    entry = entry, code_max_digits = self.auth_store.MaxDigits() )
             panel.MaskCode( not self.show_all_codes )
             panel.ShowTimer( self.show_timers )
             self.entry_panels.append( panel )
@@ -798,7 +806,8 @@ class AuthFrame( wx.Frame ):
             # Add dummy entry. We need at least this to be able to size things properly. We'll
             # replace it with the first real entry.
             self.entry_panels.append( AuthEntryPanel( self.entries_window, wx.ID_ANY,
-                                                      style = wx.BORDER_THEME ) )
+                                                      style = wx.BORDER_THEME,
+                                                      code_max_digits = self.auth_store.MaxDigits() ) )
         for panel in self.entry_panels:
             ## GetLogger().debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
             ## GetLogger().debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
