@@ -1,7 +1,9 @@
 # PyAuth version history:
 
-* 0.9.1 - 8-digit code support
+* 0.9.1 - Second beta version
+  - Packaging changes, now supports editable install
   - Support 8-digit authentication codes
+  - Fix window sizing glitches
 
 * 0.9.0 - Ready for beta testing
   - Post-install updates PyAuth.desktop from PyAuth.desktop.in replacing variables

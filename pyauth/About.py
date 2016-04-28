@@ -6,7 +6,7 @@ import io
 import wx
 from wx.lib.wordwrap import wordwrap
 import pyauth
-from .Logging import GetLogger
+from Logging import GetLogger
 
 about_data = {
     'name': pyauth.__program_name__,
@@ -72,6 +72,7 @@ def GetAboutInfo( dc, desc_width = 600 ):
     return about_info
 
 def GetIconBundle( name ):
+    # TODO find icons in editable install
     icon_bundle = None
     scheme = wx.GetApp().install_scheme
     if scheme != None:
@@ -90,6 +91,7 @@ def GetIconBundle( name ):
     return icon_bundle
 
 def GetTaskbarIcon( name ):
+    # TODO find icons in editable install
     icon = None
     scheme = wx.GetApp().install_scheme
     if scheme != None:

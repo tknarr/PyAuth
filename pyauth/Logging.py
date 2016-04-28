@@ -7,14 +7,14 @@ import logging.handlers
 # the About module whose GetProgramName() function we'd normally use needs
 # to use Logger and that sets up an import loop.
 import pyauth
-from . import Configuration
+import Configuration
 
 def GetLogger():
     return logging.getLogger( pyauth.__program_name__ )
 
-def ConfigureLogging( log_filename_args ):
-    log_lvl = Configuration.GetLoggingLevel()
-    if log_filename_args != None:
+def ConfigureLogging( log_filename_args, log_level_args ):
+    log_lvl = Configuration.GetLoggingLevel( log_level_args )
+    if log_filename_args != None and log_filename_args != '':
         lfn = log_filename_args
     else:
         lfn = Configuration.GetLogFilename()
@@ -27,13 +27,17 @@ def ConfigureLogging( log_filename_args ):
 
     app_logger = logging.getLogger( pyauth.__program_name__ )
 
-    # Console logger with just serious errors
+    # Console logger with just serious errors, unless no log file in which case the console
+    # becomes the log file
     formatter = logging.Formatter( '%(levelname)s:%(name)s:%(message)s' )
     handler = logging.StreamHandler()
     handler.setFormatter( formatter )
-    handler.setLevel( logging.ERROR )
+    if log_filename == None:
+        handler.setLevel( log_lvl )
+    else:
+        handler.setLevel( logging.ERROR )
     app_logger.addHandler( handler )
-    
+
     # File logger with all messages
     if log_filename != None:
         # Tab-separated fields

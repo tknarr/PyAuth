@@ -7,10 +7,10 @@ import logging
 import argparse
 import pkg_resources
 import wx
-from . import Configuration
-from .AuthFrame import AuthFrame as AuthFrame
-from .About import GetProgramVersionString, GetProgramName, GetVendorName
-from .Logging import ConfigureLogging, GetLogger
+import Configuration
+from AuthFrame import AuthFrame as AuthFrame
+from About import GetProgramVersionString, GetProgramName, GetVendorName
+from Logging import ConfigureLogging, GetLogger
 
 # Command line options:
 #   --systray, -s                            Start with the systray icon if possible
@@ -25,6 +25,7 @@ class PyAuthApp( wx.App ):
         initial_minimized = None
         iconset = None
         log_filename = None
+        log_level = None
 
         self.install_scheme = None
         distribution = pkg_resources.get_distribution( GetProgramName() )
@@ -50,6 +51,9 @@ class PyAuthApp( wx.App ):
                              help = "Select a given background for the program icons: %(choices)s" )
         parser.add_argument( "--logfile", metavar = "FILENAME", dest = 'logfile', default = None,
                              help = "Redirect logging to the named file, may include user and variable expansion" )
+        parser.add_argument( "--loglevel", metavar = "LEVEL", dest = 'loglevel', default = '',
+                             choices = [ 'critical', 'error', 'warning', 'info', 'debug' ],
+                             help = "Set the logging level: %(choices)s" )
         parser.add_argument( "--version", action = 'version', version = GetProgramVersionString() )
         args = parser.parse_args()
         if args.systray:
@@ -61,7 +65,9 @@ class PyAuthApp( wx.App ):
             iconset = args.iconset
         if args.logfile != None:
             log_filename = args.logfile
-        
+        if args.loglevel != None:
+            log_level = args.loglevel
+
         self.SetAppName( program_name )
 
         # Set our configuration file up to be the default configuration source
@@ -87,13 +93,16 @@ class PyAuthApp( wx.App ):
             return False
 
         # Configure logging
-        ConfigureLogging( log_filename )
+        ConfigureLogging( log_filename, log_level )
         if self.install_scheme != None:
             GetLogger().info( "Installation scheme: %s", self.install_scheme )
         GetLogger().info( "Configuration file: %s", cfgfile )
 
         # Create and position main frame
+        wpos = Configuration.GetLastWindowPosition()
+        wsize = Configuration.GetLastWindowSize()
         self.frame = AuthFrame( None, wx.ID_ANY, "PyAuth", name = 'main_frame',
+                                pos = wpos, size = wsize,
                                 initial_systray = initial_systray,
                                 initial_minimized = initial_minimized,
                                 iconset = iconset )
@@ -101,9 +110,6 @@ class PyAuthApp( wx.App ):
             logging.critical( "Cannot create main program window" )
             return False
         self.SetTopWindow( self.frame )
-        wpos = Configuration.GetLastWindowPosition()
-        if wpos != None:
-            self.frame.SetPosition( wpos )
 
         self.Bind( wx.EVT_QUERY_END_SESSION, self.OnQES )
         self.Bind( wx.EVT_END_SESSION, self.OnES )

@@ -5,8 +5,8 @@ import errno
 import string
 import wx
 import pyotp
-from .About import GetProgramName, GetVendorName
-from .Logging import GetLogger
+from About import GetProgramName, GetVendorName
+from Logging import GetLogger
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the

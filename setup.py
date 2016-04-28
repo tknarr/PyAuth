@@ -36,6 +36,7 @@ for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
 def _post_install( data_path, script_path ):
     # Read in the desktop shortcut template and substitute final paths into it to create
     # the real shortcut file
+    # TODO locate file either in the data path or the install directory
     template = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
     shortcut = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
     with open( template, 'r' ) as tf:
@@ -45,6 +46,10 @@ def _post_install( data_path, script_path ):
                                  script_path = script_path,
                                  data_path = data_path )
                 sf.write( l )
+
+def _noop( lib_path ):
+    template = lib_path
+    # No need to actually do anything
 
 
 # Classes to add post-install behavior to standard install and develop commands
@@ -58,7 +63,7 @@ class my_install( _install ):
 
 class my_develop( _develop ):
     def run( self ):
-        self.execute( noop, ( self.install_lib ), msg="Running develop task" )
+        self.execute( _noop, [ self.install_lib ], msg="Running develop task" )
         _develop.run( self )
         self.execute( _post_install, [ self.install_data, self.install_scripts ], msg="Running post develop task" )
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import wx
-from .AuthenticationStore import AuthenticationEntry
-from .Logging import GetLogger
+from AuthenticationStore import AuthenticationEntry
+from Logging import GetLogger
 
 class AuthEntryPanel( wx.Panel ):
 
