@@ -2,7 +2,7 @@
 
 import wx
 import wx.html
-from .Logging import GetLogger
+from Logging import GetLogger
 
 class ClickableHTMLWindow( wx.html.HtmlWindow ):
 
@@ -34,7 +34,7 @@ class HTMLTextDialog( wx.Dialog ):
         html = ClickableHTMLWindow( self, wx.ID_ANY, size = wx.Size( 600, 600 ) )
         self.browser = html
         vbox.Add( html, 1, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
-        
+
         vbox.AddSpacer( 16, 0 )
 
         btnsizer = self.CreateButtonSizer( wx.OK )
