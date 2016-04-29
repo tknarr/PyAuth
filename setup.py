@@ -32,16 +32,16 @@ for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
 def _post_install( data_path, script_path ):
     # Read in the desktop shortcut template and substitute final paths into it to create
     # the real shortcut file
-    # TODO locate file either in the data path or the install directory
-    template = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
-    shortcut = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
-    ## with open( template, 'r' ) as tf:
-    ##     with open( shortcut, 'w' ) as sf:
-    ##         for line in tf:
-    ##             l = line.format( program_name = pyauth.__program_name__,
-    ##                              script_path = script_path,
-    ##                              data_path = data_path )
-    ##             sf.write( l )
+    template_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
+    shortcut_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
+    if os.path.exists( template_filename ):
+        with open( template_filename, 'r' ) as template:
+            with open( shortcut_filename, 'w' ) as shortcut:
+                for line in template:
+                    l = line.format( program_name = pyauth.__program_name__,
+                                    script_path = script_path,
+                                    data_path = data_path )
+                    shortcut.write( l )
 
 
 # Classes to add post-install behavior to standard install and develop commands
@@ -49,12 +49,14 @@ def _post_install( data_path, script_path ):
 class my_install( _install ):
     def run( self ):
         _install.run( self )
-        self.execute( _post_install, [ self.install_data, self.install_scripts ], msg="Running post install task" )
+        self.execute( _post_install, [ self.install_data, self.install_scripts ],
+                      msg = "Running post install task" )
 
 class my_develop( _develop ):
     def run( self ):
         _develop.run( self )
-        self.execute( _post_install, [ self.install_data, self.install_scripts ], msg="Running post develop task" )
+        self.execute( _post_install, [ self.install_data, self.install_scripts ],
+                      msg = "Running post develop task" )
 
 
 setup(
@@ -114,7 +116,10 @@ setup(
         ],
 
     package_data = {
-        'pyauth': [ 'LICENSE.html', 'images/*.ico', 'images/PyAuth-systray*.png' ]
+        'pyauth': [ 'LICENSE.html',
+                    'images/*.ico',
+                    'images/PyAuth-systray*.png'
+                    ]
         },
 
     data_files = icon_files + [
