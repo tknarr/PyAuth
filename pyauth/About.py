@@ -74,11 +74,8 @@ def GetAboutInfo( dc, desc_width = 600 ):
 def GetIconBundle( name ):
     # TODO find icons in editable install
     icon_bundle = None
-    scheme = wx.GetApp().install_scheme
-    if scheme != None:
-        filename = sysconfig.get_path( 'data', scheme ) + '/share/' + GetProgramName()
-    else:
-        filename = sysconfig.get_path( 'data' ) + '/share/' + GetProgramName()
+    # TODO pkg_resources
+    filename = sysconfig.get_path( 'data' ) + '/share/' + GetProgramName()
     filename += '/' + GetProgramName()
     if name != 'transparent':
         filename += '-' + name
@@ -93,13 +90,9 @@ def GetIconBundle( name ):
 def GetTaskbarIcon( name ):
     # TODO find icons in editable install
     icon = None
-    scheme = wx.GetApp().install_scheme
-    if scheme != None:
-        filename = sysconfig.get_path( 'data', scheme ) + \
-            '/share/icons/hicolor/32x32/apps/' + GetProgramName() + '-systray'
-    else:
-        filename = sysconfig.get_path( 'data' ) + \
-            '/share/icons/hicolor/32x32/apps/' + GetProgramName() + '-systray'
+    # TODO pkg_resources
+    filename = sysconfig.get_path( 'data' ) + \
+        '/share/icons/hicolor/32x32/apps/' + GetProgramName() + '-systray'
     if name != 'transparent':
         filename += '-' + name
     filename += '.png'

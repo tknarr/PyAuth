@@ -2,6 +2,7 @@
 
 * 0.9.1 - Second beta version
   - Packaging changes, now supports editable install
+  - Uses pkg_resources to locate data files
   - Support 8-digit authentication codes
   - Fix window sizing glitches
 

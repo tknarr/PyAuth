@@ -168,7 +168,7 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
         self.Bind( wx.EVT_SHOW, self.OnShow )
         ## TODO self.KeyBind( wx.EVT_CHAR, self.OnKey )
-        self.Bind( wx.EVT_IDLE, self.OnIdle )
+        ## self.Bind( wx.EVT_IDLE, self.OnIdle ) # Enable for size information during idle
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
@@ -603,13 +603,8 @@ class AuthFrame( wx.Frame ):
         if self.license_dialog == None:
             self.license_dialog = HTMLTextDialog( self, wx.ID_ANY, "License" )
         # TODO Should look for license file in editable installation too
-        scheme = wx.GetApp().install_scheme
-        if scheme != None:
-            filepath = sysconfig.get_path( 'data', scheme ) + '/share/doc/' + \
-                GetProgramName() + '/LICENSE.html'
-        else:
-            filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + \
-                GetProgramName() + '/LICENSE.html'
+        # TODO pkg_resources
+        filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + GetProgramName() + '/LICENSE.html'
         self.license_dialog.LoadFile( filepath )
         self.license_dialog.ShowModal()
 
