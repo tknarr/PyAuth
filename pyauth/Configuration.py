@@ -65,6 +65,28 @@ def SetLastWindowPosition( wp, corner = 'XX' ):
         wx.Config.Get().WriteInt( '/window/last_y', y )
     wx.Config.Get().Write( '/window/pegged_corner', c )
 
+def GetLastWindowSize():
+    x = wx.Config.Get().ReadInt( '/window/width', -1 )
+    y = wx.Config.Get().ReadInt( '/window/height', -1 )
+    ws = None
+    if x >= 0 and y >= 0:
+        ws = wx.Size( x, y )
+    return ws
+
+def SetLastWindowSize( ws ):
+    x = ws.x
+    y = ws.y
+    if x >= 0:
+        wx.Config.Get().WriteInt( '/window/width', x )
+    if y >= 0:
+        wx.Config.Get().WriteInt( '/window/height', y )
+
+def GetStartMinimized():
+    return wx.Config.Get().ReadBool( '/window/start_minimized', False )
+
+def SetStartMinimized( state ):
+    wx.Config.Get().WriteBool( '/window/start_minimized', state )
+
 def GetNumberOfItemsShown():
     return wx.Config.Get().ReadInt( '/window/items_shown', 2 )
 
@@ -88,6 +110,12 @@ def GetShowToolbar():
 
 def SetShowToolbar( state ):
     wx.Config.Get().WriteBool( '/window/show_toolbar', state )
+
+def GetToolbarHeight():
+    return wx.Config.Get().ReadInt( '/window/toolbar_height', 0 )
+
+def SetToolbarHeight( h ):
+    wx.Config.Get().WriteInt( '/window/toolbar_height', h )
 
 def GetUseTaskbarIcon():
     return wx.Config.Get().ReadBool( '/window/use_taskbar_icon', False )
@@ -146,8 +174,11 @@ def GetConfigDirectory():
 def GetDatabaseFilename():
     return wx.Config.Get().Read( '/database/file_name', 'database.cfg' )
 
-def GetLoggingLevel():
-    level_string = wx.Config.Get().Read( '/logging/level', 'WARNING' )
+def GetLoggingLevel( level_args ):
+    if level_args != None and level_args != '':
+        level_string = level_args
+    else:
+        level_string = wx.Config.Get().Read( '/logging/level', 'warning' )
     loglevel = getattr( logging, level_string.upper(), None )
     if not isinstance( loglevel, int ):
         logging.warning( "Invalid logging level %s, using WARNING instead", level_string )
@@ -155,7 +186,7 @@ def GetLoggingLevel():
     return loglevel
 
 def GetLogFilename():
-    return wx.Config.Get().Read( '/logging/filename' )
+    return wx.Config.Get().Read( '/logging/filename', '' )
 
 def GetLogMaxSize():
     return wx.Config.Get().ReadInt( '/logging/max_size', 1024 * 1024 )
@@ -171,7 +202,7 @@ def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
     # the centerpoint of the frame is in (ie. it will peg to the corner nearest the
     # matching corner of the frame).
     # The result is a tuple ( corner, x, y )
-    
+
     scr_x = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_X )
     scr_y = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_Y )
     s = wx.GetApp().frame.GetSize()
@@ -201,7 +232,7 @@ def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
         peg_x = scr_x - x_pos - fr_w
     if peg_corner[0] == 'B':
         peg_y = scr_y - y_pos - fr_h
-            
+
     return ( peg_corner, peg_x, peg_y )
 
 def ConvertPeggedToScreen( corner, x_offset, y_offset ):

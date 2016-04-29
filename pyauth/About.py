@@ -3,10 +3,11 @@
 import sysconfig
 import base64
 import io
+import pkg_resources
 import wx
 from wx.lib.wordwrap import wordwrap
 import pyauth
-from .Logging import GetLogger
+from Logging import GetLogger
 
 about_data = {
     'name': pyauth.__program_name__,
@@ -73,17 +74,12 @@ def GetAboutInfo( dc, desc_width = 600 ):
 
 def GetIconBundle( name ):
     icon_bundle = None
-    scheme = wx.GetApp().install_scheme
-    if scheme != None:
-        filename = sysconfig.get_path( 'data', scheme ) + '/share/' + GetProgramName()
-    else:
-        filename = sysconfig.get_path( 'data' ) + '/share/' + GetProgramName()
-    filename += '/' + GetProgramName()
+    filename = 'images/' + GetProgramName()
     if name != 'transparent':
         filename += '-' + name
     filename += '.ico'
     try:
-        input_strm = wx.InputStream( io.FileIO( filename ) )
+        input_strm = pkg_resources.resource_stream( 'pyauth', filename )
         icon_bundle = wx.IconBundleFromStream( input_strm, wx.BITMAP_TYPE_ICO )
     except Exception as e:
         GetLogger().error( "Error in %s icon bundle: %s", name, str( e ) )
@@ -91,18 +87,12 @@ def GetIconBundle( name ):
 
 def GetTaskbarIcon( name ):
     icon = None
-    scheme = wx.GetApp().install_scheme
-    if scheme != None:
-        filename = sysconfig.get_path( 'data', scheme ) + \
-            '/share/icons/hicolor/32x32/apps/' + GetProgramName() + '-systray'
-    else:
-        filename = sysconfig.get_path( 'data' ) + \
-            '/share/icons/hicolor/32x32/apps/' + GetProgramName() + '-systray'
+    filename = 'images/' + GetProgramName() + '-systray'
     if name != 'transparent':
         filename += '-' + name
     filename += '.png'
     try:
-        input_strm = wx.InputStream( io.FileIO( filename ) )
+        input_strm = pkg_resources.resource_stream( 'pyauth', filename )
         img = wx.ImageFromStream( input_strm, wx.BITMAP_TYPE_PNG )
         bm = img.ConvertToBitmap()
         if bm != None:

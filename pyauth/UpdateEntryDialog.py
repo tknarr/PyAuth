@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import wx
-from .Logging import GetLogger
+from Logging import GetLogger
 
 class UpdateEntryDialog( wx.Dialog ):
 
@@ -10,17 +10,20 @@ class UpdateEntryDialog( wx.Dialog ):
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
         GetLogger().debug( "UED init" )
-        
+
         self.provider_label = None
         self.provider_text = None
         self.account_label = None
         self.account_text = None
         self.secret_label = None
         self.secret_text = None
+        self.digits_label = None
+        self.digits_radio = None
 
         self.provider_literal = "Provider:"
         self.account_literal = "Account:"
         self.secret_literal = "Secret:"
+        self.digits_literal = "Digits in code:"
         self.required_literal = "(required)"
 
         self.text_color = self.GetForegroundColour()
@@ -30,7 +33,7 @@ class UpdateEntryDialog( wx.Dialog ):
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 1
+        # Provider
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.provider_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
@@ -43,7 +46,7 @@ class UpdateEntryDialog( wx.Dialog ):
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 2
+        # Account
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.account_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
@@ -56,7 +59,7 @@ class UpdateEntryDialog( wx.Dialog ):
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 3
+        # Secret
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.secret_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
@@ -66,6 +69,17 @@ class UpdateEntryDialog( wx.Dialog ):
         txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.secret_text = txt
+
+        vbox.AddSpacer( 16, 0 )
+
+        # Digits in code
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.digits_literal, False )
+        vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
+        self.digits_label = lbl
+        rbox = wx.RadioBox( self, wx.ID_ANY, choices = [ "6", "8" ] )
+        vbox.Add( rbox, 0, wx.LEFT | wx.RIGHT, 8 )
+        self.digits_radio = rbox
 
         vbox.AddSpacer( 16, 0 )
 
@@ -100,7 +114,7 @@ class UpdateEntryDialog( wx.Dialog ):
             GetLogger().debug( "UED OK button" )
             event.Skip( True )
 
-                
+
     def GetProviderValue( self ):
         return self.provider_text.GetValue()
 
@@ -110,7 +124,10 @@ class UpdateEntryDialog( wx.Dialog ):
     def GetSecretValue( self ):
         return self.secret_text.GetValue()
 
-    def Reset( self, provider, account, secret ):
+    def GetDigitsValue( self ):
+        return 6 + ( self.digits_radio.GetSelection() * 2 )
+
+    def Reset( self, provider, account, secret, digits ):
         GetLogger().debug( "UED reset" )
         self.provider_text.SetValue( provider )
         self.ColorLabel( self.provider_label, self.provider_text.IsEmpty() )
@@ -118,6 +135,7 @@ class UpdateEntryDialog( wx.Dialog ):
         self.ColorLabel( self.account_label, self.account_text.IsEmpty() )
         self.secret_text.SetValue( secret )
         self.ColorLabel( self.secret_label, self.secret_text.IsEmpty() )
+        self.digits_radio.SetSelection( ( digits - 6 ) / 2 )
 
     def ColorLabel( self, ctrl, error ):
         if error:

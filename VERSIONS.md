@@ -1,5 +1,11 @@
 # PyAuth version history:
 
+* 0.9.1 - Second beta version
+  - Packaging changes, now supports editable install
+  - Uses pkg_resources to locate data files
+  - Support 8-digit authentication codes
+  - Fix window sizing glitches
+
 * 0.9.0 - Ready for beta testing
   - Post-install updates PyAuth.desktop from PyAuth.desktop.in replacing variables
     with paths from sysconfig

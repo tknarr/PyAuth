@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import wx
-from .Logging import GetLogger
+from Logging import GetLogger
 
 class NewEntryDialog( wx.Dialog ):
 
@@ -10,19 +10,22 @@ class NewEntryDialog( wx.Dialog ):
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
         GetLogger().debug( "NED init" )
-        
+
         self.provider_label = None
         self.provider_text = None
         self.account_label = None
         self.account_text = None
         self.secret_label = None
         self.secret_text = None
+        self.digits_label = None
+        self.digits_radio = None
         self.original_label_label = None
         self.original_label_text = None
 
         self.provider_literal = "Provider:"
         self.account_literal = "Account:"
         self.secret_literal = "Secret:"
+        self.digits_literal = "Digits in code:"
         self.original_label_literal = "Original label:"
         self.required_literal = "(required)"
 
@@ -33,52 +36,63 @@ class NewEntryDialog( wx.Dialog ):
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 1
+        # Provider
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.provider_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.provider_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        te = txt.GetTextExtent( 'M' * 20 )
         txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.provider_text = txt
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 2
+        # Account
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.account_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.account_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        te = txt.GetTextExtent( 'M' * 20 )
         txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.account_text = txt
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 3
+        # Secret
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.secret_literal, True )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.secret_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        te = txt.GetTextExtent( 'M' * 20 )
         txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.secret_text = txt
 
         vbox.AddSpacer( 16, 0 )
 
-        # Item 4
+        # Digits in code
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.digits_literal, False )
+        vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
+        self.digits_label = lbl
+        rbox = wx.RadioBox( self, wx.ID_ANY, choices = [ "6", "8" ] )
+        vbox.Add( rbox, 0, wx.LEFT | wx.RIGHT, 8 )
+        self.digits_radio = rbox
+
+        vbox.AddSpacer( 16, 0 )
+
+        # Original label
         lbl = wx.StaticText( self, wx.ID_ANY, '' )
         self.MakeLabel( lbl, self.original_label_literal, False )
         vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
         self.original_label_label = lbl
         txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
-        te = txt.GetTextExtent( 'MMMMMMMMMMMMMMMMMMMM' )
+        te = txt.GetTextExtent( 'M' * 20 )
         txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
         vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
         self.original_label_text = txt
@@ -116,7 +130,7 @@ class NewEntryDialog( wx.Dialog ):
             GetLogger().debug( "NED OK button" )
             event.Skip( True )
 
-                
+
     def GetProviderValue( self ):
         return self.provider_text.GetValue()
 
@@ -125,6 +139,9 @@ class NewEntryDialog( wx.Dialog ):
 
     def GetSecretValue( self ):
         return self.secret_text.GetValue()
+
+    def GetDigitsValue( self ):
+        return 6 + ( self.digits_radio.GetSelection() * 2 )
 
     def GetOriginalLabel( self ):
         return self.original_label_text.GetValue()
@@ -137,6 +154,7 @@ class NewEntryDialog( wx.Dialog ):
         self.provider_text.Clear()
         self.account_text.Clear()
         self.secret_text.Clear()
+        self.digits_radio.SetSelection( 0 )
         self.original_label_text.Clear()
 
     def ColorLabel( self, ctrl, error ):

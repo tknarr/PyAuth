@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
+import math
 import sysconfig
+import pkg_resources
 import wx
 from wx.lib import newevent as NE
-from . import Configuration
-from .AuthenticationStore import AuthenticationStore
-from .AuthEntryPanel import AuthEntryPanel
-from .About import GetProgramName, GetAboutInfo, GetIconBundle, GetTaskbarIcon
-from .NewEntryDialog import NewEntryDialog
-from .UpdateEntryDialog import UpdateEntryDialog
-from .HTMLTextDialog import HTMLTextDialog
-from .Logging import GetLogger
-
-ReadjustWindowSizeEvent, EVT_READJUST_WINDOW_SIZE = NE.NewEvent()
+import Configuration
+from AuthenticationStore import AuthenticationStore
+from AuthEntryPanel import AuthEntryPanel
+from About import GetProgramName, GetAboutInfo, GetIconBundle, GetTaskbarIcon
+from NewEntryDialog import NewEntryDialog
+from UpdateEntryDialog import UpdateEntryDialog
+from HTMLTextDialog import HTMLTextDialog
+from Logging import GetLogger
 
 class AuthTaskbarIcon( wx.TaskBarIcon ):
 
@@ -61,6 +61,8 @@ class AuthFrame( wx.Frame ):
         # Flag so we don't save anything if the user asked us to abort in the face
         # of a lockfile problem.
         self.do_not_save = False
+        # Flag indicating we were actually shown on the display
+        self.displayed = False
 
         # We need to set up a few things before we know the style flags we should use
         # Our current icon set's the one specified on the command line, or the configured
@@ -75,9 +77,11 @@ class AuthFrame( wx.Frame ):
             GetLogger().debug( "Icon bundle %s failed, trying white", self.icon_set )
             self.icon_bundle = GetIconBundle( 'white' )
         self.use_systray_icon = Configuration.GetUseTaskbarIcon()
-        self.configured_use_systray_icon = Configuration.GetUseTaskbarIcon()
         if initial_systray != None:
             self.use_systray_icon = initial_systray
+        self.start_minimized = Configuration.GetStartMinimized()
+        if initial_minimized != None:
+            self.start_minimized = initial_minimized
         # No maximize button, and no minimize button if we're using the systray icon
         my_style = style & ~wx.MAXIMIZE_BOX
         if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
@@ -106,16 +110,18 @@ class AuthFrame( wx.Frame ):
         self.show_all_codes = Configuration.GetShowAllCodes()
         self.show_toolbar = Configuration.GetShowToolbar()
         self.taskbar_icon = None
+        self.idle_output = False # Set True to enable size output during idle events
 
         self.toolbar = None
         self.tool_ids = {}
         self.toolbar_icon_size = Configuration.GetToolIconSize()
-        self.toolbar_height = 0
+        self.toolbar_height = Configuration.GetToolbarHeight()
         self.toolbar_button_height = 0
 
         self.new_entry_dialog = None
         self.update_entry_dialog = None
         self.license_dialog = None
+        self.license_source = None
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
         self.since_idle = wx.GetUTCTime()
@@ -154,19 +160,19 @@ class AuthFrame( wx.Frame ):
             self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
         # If we're in the systray and not starting minimized, don't show us in
         # the taskbar.
-        if self.taskbar_icon != None and not initial_minimized:
+        if self.taskbar_icon != None and not self.start_minimized:
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
 
         # Window event handlers
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
-        self.Bind( wx.EVT_SIZE, self.OnSize )
+        self.entries_window.Bind( wx.EVT_SIZE, self.OnSize )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
+        self.Bind( wx.EVT_SHOW, self.OnShow )
         ## TODO self.KeyBind( wx.EVT_CHAR, self.OnKey )
-        ### self.Bind( wx.EVT_IDLE, self.OnIdle ) # Debugging sizing only
-        self.Bind( EVT_READJUST_WINDOW_SIZE, self.OnReadjust )
+        ## self.Bind( wx.EVT_IDLE, self.OnIdle ) # Enable for size information during idle
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
@@ -214,25 +220,9 @@ class AuthFrame( wx.Frame ):
 
 
     def OnSize( self, event ):
-        ## GetLogger().debug( "OnSize event" )
-        tb_sized = self.record_toolbar_height()
-        if self.toolbar_height > self.toolbar_button_height:
-            ## GetLogger().debug( "OnSize toolbar size OK" )
-            # Need this to keep the size of the window in entries updated as it's resized
-            new_size = self.WindowToClientSize( event.GetSize() )
-            new_height = new_size.GetHeight()
-            # If the toolbar's shown and we just got the toolbar height (which
-            # happens the first time the toolbar's shown after starting with it
-            # off), we need to adjust for it's height not yet being factored into
-            # the window client size.
-            if tb_sized:
-                ## GetLogger().debug( "OnSize toolbar sized this time" )
-                new_height += self.toolbar_height
-            self.visible_entries = self.CalcItemsShown( new_height )
-            if tb_sized:
-                wx.PostEvent( self, ReadjustWindowSizeEvent() )
-        ## GetLogger().debug( "OnSize done" )
-        event.Skip()
+        ## GetLogger().debug( "OnSize event on entries window" )
+        self.visible_entries = self.CalcItemsShown()
+        ## GetLogger.debug( "OnSize entries window done" )
 
 
     def OnTimerTick( self, event ):
@@ -246,20 +236,21 @@ class AuthFrame( wx.Frame ):
 
 
     def OnIdle( self, event ):
-        now = wx.GetUTCTime()
-        t = now - self.since_idle
-        if t > 5:
-            self.since_idle = now
-            GetLogger().debug( "IDLE FR window size %s min %s",
-                              self.GetSize(), self.GetMinSize() )
-            GetLogger().debug( "IDLE FR client size %s min %s",
-                              self.GetClientSize(), self.GetMinClientSize() )
-            GetLogger().debug( "IDLE EW window size %s min %s",
-                              self.entries_window.GetSize(), self.entries_window.GetMinSize() )
-            GetLogger().debug( "IDLE EW client size %s min %s",
-                              self.entries_window.GetClientSize(), self.entries_window.GetMinClientSize() )
-            GetLogger().debug( "IDLE toolbar size %s", self.toolbar.GetSize().GetHeight() )
-            GetLogger().debug( "IDLE tool size %s", self.toolbar.GetToolSize() )
+        if self.idle_output:
+            now = wx.GetUTCTime()
+            t = now - self.since_idle
+            if t > 10:
+                self.since_idle = now
+                GetLogger().debug( "IDLE FR window size %s min %s",
+                                self.GetSize(), self.GetMinSize() )
+                GetLogger().debug( "IDLE FR client size %s min %s",
+                                self.GetClientSize(), self.GetMinClientSize() )
+                GetLogger().debug( "IDLE EW window size %s min %s",
+                                self.entries_window.GetSize(), self.entries_window.GetMinSize() )
+                GetLogger().debug( "IDLE EW client size %s min %s",
+                                self.entries_window.GetClientSize(), self.entries_window.GetMinClientSize() )
+                GetLogger().debug( "IDLE toolbar size %s", self.toolbar.GetSize().GetHeight() )
+                GetLogger().debug( "IDLE tool size %s", self.toolbar.GetToolSize() )
 
 
     def OnIconize( self, event ):
@@ -272,10 +263,9 @@ class AuthFrame( wx.Frame ):
         event.Skip()
 
 
-    def OnReadjust( self, event ):
-        ## GetLogger().debug( "Readjust event" )
-        self.AdjustWindowSizes( adjust_bump = True )
-        ## GetLogger().debug( "Readjust done" )
+    def OnShow( self, event ):
+        if event.IsShown():
+            self.displayed = True
 
 
     def OnKey( self, event ):
@@ -320,17 +310,22 @@ class AuthFrame( wx.Frame ):
                 self.auth_store.Save()
                 wp = self.GetPosition()
                 Configuration.SetLastWindowPosition( wp )
+                if self.displayed:
+                    ws = self.GetSize()
+                    Configuration.SetLastWindowSize( ws )
                 ## GetLogger().debug( "AF entries window size = %s, min = %s", self.entries_window.GetSize(),
                 ##                    self.entries_window.GetMinSize() )
                 ## GetLogger().debug( "AF window client size = %s, min = %s", self.GetClientSize(),
                 ##                    self.GetMinClientSize() )
-                self.visible_entries = self.CalcItemsShown( self.GetClientSize().GetHeight() )
+                self.visible_entries = self.CalcItemsShown()
                 GetLogger().info( "Items visible: %d", self.visible_entries )
                 Configuration.SetNumberOfItemsShown( self.visible_entries )
                 Configuration.SetShowTimers( self.show_timers )
                 Configuration.SetShowAllCodes( self.show_all_codes )
                 Configuration.SetShowToolbar( self.show_toolbar )
-                Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
+                Configuration.SetToolbarHeight( self.toolbar_height )
+                Configuration.SetUseTaskbarIcon( self.use_systray_icon )
+                Configuration.SetStartMinimized( self.start_minimized )
                 Configuration.SetIconSet( self.configured_icon_set )
                 Configuration.Save()
             if self.license_dialog != None:
@@ -346,12 +341,12 @@ class AuthFrame( wx.Frame ):
 
     def OnTaskbarDClick( self, event ):
         if self.IsShown():
-            GetLogger().debug( "AF taskbar double-clicked Hide" )
+            GetLogger().debug( "AF taskbar clicked Hide" )
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
             self.Hide()
         else:
-            GetLogger().debug( "AF taskbar double-clicked Show" )
+            GetLogger().debug( "AF taskbar clicked Show" )
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style & ~wx.FRAME_NO_TASKBAR )
             self.Show()
@@ -373,13 +368,15 @@ class AuthFrame( wx.Frame ):
             provider = self.new_entry_dialog.GetProviderValue()
             account = self.new_entry_dialog.GetAccountValue()
             secret = self.new_entry_dialog.GetSecretValue()
+            digits = self.new_entry_dialog.GetDigitsValue()
             original_label = self.new_entry_dialog.GetOriginalLabel()
             if original_label == '':
                 original_label = provider + ':' + account
             GetLogger().debug( "AF NE provider %s", provider )
             GetLogger().debug( "AF NE account  %s", account )
+            GetLogger().debug( "AF NE digits   %d", digits )
             GetLogger().debug( "AF NE orig lbl %s", original_label )
-            entry = self.auth_store.Add( provider, account,secret, original_label )
+            entry = self.auth_store.Add( provider, account, secret, digits, original_label )
             if entry != None:
                 GetLogger().debug( "AF NE new panel: %d", entry.GetGroup() )
                 # If all we have is the dummy entry then replace it, otherwise add the new entry at the end
@@ -388,7 +385,8 @@ class AuthFrame( wx.Frame ):
                     panel.SetEntry( entry )
                     GetLogger().debug( "AF NE replaced dummy panel with: %s", panel.GetName() )
                 else:
-                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME, entry = entry )
+                    panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
+                                            entry = entry, code_max_digits = self.auth_store.MaxDigits() )
                     panel.MaskCode( not self.show_all_codes )
                     panel.ShowTimer( self.show_timers )
                     self.entry_panels.append( panel )
@@ -421,21 +419,25 @@ class AuthFrame( wx.Frame ):
             if entry == None:
                 self.OnMenuNewEntry( event ) # Dummy panel selected, create a new entry instead
             else:
-                self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(), entry.GetSecret() )
+                self.update_entry_dialog.Reset( entry.GetProvider(), entry.GetAccount(),
+                                                entry.GetSecret(), entry.GetDigits() )
                 result = self.update_entry_dialog.ShowModal()
                 if result == wx.ID_OK:
                     provider = self.update_entry_dialog.GetProviderValue()
                     account = self.update_entry_dialog.GetAccountValue()
                     secret = self.update_entry_dialog.GetSecretValue()
+                    digits = self.update_entry_dialog.GetDigitsValue()
                     if provider == entry.GetProvider():
                         provider = None
                     if account == entry.GetAccount():
                         account = None
                     if secret == entry.GetSecret():
                         secret = None
-                    if provider != None or account != None or secret != None:
+                    if digits == entry.GetDigits():
+                        digits = None
+                    if provider != None or account != None or secret != None or digits != None:
                         GetLogger().debug( "AF UE updating entry" )
-                        status = self.auth_store.Update( entry.GetGroup(), provider, account, secret )
+                        status = self.auth_store.Update( entry.GetGroup(), provider, account, secret, digits )
                         if status < 0:
                             dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
                                                     style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
@@ -461,26 +463,30 @@ class AuthFrame( wx.Frame ):
         if self.selected_panel != None:
             GetLogger().debug( "AF DE deleting panel %s", self.selected_panel.GetName() )
             panel = self.selected_panel
+            panel.ClearBackground()
             self.selected_panel = None
             # Remove the panel from the entries list and the entries window
             self.entry_panels.remove( panel )
             status = self.entries_window.GetSizer().Detach( panel )
-            if not status:
+            if status:
+                # Delete the panel's entry in the authentication store
+                entry = panel.GetEntry()
+                if entry != None:
+                    self.auth_store.Delete( entry.GetGroup() )
+                panel.Destroy()
+                self.entries_window.GetSizer().Layout()
+            else:
                 GetLogger().warning( "Could not remove %s from entries window", panel.GetName() )
             ## GetLogger().debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
             ##                    str( panel.GetMinSize() ) )
             self.UpdatePanelSize()
-            # Delete the panel's entry in the authentication store
-            entry = panel.GetEntry()
-            if entry != None:
-                self.auth_store.Delete( entry.GetGroup() )
         else:
             dlg = wx.MessageDialog( self, "No entry selected.", "Error",
                                     style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
             dlg.SetExtendedMessage( "You must select an entry to delete." )
             dlg.ShowModal()
             dlg.Destroy()
-            
+
 
     def OnMenuCopyCode( self, event ):
         GetLogger().debug( "AF tool CopyCode command" )
@@ -586,7 +592,6 @@ class AuthFrame( wx.Frame ):
                     GetLogger().debug( "AF menu Tray Icon creating taskbar icon" )
                     self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
             self.use_systray_icon = True
-            self.configured_use_systray_icon = True
         else:
             if self.taskbar_icon != None:
                 GetLogger().debug( "AF menu Tray Icon removing taskbar icon" )
@@ -594,7 +599,6 @@ class AuthFrame( wx.Frame ):
                 self.taskbar_icon = None
                 tbi.Destroy()
             self.use_systray_icon = False
-            self.configured_use_systray_icon = False
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
@@ -604,15 +608,9 @@ class AuthFrame( wx.Frame ):
         GetLogger().debug( "AF menu License dialog" )
         if self.license_dialog == None:
             self.license_dialog = HTMLTextDialog( self, wx.ID_ANY, "License" )
-        # NOTE Should look for license file in editable installation too
-        scheme = wx.GetApp().install_scheme
-        if scheme != None:
-            filepath = sysconfig.get_path( 'data', scheme ) + '/share/doc/' + \
-                GetProgramName() + '/LICENSE.html'
-        else:
-            filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + \
-                GetProgramName() + '/LICENSE.html'
-        self.license_dialog.LoadFile( filepath )
+        if self.license_source == None:
+            license_source = pkg_resources.resource_string( 'pyauth', 'LICENSE.html' )
+        self.license_dialog.SetPage( license_source )
         self.license_dialog.ShowModal()
 
     def OnMenuAbout( self, event ):
@@ -641,18 +639,25 @@ class AuthFrame( wx.Frame ):
         GetLogger().debug( "AF create menu bar" )
         mb = wx.MenuBar()
 
+        # Database maintenance submenu
+        db_menu = wx.Menu()
+        mi = wx.MenuItem( db_menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
+        self.MENU_REINDEX = mi.GetId()
+        db_menu.AppendItem( mi )
+        mi = wx.MenuItem( db_menu, wx.ID_ANY, "Regroup", "Completely compact database in current order" )
+        self.MENU_REGROUP = mi.GetId()
+        db_menu.AppendItem( mi )
+
+        # File menu
         menu = wx.Menu()
         menu.Append( wx.ID_NEW, "&New entry", "Create a new account entry" )
-        mi = wx.MenuItem( menu, wx.ID_ANY, "Reindex", "Regenerate sort indexes in current order" )
-        self.MENU_REINDEX = mi.GetId()
-        menu.AppendItem( mi )
-        mi = wx.MenuItem( menu, wx.ID_ANY, "Regroup", "Completely compact database in current order" )
-        self.MENU_REGROUP = mi.GetId()
-        menu.AppendItem( mi )
+        menu.AppendSeparator()
+        menu.AppendSubMenu( db_menu, "DB Maintenance" )
         menu.AppendSeparator()
         menu.Append( wx.ID_EXIT, "E&xit", "Exit the program" )
         mb.Append( menu, "&File" )
-        
+
+        # Edit menu
         menu = wx.Menu()
         mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code", "Copy the current code to clipboard" )
         self.MENU_COPY_CODE = mi.GetId()
@@ -666,7 +671,8 @@ class AuthFrame( wx.Frame ):
         menu.Append( wx.ID_UP, "Move Up", "Move the selected entry up one position" )
         menu.Append( wx.ID_DOWN, "Move Down", "Move the selected entry down one position" )
         mb.Append( menu, "Edit" )
-        
+
+        # View menu
         menu = wx.Menu()
         mi = wx.MenuItem( menu, wx.ID_ANY, "Toolbar", "Show the toolbar", kind = wx.ITEM_CHECK )
         self.MENU_SHOW_TOOLBAR = mi.GetId()
@@ -687,16 +693,18 @@ class AuthFrame( wx.Frame ):
         menu.AppendItem( mi )
         menu.Check( self.MENU_SHOW_ALL_CODES, self.show_all_codes )
         mb.Append( menu, "&View" )
-        
+
+        # Help menu
         menu = wx.Menu()
         menu.Append( wx.ID_HELP, "&Help", "Help index" )
-        menu.Enable( wx.ID_HELP, False )
+        menu.Enable( wx.ID_HELP, False ) # TODO enable after help implemented
+        menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "License", "Show license" )
         self.MENU_LICENSE = mi.GetId()
         menu.AppendItem( mi )
         menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
         mb.Append( menu, "Help" )
-        
+
         return mb
 
 
@@ -706,7 +714,7 @@ class AuthFrame( wx.Frame ):
         toolbar.SetToolBitmapSize( self.toolbar_icon_size )
 
         self.tool_ids = {}
-        
+
         tool_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_TOOLBAR, self.toolbar_icon_size )
         tool = toolbar.AddTool( self.MENU_COPY_CODE, tool_icon,
                                 shortHelpString = "Copy the selected code to clipboard" )
@@ -726,7 +734,7 @@ class AuthFrame( wx.Frame ):
 
         toolbar.Realize()
         ## GetLogger().debug( "AF toolbar initial size %s", toolbar.GetSize() )
-        
+
         return toolbar
 
     def set_toolbar_state( self, show ):
@@ -742,24 +750,22 @@ class AuthFrame( wx.Frame ):
         ## GetLogger().debug( "AF STS toolbar size %s, button size %s, margin %s",
         ##                    self.toolbar.GetSize(), self.toolbar.GetToolSize(), self.toolbar.GetMargins() )
 
-    def record_toolbar_height( self ):
+    def record_toolbar_height( self, code = 'def' ):
         changed = False
         if self.toolbar != None:
             ts = self.toolbar.GetToolSize()
             if ts.GetHeight() > self.toolbar_button_height:
                 self.toolbar_button_height = ts.GetHeight()
-                ## GetLogger().debug( "AF RTH %s new toolbar button height %d", code, self.toolbar_button_height )
-            if self.toolbar_button_height == 0:
-                trigger_resize = False
+                GetLogger().debug( "AF RTH %s new toolbar button height %d", code, self.toolbar_button_height )
             ts = self.toolbar.GetSize()
             if ts.GetHeight() > self.toolbar_height:
                 self.toolbar_height = ts.GetHeight()
                 if self.toolbar_height > self.toolbar_button_height:
                     changed = True
-                ## GetLogger().debug( "AF RTH %s new toolbar height %d", code, self.toolbar_height )
+                    GetLogger().debug( "AF RTH %s new toolbar height %d", code, self.toolbar_height )
         return changed
 
-            
+
     def create_entries_window( self ):
         GetLogger().debug( "AF create entries window" )
         sw = wx.ScrolledWindow( self, wx.ID_ANY, style = wx.VSCROLL, name = 'entries_window' )
@@ -776,7 +782,7 @@ class AuthFrame( wx.Frame ):
         for entry in self.auth_store.EntryList():
             ## GetLogger().debug( "AF create panel: %d", entry.GetGroup() )
             panel = AuthEntryPanel( self.entries_window, wx.ID_ANY, style = wx.BORDER_THEME,
-                                    entry = entry )
+                                    entry = entry, code_max_digits = self.auth_store.MaxDigits() )
             panel.MaskCode( not self.show_all_codes )
             panel.ShowTimer( self.show_timers )
             self.entry_panels.append( panel )
@@ -788,7 +794,8 @@ class AuthFrame( wx.Frame ):
             # Add dummy entry. We need at least this to be able to size things properly. We'll
             # replace it with the first real entry.
             self.entry_panels.append( AuthEntryPanel( self.entries_window, wx.ID_ANY,
-                                                      style = wx.BORDER_THEME ) )
+                                                      style = wx.BORDER_THEME,
+                                                      code_max_digits = self.auth_store.MaxDigits() ) )
         for panel in self.entry_panels:
             ## GetLogger().debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
             ## GetLogger().debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
@@ -805,22 +812,20 @@ class AuthFrame( wx.Frame ):
         self.entry_panels = []
 
 
-    def CalcItemsShown( self, height ):
-        ## GetLogger().debug( "AF CIS win height = %s, entry height = %d", height, self.entry_height )
+    def CalcItemsShown( self ):
+        height = self.entries_window.GetSize().GetHeight()
+        ## GetLogger().debug( "AF CIS win height = %d, entry height = %d", height, self.entry_height )
         r = self.visible_entries
         if self.entry_height > 0:
-            # Doing integer math, so we can't cancel terms and add 1/2
-            ## n = height + ( self.entry_height + 2 * self.entry_border ) / 2
-            n = height
             d = self.entry_height + 2 * self.entry_border
-            r = n // d
+            r = math.ceil( float( height )  / float( d ) )
             if r < 1:
                 r = 1
-            ## GetLogger().debug( "AF CIS result = %d / %d = %d", n, d, r )
+            ## GetLogger().debug( "AF CIS result = %d / %d = %d", height, d, r )
         return r
 
 
-    def AdjustWindowSizes( self, toolbar_state_changed = False, adjust_bump = False ):
+    def AdjustWindowSizes( self, toolbar_state_changed = False ):
         ## GetLogger().debug( "AF AWS entry size:  %dx%d, visible = %d", self.entry_width, self.entry_height,
         ##                    self.visible_entries )
         # Need to adjust this here, it depends on the entry height which may change
@@ -839,7 +844,7 @@ class AuthFrame( wx.Frame ):
         # calculated correctly. We end up not using the client sizes, but we need them
         # as intermediate steps to make sure the frame has a minimum size large enough
         # for it's client area to hold the entries window.
-        
+
         # Calculate size needed in client area of scrolling entries window
         entries_client_size = wx.Size( column_width, column_height )
         entries_min_client_size = wx.Size( column_width, min_height )
@@ -857,11 +862,9 @@ class AuthFrame( wx.Frame ):
             if self.show_toolbar:
                 frame_size.SetHeight( frame_size.GetHeight() + self.toolbar_height )
                 frame_min_size.SetHeight( frame_min_size.GetHeight() + self.toolbar_height )
-            else:
+            if not self.show_toolbar:
                 frame_size.SetHeight( frame_size.GetHeight() - self.toolbar_height )
                 frame_min_size.SetHeight( frame_min_size.GetHeight() - self.toolbar_height )
-        if adjust_bump:
-            frame_size.SetHeight( frame_size.GetHeight() + self.entry_height + 2 * self.entry_border )
 
         ## GetLogger().debug( "AF AWS FR window size %s min %s", frame_size, frame_min_size )
         ## GetLogger().debug( "AF AWS EW window size %s min %s", entries_size, entries_min_size )
@@ -869,8 +872,10 @@ class AuthFrame( wx.Frame ):
 
         # Clear the hints so we can resize the frame freely
         self.SetSizeHints( -1, -1 )
-        
+
         # Set window sizes and minimum sizes for the entries window and the frame
+        self.entries_window.SetSize( entries_size )
+        self.entries_window.SetMinSize( entries_min_size )
         self.SetMinSize( frame_min_size )
         self.SetSize( frame_size )
 
@@ -900,7 +905,7 @@ class AuthFrame( wx.Frame ):
             if s.GetHeight() > self.entry_height:
                 self.entry_height = s.GetHeight()
         ## GetLogger().debug( "AF APS entry width %d height %d", self.entry_width, self.entry_height )
-                
+
 
     def UpdatePanelSize( self ):
         ## GetLogger().debug( "AF UPS" )
