@@ -15,41 +15,33 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-# Collect icon images for use in data_files
-image_files = []
-# Icon bundles
-files = glob( 'images/*.ico' )
-entry = ( 'share/' + pyauth.__program_name__, files )
-image_files.append( entry )
-# Large program icons
-files = glob( 'images/*.png' )
+# Icon files to add to system
+icon_files = []
+# Large program icons plus icon bundles
+files = glob( 'pyauth/images/*.png' )
 entry = ( 'share/icons/hicolor/512x512/apps', files )
-image_files.append( entry )
+icon_files.append( entry )
 # Specific sizes of icons
 for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
-    files = glob( 'images/{0}x{0}/*.png'.format( str(s) ) )
+    files = glob( 'pyauth/images/{0}x{0}/*.png'.format( str(s) ) )
     entry = ( 'share/icons/hicolor/{0}x{0}/apps'.format( str(s) ), files )
-    image_files.append( entry )
+    icon_files.append( entry )
 
 
 # Post-installation script
 def _post_install( data_path, script_path ):
     # Read in the desktop shortcut template and substitute final paths into it to create
     # the real shortcut file
-    # TODO locate file either in the data path or the install directory
-    template = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
-    shortcut = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
-    with open( template, 'r' ) as tf:
-        with open( shortcut, 'w' ) as sf:
-            for line in tf:
-                l = line.format( program_name = pyauth.__program_name__,
-                                 script_path = script_path,
-                                 data_path = data_path )
-                sf.write( l )
-
-def _noop( lib_path ):
-    template = lib_path
-    # No need to actually do anything
+    template_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
+    shortcut_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
+    if os.path.exists( template_filename ):
+        with open( template_filename, 'r' ) as template:
+            with open( shortcut_filename, 'w' ) as shortcut:
+                for line in template:
+                    l = line.format( program_name = pyauth.__program_name__,
+                                    script_path = script_path,
+                                    data_path = data_path )
+                    shortcut.write( l )
 
 
 # Classes to add post-install behavior to standard install and develop commands
@@ -57,15 +49,14 @@ def _noop( lib_path ):
 class my_install( _install ):
     def run( self ):
         _install.run( self )
-
-        # the second parameter, [], can be replaced with a set of parameters if _post_install needs any
-        self.execute( _post_install, [ self.install_data, self.install_scripts ], msg="Running post install task" )
+        self.execute( _post_install, [ self.install_data, self.install_scripts ],
+                      msg = "Running post install task" )
 
 class my_develop( _develop ):
     def run( self ):
-        self.execute( _noop, [ self.install_lib ], msg="Running develop task" )
         _develop.run( self )
-        self.execute( _post_install, [ self.install_data, self.install_scripts ], msg="Running post develop task" )
+        self.execute( _post_install, [ self.install_data, self.install_scripts ],
+                      msg = "Running post develop task" )
 
 
 setup(
@@ -116,43 +107,37 @@ setup(
         'Operating System :: Unix',
     ],
 
-    # What does your project relate to?
     keywords = 'authentication totp hotp 2fa',
 
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
-    packages=find_packages( exclude = ['contrib', 'docs', 'tests'] ),
+    packages = find_packages( exclude = ['contrib', 'docs', 'tests*'] ),
 
-    # List run-time dependencies here.  These will be installed by pip when
-    # your project is installed. For an analysis of "install_requires" vs pip's
-    # requirements files see:
-    # https://packaging.python.org/en/latest/requirements.html
     install_requires = [
         'pyotp>=2.0.1'
         ],
 
-    # Although 'package_data' is the preferred approach, in some case you may
-    # need to place data files outside of your packages. See:
-    # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files # noqa
-    data_files = image_files + [
+    package_data = {
+        'pyauth': [ 'LICENSE.html',
+                    'images/*.ico',
+                    'images/PyAuth-systray*.png'
+                    ]
+        },
+
+    data_files = icon_files + [
         ( 'share/doc/' + pyauth.__program_name__,
           [ 'README.rst',
-            'LICENSE.html',
+            'pyauth/LICENSE.html',
             'TODO.md',
             'VERSIONS.md',
-            'PyAuth.desktop.in',
-            'PyAuth.desktop'
+            'PyAuth.desktop.in'
           ] )
         ],
 
-    # To provide executable scripts, use entry points in preference to the
-    # "scripts" keyword. Entry points provide cross-platform support and allow
-    # pip to create the appropriate form of executable for the target platform.
     entry_points = {
         'gui_scripts': [
             'PyAuth=pyauth.__main__:main',
         ],
     },
+
     cmdclass = {
         'install': my_install,  # override install
         'develop': my_develop   # develop is used for pip install -e .

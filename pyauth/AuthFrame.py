@@ -2,6 +2,7 @@
 
 import math
 import sysconfig
+import pkg_resources
 import wx
 from wx.lib import newevent as NE
 import Configuration
@@ -76,9 +77,11 @@ class AuthFrame( wx.Frame ):
             GetLogger().debug( "Icon bundle %s failed, trying white", self.icon_set )
             self.icon_bundle = GetIconBundle( 'white' )
         self.use_systray_icon = Configuration.GetUseTaskbarIcon()
-        self.configured_use_systray_icon = Configuration.GetUseTaskbarIcon()
         if initial_systray != None:
             self.use_systray_icon = initial_systray
+        self.start_minimized = Configuration.GetStartMinimized()
+        if initial_minimized != None:
+            self.start_minimized = initial_minimized
         # No maximize button, and no minimize button if we're using the systray icon
         my_style = style & ~wx.MAXIMIZE_BOX
         if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
@@ -118,6 +121,7 @@ class AuthFrame( wx.Frame ):
         self.new_entry_dialog = None
         self.update_entry_dialog = None
         self.license_dialog = None
+        self.license_source = None
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
         self.since_idle = wx.GetUTCTime()
@@ -156,7 +160,7 @@ class AuthFrame( wx.Frame ):
             self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
         # If we're in the systray and not starting minimized, don't show us in
         # the taskbar.
-        if self.taskbar_icon != None and not initial_minimized:
+        if self.taskbar_icon != None and not self.start_minimized:
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
 
@@ -168,7 +172,7 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
         self.Bind( wx.EVT_SHOW, self.OnShow )
         ## TODO self.KeyBind( wx.EVT_CHAR, self.OnKey )
-        self.Bind( wx.EVT_IDLE, self.OnIdle )
+        ## self.Bind( wx.EVT_IDLE, self.OnIdle ) # Enable for size information during idle
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
@@ -320,7 +324,8 @@ class AuthFrame( wx.Frame ):
                 Configuration.SetShowAllCodes( self.show_all_codes )
                 Configuration.SetShowToolbar( self.show_toolbar )
                 Configuration.SetToolbarHeight( self.toolbar_height )
-                Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
+                Configuration.SetUseTaskbarIcon( self.use_systray_icon )
+                Configuration.SetStartMinimized( self.start_minimized )
                 Configuration.SetIconSet( self.configured_icon_set )
                 Configuration.Save()
             if self.license_dialog != None:
@@ -584,7 +589,6 @@ class AuthFrame( wx.Frame ):
                     GetLogger().debug( "AF menu Tray Icon creating taskbar icon" )
                     self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
             self.use_systray_icon = True
-            self.configured_use_systray_icon = True
         else:
             if self.taskbar_icon != None:
                 GetLogger().debug( "AF menu Tray Icon removing taskbar icon" )
@@ -592,7 +596,6 @@ class AuthFrame( wx.Frame ):
                 self.taskbar_icon = None
                 tbi.Destroy()
             self.use_systray_icon = False
-            self.configured_use_systray_icon = False
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler
@@ -602,15 +605,9 @@ class AuthFrame( wx.Frame ):
         GetLogger().debug( "AF menu License dialog" )
         if self.license_dialog == None:
             self.license_dialog = HTMLTextDialog( self, wx.ID_ANY, "License" )
-        # TODO Should look for license file in editable installation too
-        scheme = wx.GetApp().install_scheme
-        if scheme != None:
-            filepath = sysconfig.get_path( 'data', scheme ) + '/share/doc/' + \
-                GetProgramName() + '/LICENSE.html'
-        else:
-            filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + \
-                GetProgramName() + '/LICENSE.html'
-        self.license_dialog.LoadFile( filepath )
+        if self.license_source == None:
+            license_source = pkg_resources.resource_string( 'pyauth', 'LICENSE.html' )
+        self.license_dialog.SetPage( license_source )
         self.license_dialog.ShowModal()
 
     def OnMenuAbout( self, event ):
