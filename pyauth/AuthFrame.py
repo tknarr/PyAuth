@@ -2,6 +2,7 @@
 
 import math
 import sysconfig
+import pkg_resources
 import wx
 from wx.lib import newevent as NE
 import Configuration
@@ -118,6 +119,7 @@ class AuthFrame( wx.Frame ):
         self.new_entry_dialog = None
         self.update_entry_dialog = None
         self.license_dialog = None
+        self.license_source = None
 
         self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
         self.since_idle = wx.GetUTCTime()
@@ -602,10 +604,9 @@ class AuthFrame( wx.Frame ):
         GetLogger().debug( "AF menu License dialog" )
         if self.license_dialog == None:
             self.license_dialog = HTMLTextDialog( self, wx.ID_ANY, "License" )
-        # TODO Should look for license file in editable installation too
-        # TODO pkg_resources
-        filepath = sysconfig.get_path( 'data' ) + '/share/doc/' + GetProgramName() + '/LICENSE.html'
-        self.license_dialog.LoadFile( filepath )
+        if self.license_source == None:
+            license_source = pkg_resources.resource_string( 'pyauth', 'LICENSE.html' )
+        self.license_dialog.SetPage( license_source )
         self.license_dialog.ShowModal()
 
     def OnMenuAbout( self, event ):

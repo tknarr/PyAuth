@@ -48,9 +48,9 @@ class HTMLTextDialog( wx.Dialog ):
         GetLogger().debug( "HTML text dialog init done" )
 
 
-    def LoadFile( self, fn ):
+    def SetPage( self, src ):
         if self.browser != None:
-            self.browser.LoadFile( fn )
+            self.browser.SetPage( src )
 
 
     def OnOK( self, event ):
