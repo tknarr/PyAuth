@@ -34,14 +34,16 @@ def _post_install( data_path, script_path ):
     # the real shortcut file
     template_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
     shortcut_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
-    if path.exists( template_filename ):
-        with open( template_filename, 'r' ) as template:
-            with open( shortcut_filename, 'w' ) as shortcut:
-                for line in template:
-                    l = line.format( program_name = pyauth.__program_name__,
-                                    script_path = script_path,
-                                    data_path = data_path )
-                    shortcut.write( l )
+    ## TODO This isn't working, need some sort of fix at some point
+    ## if path.exists( template_filename ):
+    ##     with open( template_filename, 'r' ) as template:
+    ##         with open( shortcut_filename, 'w' ) as shortcut:
+    ##             for line in template:
+    ##                 l = line.format( program_name = pyauth.__program_name__,
+    ##                                 script_path = script_path,
+    ##                                 data_path = data_path )
+    ##                 shortcut.write( l )
+    ##     os.chmod( shortcut_filename, 0755 )
 
 
 # Classes to add post-install behavior to standard install and develop commands

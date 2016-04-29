@@ -1,5 +1,9 @@
 # PyAuth version history:
 
+* 0.9.2 - Second beta version
+  - Version number bump to avoid a collision on PyPI
+  - Fixed a bug with paths when generating the .desktop file during post-install
+
 * 0.9.1 - Second beta version
   - Packaging changes, now supports editable install
   - Uses pkg_resources to locate data files

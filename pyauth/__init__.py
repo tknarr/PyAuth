@@ -3,6 +3,6 @@
 __program_name__ = "PyAuth"
 
 # Version info
-__version__ = '0.9.1'
+__version__ = '0.9.2'
 __version_tag__ = ''
 __version_status__ = 'beta'
