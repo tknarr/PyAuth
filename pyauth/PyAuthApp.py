@@ -36,6 +36,8 @@ class PyAuthApp( wx.App ):
                              help = "Start the program with the notification icon showing" )
         parser.add_argument( "-m", "--minimized", action = 'store_true', dest = 'minimized',
                              help = "Start the program minimized to the notification icon (implies -s)" )
+        parser.add_argument( "-n", "--no-systray", action = "store_true", dest = 'normal',
+                             help = "Start as a normal window, overrides -s and -m" )
         parser.add_argument( "--icons", metavar = "ICONSET", dest = 'iconset',
                              choices = [ "white", "grey", "dark", "transparent" ],
                              help = "Select a given background for the program icons: %(choices)s" )
@@ -51,6 +53,9 @@ class PyAuthApp( wx.App ):
         if args.minimized:
             initial_minimized = True
             initial_systray = True
+        if args.normal:
+            initial_minimized = False
+            initial_systray = False
         if args.iconset != None:
             iconset = args.iconset
         if args.logfile != None:

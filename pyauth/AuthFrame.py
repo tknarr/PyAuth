@@ -77,9 +77,11 @@ class AuthFrame( wx.Frame ):
             GetLogger().debug( "Icon bundle %s failed, trying white", self.icon_set )
             self.icon_bundle = GetIconBundle( 'white' )
         self.use_systray_icon = Configuration.GetUseTaskbarIcon()
-        self.configured_use_systray_icon = Configuration.GetUseTaskbarIcon()
         if initial_systray != None:
             self.use_systray_icon = initial_systray
+        self.start_minimized = Configuration.GetStartMinimized()
+        if initial_minimized != None:
+            self.start_minimized = initial_minimized
         # No maximize button, and no minimize button if we're using the systray icon
         my_style = style & ~wx.MAXIMIZE_BOX
         if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
@@ -158,7 +160,7 @@ class AuthFrame( wx.Frame ):
             self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
         # If we're in the systray and not starting minimized, don't show us in
         # the taskbar.
-        if self.taskbar_icon != None and not initial_minimized:
+        if self.taskbar_icon != None and not self.start_minimized:
             window_style = self.GetWindowStyle()
             self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
 
@@ -322,7 +324,8 @@ class AuthFrame( wx.Frame ):
                 Configuration.SetShowAllCodes( self.show_all_codes )
                 Configuration.SetShowToolbar( self.show_toolbar )
                 Configuration.SetToolbarHeight( self.toolbar_height )
-                Configuration.SetUseTaskbarIcon( self.configured_use_systray_icon )
+                Configuration.SetUseTaskbarIcon( self.use_systray_icon )
+                Configuration.SetStartMinimized( self.start_minimized )
                 Configuration.SetIconSet( self.configured_icon_set )
                 Configuration.Save()
             if self.license_dialog != None:
@@ -586,7 +589,6 @@ class AuthFrame( wx.Frame ):
                     GetLogger().debug( "AF menu Tray Icon creating taskbar icon" )
                     self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
             self.use_systray_icon = True
-            self.configured_use_systray_icon = True
         else:
             if self.taskbar_icon != None:
                 GetLogger().debug( "AF menu Tray Icon removing taskbar icon" )
@@ -594,7 +596,6 @@ class AuthFrame( wx.Frame ):
                 self.taskbar_icon = None
                 tbi.Destroy()
             self.use_systray_icon = False
-            self.configured_use_systray_icon = False
 
     def OnMenuHelpContents( self, event ):
         # TODO menu handler

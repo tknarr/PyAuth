@@ -81,6 +81,12 @@ def SetLastWindowSize( ws ):
     if y >= 0:
         wx.Config.Get().WriteInt( '/window/height', y )
 
+def GetStartMinimized():
+    return wx.Config.Get().ReadBool( '/window/start_minimized', False )
+
+def SetStartMinimized( state ):
+    wx.Config.Get().WriteBool( '/window/start_minimized', state )
+
 def GetNumberOfItemsShown():
     return wx.Config.Get().ReadInt( '/window/items_shown', 2 )
 
