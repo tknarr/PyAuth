@@ -1,5 +1,9 @@
 # PyAuth version history:
 
+* 0.9.3 - Removed post-install creation of .desktop file
+  - Post-install scripts just aren't working, so the template's been replaced by a filled-in
+    version the user can edit.
+
 * 0.9.2 - Second beta version
   - Version number bump to avoid a collision on PyPI
   - Fixed a bug with paths when generating the .desktop file during post-install

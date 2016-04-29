@@ -81,18 +81,25 @@ Usage
 
 Command line:
 
-``PyAuth [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME]``
+``PyAuth [-n] [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME]
+  [--loglevel (debug|info|warning|error|critical)]``
 
 * ``-s`` enables use of the notification (systray) icon if possible.
 
 * ``-m`` acts as ``-s`` plus hides the main window on startup (minimized to systray).
 
+* ``-n`` forces the program to display in a normal window without using the
+  notification icon. This overrides ``-s`` and ``-m`` and any remembered settings
+  for the notification icon.
+    
 * ``--icons`` selects a set of icons with the named background (default white).
 
 * ``--logfile`` allows you to set a log file for errors and messages logged by
   the program. Errors always appear on the console regardless. You may use variable
   and user expansions in the filename.
-  
+
+* ``--loglevel`` sets the level of log messages to output to the log file.
+
 * ``--version`` requests that the program print out it's version number.
 
 * ``--help`` requests help on the command-line syntax.

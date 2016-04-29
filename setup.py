@@ -4,15 +4,15 @@ from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
 # To use a consistent encoding
 from codecs import open
-from os import path
 from glob import glob
+import os
 import pkg_resources
 import pyauth
 
-here = path.abspath(path.dirname(__file__))
+here = os.path.abspath(os.path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Icon files to add to system
@@ -26,39 +26,6 @@ for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
     files = glob( 'pyauth/images/{0}x{0}/*.png'.format( str(s) ) )
     entry = ( 'share/icons/hicolor/{0}x{0}/apps'.format( str(s) ), files )
     icon_files.append( entry )
-
-
-# Post-installation script
-def _post_install( data_path, script_path ):
-    # Read in the desktop shortcut template and substitute final paths into it to create
-    # the real shortcut file
-    template_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
-    shortcut_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
-    ## TODO This isn't working, need some sort of fix at some point
-    ## if path.exists( template_filename ):
-    ##     with open( template_filename, 'r' ) as template:
-    ##         with open( shortcut_filename, 'w' ) as shortcut:
-    ##             for line in template:
-    ##                 l = line.format( program_name = pyauth.__program_name__,
-    ##                                 script_path = script_path,
-    ##                                 data_path = data_path )
-    ##                 shortcut.write( l )
-    ##     os.chmod( shortcut_filename, 0755 )
-
-
-# Classes to add post-install behavior to standard install and develop commands
-
-class my_install( _install ):
-    def run( self ):
-        _install.run( self )
-        self.execute( _post_install, [ self.install_data, self.install_scripts ],
-                      msg = "Running post install task" )
-
-class my_develop( _develop ):
-    def run( self ):
-        _develop.run( self )
-        self.execute( _post_install, [ self.install_data, self.install_scripts ],
-                      msg = "Running post develop task" )
 
 
 setup(
@@ -130,7 +97,7 @@ setup(
             'pyauth/LICENSE.html',
             'TODO.md',
             'VERSIONS.md',
-            'PyAuth.desktop.in'
+            'PyAuth.desktop'
           ] )
         ],
 
