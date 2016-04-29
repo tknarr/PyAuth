@@ -463,20 +463,23 @@ class AuthFrame( wx.Frame ):
         if self.selected_panel != None:
             GetLogger().debug( "AF DE deleting panel %s", self.selected_panel.GetName() )
             panel = self.selected_panel
+            panel.ClearBackground()
             self.selected_panel = None
             # Remove the panel from the entries list and the entries window
             self.entry_panels.remove( panel )
-            panel.ClearBackground()
             status = self.entries_window.GetSizer().Detach( panel )
-            if not status:
+            if status:
+                # Delete the panel's entry in the authentication store
+                entry = panel.GetEntry()
+                if entry != None:
+                    self.auth_store.Delete( entry.GetGroup() )
+                panel.Destroy()
+                self.entries_window.GetSizer().Layout()
+            else:
                 GetLogger().warning( "Could not remove %s from entries window", panel.GetName() )
             ## GetLogger().debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
             ##                    str( panel.GetMinSize() ) )
             self.UpdatePanelSize()
-            # Delete the panel's entry in the authentication store
-            entry = panel.GetEntry()
-            if entry != None:
-                self.auth_store.Delete( entry.GetGroup() )
         else:
             dlg = wx.MessageDialog( self, "No entry selected.", "Error",
                                     style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
