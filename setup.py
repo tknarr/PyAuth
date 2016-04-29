@@ -34,7 +34,7 @@ def _post_install( data_path, script_path ):
     # the real shortcut file
     template_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop.in'
     shortcut_filename = data_path + '/share/doc/' + pyauth.__program_name__ + '/PyAuth.desktop'
-    if os.path.exists( template_filename ):
+    if path.exists( template_filename ):
         with open( template_filename, 'r' ) as template:
             with open( shortcut_filename, 'w' ) as shortcut:
                 for line in template:
