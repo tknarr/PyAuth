@@ -105,10 +105,5 @@ setup(
         'gui_scripts': [
             'PyAuth=pyauth.__main__:main',
         ],
-    },
-
-    cmdclass = {
-        'install': my_install,  # override install
-        'develop': my_develop   # develop is used for pip install -e .
-        }
+    }
 )

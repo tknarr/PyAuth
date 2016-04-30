@@ -3,10 +3,14 @@
 import os
 import errno
 import string
+import base64
 import wx
 import pyotp
 from About import GetProgramName, GetVendorName
 from Logging import GetLogger
+from Crypto.Protocol.KDF import PBKDF2
+from Crypto.Cipher import AES
+from Crypto import Random
 
 # The authentication store works in tandem with the authentication entry panels. Each
 # panel contains a reference to an AuthenticationEntry object in the entry_list in the
@@ -19,7 +23,7 @@ from Logging import GetLogger
 
 class AuthenticationStore:
 
-    def __init__( self, filename ):
+    def __init__( self, filename, password = 'ndp38wjv' ):
         self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
@@ -28,6 +32,32 @@ class AuthenticationStore:
         self.next_group = 1
         self.next_index = 1
         self.max_digits = 8
+
+        # Set up an RNG object and derive the encryption key from the supplied
+        # password. The salt for the key derivation is taken from the database,
+        # or generated randomly and stored in the database if not already present.
+        self.rng = Random.new()
+        # Check the encryption algorithm entry. If it's missing, the database must
+        # have cleartext secrets. If we have a password but cleartext secrets, we'll
+        # read them without encryption and then properly encrypt them upon saving.
+        self.algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
+        self.algorithm_change = False
+        if password == None or password == '':
+            self.read_cleartext = True
+            self.storage_key = None
+        else:
+            self.read_cleartext = False
+            if self.algorithm == 'cleartext':
+                self.read_cleartext = True
+                self.algorithm = 'AES'
+                self.algorithm_change = True
+            salt = self.cfg.Read( '/crypto/salt', '' )
+            if salt == '':
+                s = self.rng.read( AES.block_size )
+                salt = str( base64.standard_b64encode( s ) )
+                self.cfg.Write( '/crypto/salt', salt )
+                self.cfg.Flush()
+            self.storage_key = PBKDF2( password, salt, AES.block_size, 10000 )
 
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter
@@ -40,24 +70,16 @@ class AuthenticationStore:
             if entry_group > 0:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
-                cfgpath = '{0:d}/'.format( entry_group )
-                sort_index = self.cfg.ReadInt( cfgpath + 'sort_index' )
+                entry = AuthenticationEntry.Load( self.cfg, entry_group, self )
+                if self.algorithm_change:
+                    entry.modified = True # Make sure we rewrite entries when encryption changes
+                sort_index = entry.GetSortIndex()
                 ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
                     self.next_index = sort_index + 1
-                provider = self.cfg.Read( cfgpath + 'provider' )
-                account = self.cfg.Read( cfgpath + 'account' )
-                ## GetLogger().debug( "AS   provider %s", provider )
-                ## GetLogger().debug( "AS   account %s", account )
-                secret = self.cfg.Read( cfgpath + 'secret' )
-                digits = self.cfg.ReadInt( cfgpath + 'digits', 6 )
+                digits = entry.GetDigits()
                 if digits > self.max_digits:
                     self.max_digits = digits
-                original_label = self.cfg.Read( cfgpath + 'original_label', '' )
-                if original_label == '':
-                    original_label = provider + ':' + account
-                entry = AuthenticationEntry( entry_group, sort_index, provider, account, secret,
-                                             digits, original_label )
                 self.entry_list.append( entry )
             more, value, index = self.cfg.GetNextGroup(index)
         self.cfg.SetPath( '/' )
@@ -80,7 +102,13 @@ class AuthenticationStore:
     def Save( self ):
         GetLogger().debug( "AS saving all" )
         for entry in self.entry_list:
-            entry.Save( self.cfg )
+            entry.Save( self.cfg, self )
+        if self.storage_key == None:
+            if self.algorithm != 'cleartext':
+                self.cfg.Write( '/crypto/algorithm', 'cleartext' )
+        else:
+            if self.algorithm_change:
+                self.cfg.Write( '/crypto/algorithm', self.algorithm )
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
         # This should be handled via SetUmask(), but it's not implemented in the Python bindings
@@ -100,7 +128,7 @@ class AuthenticationStore:
         i = 1;
         for e in self.entry_list:
             e.SetSortIndex( i )
-            e.Save( self.cfg )
+            e.Save( self.cfg, self )
             i += 1
         self.next_index = i
         GetLogger().debug( "AS next index = %d", self.next_index )
@@ -116,7 +144,7 @@ class AuthenticationStore:
         for e in self.entry_list:
             e.SetGroup( i )
             e.SetSortIndex( i )
-            e.Save( self.cfg )
+            e.Save( self.cfg, self )
             i += 1
         self.next_group = i
         self.next_index = i
@@ -137,7 +165,7 @@ class AuthenticationStore:
         self.entry_list.append( entry )
         self.next_index += 1
         self.next_group += 1
-        entry.Save( self.cfg )
+        entry.Save( self.cfg, self )
         self.cfg.Flush()
         return entry
 
@@ -181,16 +209,46 @@ class AuthenticationStore:
         if original_label != None:
             GetLogger().debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
-        entry.Save( self.cfg )
+        entry.Save( self.cfg, self )
         self.cfg.Flush()
         return 1
+
+
+    def UpdatePassword( self, password ):
+        # TODO
+        pass
+
+
+    def Encrypt( self, secret ):
+        if self.storage_key == None:
+            return secret
+        iv = self.rng.read( AES.block_size )
+        cipher = AES.new( self.storage_key, AES.MODE_CBC, iv )
+        excess = len( secret ) % AES.block_size
+        if excess > 0:
+            cleartext = secret + ( ' ' * ( AES.block_size - excess ) )
+        else:
+            cleartext = secret
+        ciphertext = iv + cipher.encrypt( cleartext )
+        return str( base64.standard_b64encode( ciphertext ) )
+
+
+    def Decrypt( self, ciphertext ):
+        if self.storage_key == None or self.read_cleartext:
+            return ciphertext
+        b = base64.standard_b64decode( ciphertext )
+        iv = b[0:AES.block_size]
+        raw_ciphertext = b[AES.block_size:]
+        cipher = AES.new( self.storage_key, AES.MODE_CBC, iv )
+        cleartext = cipher.decrypt( raw_ciphertext )
+        return unicode( cleartext ).rstrip()
 
 
 # Helper to create our deletion table for SetSecret()
 def make_deltbl():
     tbl = { ord( '-' ) : None }
     for c in string.whitespace:
-        tbl[ ord(c) ] = None
+        tbl[ ord( c ) ] = None
     return tbl
 
 class AuthenticationEntry:
@@ -209,24 +267,46 @@ class AuthenticationEntry:
             self.original_label = original_label
         else:
             self.original_label = provider + ':' + account
-
         self.auth = pyotp.TOTP( self.secret, self.digits )
         self.otp_problem = False
+        self.modified = True
 
 
     def __cmp__( self, other ):
         return cmp( self.entry_group, other.entry_group ) if other != None else -1
 
 
-    def Save( self, cfg ):
-        cfgpath = '/entries/{0:d}/'.format( self.entry_group )
-        cfg.Write( cfgpath + 'type', 'totp' )
-        cfg.WriteInt( cfgpath + 'sort_index', self.sort_index )
-        cfg.Write( cfgpath + 'provider', self.provider )
-        cfg.Write( cfgpath + 'account', self.account )
-        cfg.Write( cfgpath + 'secret', self.secret )
-        cfg.WriteInt( cfgpath + 'digits', self.digits )
-        cfg.Write( cfgpath + 'original_label', self.original_label )
+    @classmethod
+    def Load( klass, cfg, entry_group, auth_store ):
+        cfgpath = '/entries/{0:d}/'.format( entry_group )
+        old_path = cfg.GetPath()
+        cfg.SetPath( cfgpath )
+        sort_index = cfg.ReadInt( 'sort_index' )
+        provider = cfg.Read( 'provider' )
+        account = cfg.Read( 'account' )
+        secret = auth_store.Decrypt( cfg.Read( 'secret' ) )
+        digits = cfg.ReadInt( 'digits', 6 )
+        original_label = cfg.Read( 'original_label', '' )
+        if original_label == '':
+            original_label = provider + ':' + account
+        cfg.SetPath( old_path )
+        obj = klass( entry_group, sort_index, provider, account, secret,
+                     digits, original_label )
+        obj.modified = False # Newly-created objects are modified, ones loaded from the database aren't
+        return obj
+
+
+    def Save( self, cfg, auth_store ):
+        if self.modified:
+            cfgpath = '/entries/{0:d}/'.format( self.entry_group )
+            cfg.Write( cfgpath + 'type', 'totp' )
+            cfg.WriteInt( cfgpath + 'sort_index', self.sort_index )
+            cfg.Write( cfgpath + 'provider', self.provider )
+            cfg.Write( cfgpath + 'account', self.account )
+            cfg.Write( cfgpath + 'secret', auth_store.Encrypt( self.secret ) )
+            cfg.WriteInt( cfgpath + 'digits', self.digits )
+            cfg.Write( cfgpath + 'original_label', self.original_label )
+            self.modified = False
 
 
     def GetGroup( self ):
@@ -234,43 +314,47 @@ class AuthenticationEntry:
 
     def SetGroup( self, g ):
         self.entry_group = g
-
+        self.modified = True
 
     def GetSortIndex( self ):
         return self.sort_index
 
     def SetSortIndex( self, index ):
         self.sort_index = index
+        self.modified = True
 
     def GetProvider( self ):
         return self.provider
 
     def SetProvider( self, provider ):
         self.provider = provider
+        self.modified = True
 
     def GetAccount( self ):
         return self.account
 
     def SetAccount( self, account ):
         self.account = account
+        self.modified = True
 
     def GetDigits( self ):
         return self.digits
 
     def SetDigits( self, digits ):
         self.digits = digits
+        self.modified = True
 
     def GetOriginalLabel( self ):
         return self.original_label
 
     def SetOriginalLabel( self, original_label ):
         self.original_label = original_label
+        self.modified = True
 
     def GetSecret( self ):
         return self.secret
 
     def SetSecret( self, secret ):
-        self.secret = secret
         # Strip out dashes and whitespace characters that're sometimes put in the
         # text given to the user.
         self.secret = secret.translate( AuthenticationEntry.del_tbl )
@@ -282,6 +366,7 @@ class AuthenticationEntry:
         # Need a new auth object too
         self.auth = pyotp.TOTP( self.secret )
         self.otp_problem = False
+        self.modified = True
 
 
     def GetPeriod( self ):
