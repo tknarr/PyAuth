@@ -23,7 +23,7 @@ from Crypto import Random
 
 class AuthenticationStore:
 
-    def __init__( self, filename, password = 'ndp38wjv' ):
+    def __init__( self, filename, password ):
         self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
