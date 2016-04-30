@@ -10,6 +10,7 @@ from About import GetProgramName, GetVendorName
 from Logging import GetLogger
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
 from Crypto import Random
 
 # The authentication store works in tandem with the authentication entry panels. Each
@@ -37,27 +38,13 @@ class AuthenticationStore:
         # password. The salt for the key derivation is taken from the database,
         # or generated randomly and stored in the database if not already present.
         self.rng = Random.new()
+
         # Check the encryption algorithm entry. If it's missing, the database must
         # have cleartext secrets. If we have a password but cleartext secrets, we'll
         # read them without encryption and then properly encrypt them upon saving.
         self.algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
         self.algorithm_change = False
-        if password == None or password == '':
-            self.read_cleartext = True
-            self.storage_key = None
-        else:
-            self.read_cleartext = False
-            if self.algorithm == 'cleartext':
-                self.read_cleartext = True
-                self.algorithm = 'AES'
-                self.algorithm_change = True
-            salt = self.cfg.Read( '/crypto/salt', '' )
-            if salt == '':
-                s = self.rng.read( AES.block_size )
-                salt = str( base64.standard_b64encode( s ) )
-                self.cfg.Write( '/crypto/salt', salt )
-                self.cfg.Flush()
-            self.storage_key = PBKDF2( password, salt, AES.block_size, 10000 )
+        self.UpdatePassword( password )
 
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter
@@ -92,11 +79,53 @@ class AuthenticationStore:
         self.entry_list.sort( key = keyfunc )
 
 
+    def UpdatePassword( self, password ):
+        if password == None or password == '':
+            self.read_cleartext = True
+            self.storage_key = None
+        else:
+            self.read_cleartext = False
+            if self.algorithm == 'cleartext':
+                self.read_cleartext = True
+                self.algorithm = 'AES'
+                self.algorithm_change = True
+                check_data = unicode( base64.standard_b64encode( self.rng.read( AES.block_size * 4 ) ) )
+                check_ciphertext = self.Encrypt( check_data )
+                self.cfg.Write( '/crypto/check_data', check_ciphertext )
+                h = SHA256.new()
+                h.update( check_data )
+                check_hash = unicode( base64.standard_b64encode( h.digest() ) )
+                self.cfg.Write( '/crypto/check_hash', check_hash )
+                self.cfg.Flush()
+            salt = self.cfg.Read( '/crypto/salt', '' )
+            if salt == '':
+                s = self.rng.read( AES.block_size )
+                salt = unicode( base64.standard_b64encode( s ) )
+                self.cfg.Write( '/crypto/salt', salt )
+                self.cfg.Flush()
+            self.storage_key = PBKDF2( password, salt, AES.block_size, 10000 )
+        return self.EncryptionEnabled()
+
+    def CheckPassword( self ):
+        check_ciphertext = self.cfg.Read( '/crypto/check_data', '' )
+        if check_ciphertext == '':
+            return True
+        check_data = self.Decrypt( check_ciphertext )
+        h = SHA256.new()
+        h.update( check_data )
+        check_hash = unicode( base64.standard_b64encode( h.digest() ) )
+        stored_hash = self.cfg.Read( '/crypto/check_hash', '' )
+        return check_hash == stored_hash
+
+
     def EntryList( self ):
         return self.entry_list
 
     def MaxDigits( self ):
         return self.max_digits
+
+    def EncryptionEnabled( self ):
+        return self.algorithm != 'cleartext'
 
 
     def Save( self ):
@@ -214,11 +243,6 @@ class AuthenticationStore:
         return 1
 
 
-    def UpdatePassword( self, password ):
-        # TODO
-        pass
-
-
     def Encrypt( self, secret ):
         if self.storage_key == None:
             return secret
@@ -230,7 +254,7 @@ class AuthenticationStore:
         else:
             cleartext = secret
         ciphertext = iv + cipher.encrypt( cleartext )
-        return str( base64.standard_b64encode( ciphertext ) )
+        return unicode( base64.standard_b64encode( ciphertext ) )
 
 
     def Decrypt( self, ciphertext ):
@@ -382,5 +406,5 @@ class AuthenticationEntry:
             except Exception as e:
                 c = '?' * self.digits
                 self.otp_problem = True
-                GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, str( e ) )
+                GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, unicode( e ) )
         return c

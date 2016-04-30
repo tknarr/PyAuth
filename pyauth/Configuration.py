@@ -192,7 +192,7 @@ def GetLogMaxSize():
     return wx.Config.Get().ReadInt( '/logging/max_size', 1024 * 1024 )
 
 def GetLogBackupCount():
-    return wx.Config.Get().ReadInt( 'logging/backup_count', 5 )
+    return wx.Config.Get().ReadInt( '/logging/backup_count', 5 )
 
 
 def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
