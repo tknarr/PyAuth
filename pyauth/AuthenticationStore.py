@@ -27,7 +27,9 @@ class AuthenticationStore:
     def __init__( self, filename, password ):
         self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-        cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        self.database_filename = filename
+        cfgfile = wx.FileConfig.GetLocalFileName( self.database_filename,
+                                                  wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         GetLogger().info( "Database file: %s", cfgfile )
         self.entry_list = []
         self.next_group = 1
@@ -143,7 +145,8 @@ class AuthenticationStore:
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
         # This should be handled via SetUmask(), but it's not implemented in the Python bindings
-        cfgfile = wx.FileConfig.GetLocalFileName( 'database.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        cfgfile = wx.FileConfig.GetLocalFileName( self.database_filename,
+                                                  wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         try:
             os.chmod( cfgfile, 0o600 )
         except OSError as e:
