@@ -11,14 +11,26 @@ class DatabasePasswordDialog( wx.Dialog ):
 
         GetLogger().debug( "PWD init" )
 
-        # TODO
+        self.password_label = None
+        self.password_text = None
+
+        self.password_literal = "Password:"
 
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )
 
         vbox.AddSpacer( 16, 0 )
 
-        # TODO
+        # Password
+        lbl = wx.StaticText( self, wx.ID_ANY, '' )
+        self.MakeLabel( lbl, self.password_literal, True )
+        vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
+        self.password_label = lbl
+        txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP )
+        te = txt.GetTextExtent( 'M' * 20 )
+        txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
+        vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
+        self.password_text = txt
 
         vbox.AddSpacer( 16, 0 )
 
@@ -36,16 +48,16 @@ class DatabasePasswordDialog( wx.Dialog ):
 
 
     def OnOK( self, event ):
-        err = False
-        # TODO
-        if err:
-            GetLogger().debug( "PWD OK button missing required items" )
-            wx.Bell()
-        else:
-            GetLogger().debug( "PWD OK button" )
-            event.Skip( True )
+        GetLogger().debug( "PWD OK button" )
+        event.Skip( True )
 
 
     def Reset( self ):
         GetLogger().debug( "PWD reset" )
-        # TODO
+        self.password_text.Clear()
+
+
+    def MakeLabel( self, ctrl, txt, required ):
+        lbl = txt
+        ctrl.SetLabelText( lbl )
+        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )
