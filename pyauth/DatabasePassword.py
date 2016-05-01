@@ -52,6 +52,10 @@ class DatabasePasswordDialog( wx.Dialog ):
         event.Skip( True )
 
 
+    def GetPasswordValue( self ):
+        return self.password_text.GetValue()
+
+
     def Reset( self ):
         GetLogger().debug( "PWD reset" )
         self.password_text.Clear()

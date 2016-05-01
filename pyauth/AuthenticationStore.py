@@ -45,6 +45,8 @@ class AuthenticationStore:
         self.algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
         self.algorithm_change = False
         self.UpdatePassword( password )
+        if not self.CheckPassword( password ):
+            raise ValueError( "Invalid password" )
 
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter

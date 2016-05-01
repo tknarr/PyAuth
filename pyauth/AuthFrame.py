@@ -87,7 +87,6 @@ class AuthFrame( wx.Frame ):
         if self.use_systray_icon and self.icon_bundle != None and wx.TaskBarIcon.IsAvailable():
             my_style = my_style & ~wx.MINIMIZE_BOX
 
-
         wx.Frame.__init__( self, parent, id, title, pos, size, my_style, name )
         GetLogger().debug( "AF init" )
 
@@ -118,12 +117,11 @@ class AuthFrame( wx.Frame ):
         self.toolbar_height = Configuration.GetToolbarHeight()
         self.toolbar_button_height = 0
 
+        self.password_dialog = None
         self.new_entry_dialog = None
         self.update_entry_dialog = None
         self.license_dialog = None
         self.license_source = None
-
-        self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename() )
         self.since_idle = wx.GetUTCTime()
 
         # Timers are scarce on some platforms, so we set one up here and broadcast the
@@ -136,6 +134,72 @@ class AuthFrame( wx.Frame ):
         # Start off iconized so timer ticks don't modify controls before they exist. We'll
         # set this to our actual state in OnCreate()
         self.iconized = True
+
+        # Set up the taskbar icon if we're supposed to use it and can (have icons and
+        # it's available).
+        self.taskbar_icon_image = GetTaskbarIcon( 'transparent' )
+        if self.use_systray_icon and self.taskbar_icon_image != None and wx.TaskBarIcon.IsAvailable():
+            GetLogger().debug( "AF creating taskbar icon" )
+            self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
+        # If we're in the systray and not starting minimized, don't show us in
+        # the taskbar.
+        if self.taskbar_icon != None and not self.start_minimized:
+            window_style = self.GetWindowStyle()
+            self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
+
+        # Basic window event handlers
+        self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
+        self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
+
+
+    def KeyBind( self, event_type, func ):
+        self.Bind( event_type, func )
+        self.entries_window.Bind( event_type, func )
+        for panel in self.entry_panels:
+            panel.Bind( event_type, func )
+
+
+    def OnCreate( self, event ):
+        self.Unbind( wx.EVT_WINDOW_CREATE )
+        GetLogger().debug( "AF created" )
+
+        # Prompt for password and create authentication store
+        password = ''
+        authentication_store_ok = False
+        retry = True
+        while retry:
+            if self.password_dialog == None:
+                self.password_dialog = DatabasePasswordDialog( self, wx.ID_ANY, "Database Password" )
+            self.password_dialog.Reset()
+            result = self.password_dialog.ShowModal()
+            if result == wx.ID_OK:
+                password = self.password_dialog.GetPasswordValue()
+            else:
+                authentication_store_ok = False
+                break
+            try:
+                self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename(), password )
+            except ValueError:
+                retry = True
+            else:
+                authentication_store_ok = True
+                retry = False
+        if not authentication_store_ok:
+            GetLogger().critical( "Database could not be opened" )
+            self.do_not_save = True
+            self.Close( True )
+
+        # NOTE Instance check currently not active, handled in PyAuthApp class
+        ## if  wx.GetApp().instance_check.IsAnotherRunning():
+        ##     dlg = wx.MessageDialog( self, "Another instance may be running.", "Error",
+        ##                             style = wx.YES_NO | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+        ##     dlg.SetExtendedMessage( "Another instance of this application may be running. "
+        ##                             "Do you wish to run this application anyway?" )
+        ##     result = dlg.ShowModal()
+        ##     dlg.Destroy()
+        ##     if result != wx.ID_YES:
+        ##         self.do_not_save = True
+        ##         self.Close( True )
 
         self.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         menu_bar = self.create_menu_bar()
@@ -152,21 +216,7 @@ class AuthFrame( wx.Frame ):
 
         self.populate_entries_window()
 
-        # Set up the taskbar icon if we're supposed to use it and can (have icons and
-        # it's available).
-        self.taskbar_icon_image = GetTaskbarIcon( 'transparent' )
-        if self.use_systray_icon and self.taskbar_icon_image != None and wx.TaskBarIcon.IsAvailable():
-            GetLogger().debug( "AF creating taskbar icon" )
-            self.taskbar_icon = AuthTaskbarIcon( self, self.taskbar_icon_image )
-        # If we're in the systray and not starting minimized, don't show us in
-        # the taskbar.
-        if self.taskbar_icon != None and not self.start_minimized:
-            window_style = self.GetWindowStyle()
-            self.SetWindowStyle( window_style | wx.FRAME_NO_TASKBAR )
-
         # Window event handlers
-        self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
-        self.Bind( wx.EVT_CLOSE, self.OnCloseWindow )
         self.entries_window.Bind( wx.EVT_SIZE, self.OnSize )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
@@ -192,31 +242,9 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnMenuAbout,        id = wx.ID_ABOUT )
         # Any toolbar tool handlers that aren't also menu item handlers go below here
 
-
-    def KeyBind( self, event_type, func ):
-        self.Bind( event_type, func )
-        self.entries_window.Bind( event_type, func )
-        for panel in self.entry_panels:
-            panel.Bind( event_type, func )
-
-
-    def OnCreate( self, event ):
-        self.Unbind( wx.EVT_WINDOW_CREATE )
-        GetLogger().debug( "AF created" )
         self.iconized = self.IsIconized()
         self.timer.Start( 1000 )
         self.record_toolbar_height()
-        # NOTE Currently inactive, handled in PyAuthApp class
-        if  wx.GetApp().instance_check.IsAnotherRunning():
-            dlg = wx.MessageDialog( self, "Another instance may be running.", "Error",
-                                    style = wx.YES_NO | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-            dlg.SetExtendedMessage( "Another instance of this application may be running. "
-                                    "Do you wish to run this application anyway?" )
-            result = dlg.ShowModal()
-            dlg.Destroy()
-            if result != wx.ID_YES:
-                self.do_not_save = True
-                self.Close( True )
 
 
     def OnSize( self, event ):
@@ -334,6 +362,8 @@ class AuthFrame( wx.Frame ):
                 self.new_entry_dialog.Destroy()
             if self.update_entry_dialog != None:
                 self.update_entry_dialog.Destroy()
+            if self.password_dialog != None:
+                self.password_dialog.Destroy()
             if self.taskbar_icon != None:
                 self.taskbar_icon.Destroy()
             self.Destroy()
