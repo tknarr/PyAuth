@@ -174,11 +174,8 @@ def GetConfigDirectory():
 def GetDatabaseFilename():
     return wx.Config.Get().Read( '/database/file_name', 'database.cfg' )
 
-def GetLoggingLevel( level_args ):
-    if level_args != None and level_args != '':
-        level_string = level_args
-    else:
-        level_string = wx.Config.Get().Read( '/logging/level', 'warning' )
+def GetLoggingLevel():
+    level_string = wx.Config.Get().Read( '/logging/level', 'warning' )
     loglevel = getattr( logging, level_string.upper(), None )
     if not isinstance( loglevel, int ):
         logging.warning( "Invalid logging level %s, using WARNING instead", level_string )

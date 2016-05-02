@@ -1,4 +1,5 @@
-"""PyAuth - Google Authenticator (TOTP) desktop client"""
+# -*- coding: utf-8 -*-
+"""PyAuth - Google Authenticator (TOTP) desktop client."""
 
 __program_name__ = "PyAuth"
 

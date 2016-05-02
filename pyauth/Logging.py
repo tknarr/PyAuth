@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Logging setup."""
 
 import os.path
 import logging
@@ -10,25 +11,42 @@ import pyauth
 import Configuration
 
 def GetLogger():
+    """Return the standard logger for the program."""
     return logging.getLogger( pyauth.__program_name__ )
 
 def ConfigureLogging( log_filename_args, log_level_args ):
-    log_lvl = Configuration.GetLoggingLevel( log_level_args )
-    if log_filename_args != None and log_filename_args != '':
-        lfn = log_filename_args
+    """
+    Set up logging for the rest of the program.
+
+    The two arguments indicate the filename and log level the user requested
+    via command-line arguments, overriding what's stored in the program's
+    configuration file.
+    """
+
+    # If we were given a log-level argument, try to use it. If we weren't given
+    # one or it isn't valid, use what's in the configuration file.
+    if log_level_args == None or log_level_args == '':
+        log_lvl = Configuration.GetLoggingLevel()
     else:
+        log_lvl = getattr( logging, log_level_args.upper(), None )
+        if not isinstance( loglevel, int ):
+            log_lvl = Configuration.GetLoggingLevel()
+
+    if log_filename_args == None or log_filename_args == '':
         lfn = Configuration.GetLogFilename()
-    if lfn != None and lfn != '':
+    else:
+        lfn = log_filename_args
+    if lfn == None or lfn == '':
+        log_filename = None
+    else:
         log_filename = os.path.expandvars( os.path.expanduser( lfn ) )
         max_size = Configuration.GetLogMaxSize()
         backup_count = Configuration.GetLogBackupCount()
-    else:
-        log_filename = None
 
     app_logger = logging.getLogger( pyauth.__program_name__ )
 
     # Console logger with just serious errors, unless no log file in which case the console
-    # becomes the log file
+    # becomes the log file and gets all messages requested
     formatter = logging.Formatter( '%(levelname)s:%(name)s:%(message)s' )
     handler = logging.StreamHandler()
     handler.setFormatter( formatter )
@@ -38,7 +56,7 @@ def ConfigureLogging( log_filename_args, log_level_args ):
         handler.setLevel( logging.ERROR )
     app_logger.addHandler( handler )
 
-    # File logger with all messages
+    # File logger with all messages requested
     if log_filename != None:
         # Tab-separated fields
         formatter = logging.Formatter( '%(asctime)s %(levelname)s: %(message)s' )
