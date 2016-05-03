@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
+"""Database password dialog box."""
 
 import wx
 from Logging import GetLogger
 
 class DatabasePasswordDialog( wx.Dialog ):
+    """Database password dialog box."""
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
+        """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
         GetLogger().debug( "PWD init" )
@@ -48,20 +51,23 @@ class DatabasePasswordDialog( wx.Dialog ):
 
 
     def OnOK( self, event ):
+        """Handle the OK button event."""
         GetLogger().debug( "PWD OK button" )
         event.Skip( True )
 
 
     def GetPasswordValue( self ):
+        """Return the contents of the password field."""
         return self.password_text.GetValue()
 
 
     def Reset( self ):
+        """Reset the dialog box contents."""
         GetLogger().debug( "PWD reset" )
         self.password_text.Clear()
 
 
     def MakeLabel( self, ctrl, txt, required ):
-        lbl = txt
-        ctrl.SetLabelText( lbl )
+        """Set up a label control's text."""
+        ctrl.SetLabelText( txt )
         ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )

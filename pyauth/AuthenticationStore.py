@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Authentication secrets store."""
 
 import os
 import errno
@@ -13,18 +14,22 @@ from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto import Random
 
-# The authentication store works in tandem with the authentication entry panels. Each
-# panel contains a reference to an AuthenticationEntry object in the entry_list in the
-# authentication store. In an AuthenticationEntry object, the entry_group holds the number
-# used as the group in the config file holding that entry's values. sort_index controls
-# the order entries appear in in the main window. The sort_index is altered as entries
-# change position in the main window and just before the store is saved. The entry_group
-# value is assigned when a new entry is created and doesn't change after that except
-# during a regroup operation just before the store is saved.
-
 class AuthenticationStore:
+    """
+    Authentication secrets store.
+
+    The authentication store works in tandem with the authentication entry panels. Each
+    panel contains a reference to an AuthenticationEntry object in the entry_list in the
+    authentication store. In an AuthenticationEntry object, the entry_group holds the number
+    used as the group in the config file holding that entry's values. sort_index controls
+    the order entries appear in in the main window. The sort_index is altered as entries
+    change position in the main window and just before the store is saved. The entry_group
+    value is assigned when a new entry is created and doesn't change after that except
+    during a regroup operation just before the store is saved.
+    """
 
     def __init__( self, filename, password ):
+        """Initialize the store from the given filename, using a password to encrypt secrets."""
         self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         self.database_filename = filename
@@ -84,6 +89,7 @@ class AuthenticationStore:
 
 
     def UpdatePassword( self, password ):
+        """Update the encryption password and algorithm."""
         if password == None or password == '':
             self.read_cleartext = True
             self.storage_key = None
@@ -111,7 +117,9 @@ class AuthenticationStore:
         return self.EncryptionEnabled()
 
     def CheckPassword( self ):
+        """Check whether the current password is correct or not."""
         check_ciphertext = self.cfg.Read( '/crypto/check_data', '' )
+        # If we have no stored ciphertext to check, secrets must be stored in the clear.
         if check_ciphertext == '':
             return True
         check_data = self.Decrypt( check_ciphertext )
@@ -123,16 +131,20 @@ class AuthenticationStore:
 
 
     def EntryList( self ):
+        """Return the list of entries in the store."""
         return self.entry_list
 
     def MaxDigits( self ):
+        """Return the maximum number of code digits supported."""
         return self.max_digits
 
     def EncryptionEnabled( self ):
+        """Indicate whether encryption is active or not."""
         return self.algorithm != 'cleartext'
 
 
     def Save( self ):
+        """Save any modifications back to disk."""
         GetLogger().debug( "AS saving all" )
         for entry in self.entry_list:
             entry.Save( self.cfg, self )
@@ -156,6 +168,12 @@ class AuthenticationStore:
 
 
     def Reindex( self ):
+        """
+        Reindex the database.
+
+        The entry list will be sorted and then each entry will be assigned
+        a new sort index and the change saved.
+        """
         GetLogger().debug( "AS reindexing" )
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
@@ -170,6 +188,14 @@ class AuthenticationStore:
 
 
     def Regroup( self ):
+        """
+        Reindex and re-group the database.
+
+        The current set of entries will be deleted from the database file, then
+        the entry list will be sorted and new sort indexes and group numbers will
+        be assigned. The new entries will be saved, resulting in a database file
+        with group numbers starting from 1 again.
+        """
         GetLogger().debug( "AS regroup" )
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
@@ -187,6 +213,12 @@ class AuthenticationStore:
 
 
     def Add( self, provider, account, secret, digits = 6, original_label = None ):
+        """
+        Add a new entry to the database.
+
+        The new entry will receive a sort index and group number one greater than the
+        highest currently present in the database.
+        """
         f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
         elist = list( filter( f, self.entry_list ) )
         if len( elist ) > 0:
@@ -205,6 +237,7 @@ class AuthenticationStore:
 
 
     def Delete( self, entry_group ):
+        """Delete an entry from the database."""
         GetLogger().debug( "AS deleting entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
         elist = list( filter( f, self.entry_list ) )
@@ -218,6 +251,7 @@ class AuthenticationStore:
 
     def Update( self, entry_group, provider = None, account = None, secret = None, digits = None,
                 original_label = None ):
+        """Update an entry in the database."""
         GetLogger().debug( "AS updating entry %d", entry_group )
         f = lambda x: x.GetGroup() == entry_group
         elist = list( filter( f, self.entry_list ) )
@@ -249,6 +283,7 @@ class AuthenticationStore:
 
 
     def Encrypt( self, secret ):
+        """Encrypt a secret with the current password."""
         if self.storage_key == None:
             return secret
         iv = self.rng.read( AES.block_size )
@@ -263,6 +298,7 @@ class AuthenticationStore:
 
 
     def Decrypt( self, ciphertext ):
+        """Decrypt a secret using the current password."""
         if self.storage_key == None or self.read_cleartext:
             return ciphertext
         b = base64.standard_b64decode( ciphertext )
@@ -273,19 +309,21 @@ class AuthenticationStore:
         return unicode( cleartext ).rstrip()
 
 
-# Helper to create our deletion table for SetSecret()
 def make_deltbl():
+    """Make the translation table for cleaning up secrets."""
     tbl = { ord( '-' ) : None }
     for c in string.whitespace:
         tbl[ ord( c ) ] = None
     return tbl
 
 class AuthenticationEntry:
+    """A single entry in the authentication store."""
 
     # Never changed, so just make it once
     del_tbl = make_deltbl()
 
     def __init__( self, group, index, provider, account, secret, digits = 6, original_label = None ):
+        """Initialize the entry."""
         self.entry_group = group
         self.sort_index = index
         self.provider = provider
@@ -302,11 +340,13 @@ class AuthenticationEntry:
 
 
     def __cmp__( self, other ):
+        """Compare two entries based on their entry group numbers."""
         return cmp( self.entry_group, other.entry_group ) if other != None else -1
 
 
     @classmethod
     def Load( klass, cfg, entry_group, auth_store ):
+        """Create a new entry based on an entry group from the database."""
         cfgpath = '/entries/{0:d}/'.format( entry_group )
         old_path = cfg.GetPath()
         cfg.SetPath( cfgpath )
@@ -326,6 +366,7 @@ class AuthenticationEntry:
 
 
     def Save( self, cfg, auth_store ):
+        """Save the entry to the database file if modified."""
         if self.modified:
             cfgpath = '/entries/{0:d}/'.format( self.entry_group )
             cfg.Write( cfgpath + 'type', 'totp' )
@@ -339,51 +380,71 @@ class AuthenticationEntry:
 
 
     def GetGroup( self ):
+        """Return the entry group number."""
         return self.entry_group
 
     def SetGroup( self, g ):
+        """Set the entry group number."""
         self.entry_group = g
         self.modified = True
 
     def GetSortIndex( self ):
+        """Return the sort index."""
         return self.sort_index
 
     def SetSortIndex( self, index ):
+        """Set the sort index."""
         self.sort_index = index
         self.modified = True
 
     def GetProvider( self ):
+        """Return the provider string."""
         return self.provider
 
     def SetProvider( self, provider ):
+        """Set the provider string."""
         self.provider = provider
         self.modified = True
 
     def GetAccount( self ):
+        """Return the account name."""
         return self.account
 
     def SetAccount( self, account ):
+        """Set the account name."""
         self.account = account
         self.modified = True
 
     def GetDigits( self ):
+        """Return the number of code digits."""
         return self.digits
 
     def SetDigits( self, digits ):
+        """Set the number of code digits."""
         self.digits = digits
         self.modified = True
 
     def GetOriginalLabel( self ):
+        """Return the original label text."""
         return self.original_label
 
     def SetOriginalLabel( self, original_label ):
+        """Set the original label text."""
         self.original_label = original_label
         self.modified = True
 
     def GetSecret( self ):
+        """Return the secret."""
         return self.secret
 
     def SetSecret( self, secret ):
+        """
+        Set the secret.
+
+        Cleans up the secret removing any illegal characters and correcting the
+        padding.
+        """
+
         # Strip out dashes and whitespace characters that're sometimes put in the
         # text given to the user.
         self.secret = secret.translate( AuthenticationEntry.del_tbl )
@@ -399,10 +460,12 @@ class AuthenticationEntry:
 
 
     def GetPeriod( self ):
+        """Return the time period between code changes."""
         return 30 # Google Authenticator uses a 30-second period
 
 
     def GenerateNextCode( self ):
+        """Generate the next code in sequence from the secret."""
         if self.otp_problem:
             c = '?' * self.digits
         else:

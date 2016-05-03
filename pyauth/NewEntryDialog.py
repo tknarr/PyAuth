@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
+"""New entry dialog box."""
 
 import wx
 from Logging import GetLogger
 
 class NewEntryDialog( wx.Dialog ):
+    """New entry dialog box."""
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
+        """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
         GetLogger().debug( "NED init" )
@@ -113,6 +116,7 @@ class NewEntryDialog( wx.Dialog ):
 
 
     def OnOK( self, event ):
+        """Handle the OK button and check for required fields."""
         err = False
         f = self.provider_text.IsEmpty()
         err = err or f
@@ -132,21 +136,27 @@ class NewEntryDialog( wx.Dialog ):
 
 
     def GetProviderValue( self ):
+        """Return the value of the provider field."""
         return self.provider_text.GetValue()
 
     def GetAccountValue( self ):
+        """Return the value of the account field."""
         return self.account_text.GetValue()
 
     def GetSecretValue( self ):
+        """Return the value of the secret field."""
         return self.secret_text.GetValue()
 
     def GetDigitsValue( self ):
+        """Return the value of the digits selection."""
         return 6 + ( self.digits_radio.GetSelection() * 2 )
 
     def GetOriginalLabel( self ):
+        """Return the value of the original label field."""
         return self.original_label_text.GetValue()
 
     def Reset( self ):
+        """Reset the contents of the dialog box to the initial state."""
         GetLogger().debug( "NED reset" )
         self.ColorLabel( self.provider_label, False )
         self.ColorLabel( self.account_label, False )
@@ -158,12 +168,14 @@ class NewEntryDialog( wx.Dialog ):
         self.original_label_text.Clear()
 
     def ColorLabel( self, ctrl, error ):
+        """Set the color of the label depending on the error state."""
         if error:
             ctrl.SetForegroundColour( wx.RED )
         else:
             ctrl.SetForegroundColour( self.text_color )
 
     def MakeLabel( self, ctrl, txt, required ):
+        """Set up the text for a label control."""
         lbl = txt
         if required:
             lbl += ' ' + self.required_literal
