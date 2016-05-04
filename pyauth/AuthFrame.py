@@ -11,6 +11,7 @@ from AuthEntryPanel import AuthEntryPanel
 from About import GetProgramName, GetAboutInfo, GetIconBundle, GetTaskbarIcon
 from NewEntryDialog import NewEntryDialog
 from UpdateEntryDialog import UpdateEntryDialog
+from DatabasePasswordDialog import DatabasePasswordDialog
 from HTMLTextDialog import HTMLTextDialog
 from Logging import GetLogger
 
@@ -182,12 +183,15 @@ class AuthFrame( wx.Frame ):
             except ValueError:
                 retry = True
             else:
-                authentication_store_ok = True
                 retry = False
+            finally:
+                if self.auth_store != None:
+                    authentication_store_ok = True
         if not authentication_store_ok:
             GetLogger().critical( "Database could not be opened" )
             self.do_not_save = True
             self.Close( True )
+            return None
 
         # NOTE Instance check currently not active, handled in PyAuthApp class
         ## if  wx.GetApp().instance_check.IsAnotherRunning():
@@ -218,6 +222,8 @@ class AuthFrame( wx.Frame ):
 
         # Window event handlers
         self.entries_window.Bind( wx.EVT_SIZE, self.OnSize )
+        self.toolbar.Bind( wx.EVT_SIZE, self.OnToolbarSize )
+        self.toolbar.Bind( wx.EVT_SHOW, self.OnToolbarShow )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
         self.Bind( wx.EVT_SHOW, self.OnShow )
@@ -251,6 +257,14 @@ class AuthFrame( wx.Frame ):
         ## GetLogger().debug( "OnSize event on entries window" )
         self.visible_entries = self.CalcItemsShown()
         ## GetLogger.debug( "OnSize entries window done" )
+
+    def OnToolbarSize( self, event ):
+        GetLogger().debug( "OnSize event on toolbar" )
+        GetLogger().debug( "Toolbar size: %s", self.toolbar.GetSize() )
+
+    def OnToolbarShow( self, event ):
+        GetLogger().debug( "OnShow event on toolbar" )
+        GetLogger().debug( "Toolbar size: %s", self.toolbar.GetSize() )
 
 
     def OnTimerTick( self, event ):
@@ -335,7 +349,8 @@ class AuthFrame( wx.Frame ):
             self.Unbind( wx.EVT_TIMER )
             self.timer = None
             if not self.do_not_save:
-                self.auth_store.Save()
+                if self.auth_store != None:
+                    self.auth_store.Save()
                 wp = self.GetPosition()
                 Configuration.SetLastWindowPosition( wp )
                 if self.displayed:
@@ -423,7 +438,8 @@ class AuthFrame( wx.Frame ):
                     GetLogger().debug( "AF NE add panel: %s", panel.GetName() )
                     self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT,
                                                         self.entry_border )
-                ## GetLogger().debug( "AF NE panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+                ## GetLogger().debug( "AF NE panel size %s min %s", unicode( panel.GetSize() ),
+                ##                    unicode( panel.GetMinSize() ) )
                 self.UpdatePanelSize()
             else:
                 GetLogger().debug( "AF NE duplicate item" )
@@ -484,8 +500,8 @@ class AuthFrame( wx.Frame ):
                             dlg.Destroy()
                         else:
                             self.selected_panel.ChangeContents()
-                            ## GetLogger().debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
-                            ##                    str( panel.GetMinSize() ) )
+                            ## GetLogger().debug( "AF UE panel size %s min %s", unicode( panel.GetSize() ),
+                            ##                    unicode( panel.GetMinSize() ) )
                             self.UpdatePanelSize()
 
     def OnMenuDeleteEntry( self, event ):
@@ -507,8 +523,8 @@ class AuthFrame( wx.Frame ):
                 self.entries_window.GetSizer().Layout()
             else:
                 GetLogger().warning( "Could not remove %s from entries window", panel.GetName() )
-            ## GetLogger().debug( "AF UE panel size %s min %s", str( panel.GetSize() ),
-            ##                    str( panel.GetMinSize() ) )
+            ## GetLogger().debug( "AF UE panel size %s min %s", unicode( panel.GetSize() ),
+            ##                    unicode( panel.GetMinSize() ) )
             self.UpdatePanelSize()
         else:
             dlg = wx.MessageDialog( self, "No entry selected.", "Error",
@@ -828,7 +844,7 @@ class AuthFrame( wx.Frame ):
                                                       code_max_digits = self.auth_store.MaxDigits() ) )
         for panel in self.entry_panels:
             ## GetLogger().debug( "AF add panel: %d - %s", panel.GetSortIndex(), panel.GetName() )
-            ## GetLogger().debug( "AF panel size %s min %s", str( panel.GetSize() ), str( panel.GetMinSize() ) )
+            ## GetLogger().debug( "AF panel size %s min %s", unicode( panel.GetSize() ), unicode( panel.GetMinSize() ) )
             self.entries_window.GetSizer().Add( panel, 0, wx.ALL | wx.ALIGN_LEFT, self.entry_border )
 
 

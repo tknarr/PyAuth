@@ -52,7 +52,7 @@ class AuthenticationStore:
         self.algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
         self.algorithm_change = False
         self.UpdatePassword( password )
-        if not self.CheckPassword( password ):
+        if not self.CheckPassword():
             raise ValueError( "Invalid password" )
 
         # Read configuration entries into a list
@@ -88,41 +88,43 @@ class AuthenticationStore:
         self.entry_list.sort( key = keyfunc )
 
 
-    def UpdatePassword( self, password ):
+    def UpdatePassword( self, password, new_password = False ):
         """Update the encryption password and algorithm."""
         if password == None or password == '':
-            self.read_cleartext = True
             self.storage_key = None
-        else:
-            self.read_cleartext = False
-            if self.algorithm == 'cleartext':
-                self.read_cleartext = True
-                self.algorithm = 'AES'
-                self.algorithm_change = True
-                check_data = unicode( base64.standard_b64encode( self.rng.read( AES.block_size * 4 ) ) )
-                check_ciphertext = self.Encrypt( check_data )
-                self.cfg.Write( '/crypto/check_data', check_ciphertext )
-                h = SHA256.new()
-                h.update( check_data )
-                check_hash = unicode( base64.standard_b64encode( h.digest() ) )
-                self.cfg.Write( '/crypto/check_hash', check_hash )
-                self.cfg.Flush()
-            salt = self.cfg.Read( '/crypto/salt', '' )
-            if salt == '':
-                s = self.rng.read( AES.block_size )
-                salt = unicode( base64.standard_b64encode( s ) )
-                self.cfg.Write( '/crypto/salt', salt )
-                self.cfg.Flush()
-            self.storage_key = PBKDF2( password, salt, AES.block_size, 10000 )
+            return False # Passwordless database not allowed
+        self.read_cleartext = False
+        if self.algorithm == 'cleartext':
+            new_password = True
+            self.read_cleartext = True
+            self.algorithm = 'AES'
+            self.algorithm_change = True
+        salt = self.cfg.Read( '/crypto/salt', '' )
+        # Generate a new salt if there is none or if we're changing the password
+        if salt == '' or new_password:
+            s = self.rng.read( AES.block_size )
+            salt = unicode( base64.standard_b64encode( s ) )
+            self.cfg.Write( '/crypto/salt', salt )
+            self.cfg.Flush()
+        self.storage_key = PBKDF2( password, salt, AES.block_size, 10000 )
+        # Generate new check data every time the password is changed
+        if new_password:
+            check_data = unicode( base64.standard_b64encode( self.rng.read( AES.block_size * 4 ) ) )
+            check_ciphertext = self.Encrypt( check_data )
+            self.cfg.Write( '/crypto/check_data', check_ciphertext )
+            h = SHA256.new()
+            h.update( check_data )
+            check_hash = unicode( base64.standard_b64encode( h.digest() ) )
+            self.cfg.Write( '/crypto/check_hash', check_hash )
+            self.cfg.Flush()
         return self.EncryptionEnabled()
 
     def CheckPassword( self ):
         """Check whether the current password is correct or not."""
         check_ciphertext = self.cfg.Read( '/crypto/check_data', '' )
-        # If we have no stored ciphertext to check, secrets must be stored in the clear.
         if check_ciphertext == '':
-            return True
-        check_data = self.Decrypt( check_ciphertext )
+            raise ValueError( "Password check data not present." )
+        check_data = self.Decrypt( check_ciphertext, True )
         h = SHA256.new()
         h.update( check_data )
         check_hash = unicode( base64.standard_b64encode( h.digest() ) )
@@ -148,12 +150,8 @@ class AuthenticationStore:
         GetLogger().debug( "AS saving all" )
         for entry in self.entry_list:
             entry.Save( self.cfg, self )
-        if self.storage_key == None:
-            if self.algorithm != 'cleartext':
-                self.cfg.Write( '/crypto/algorithm', 'cleartext' )
-        else:
-            if self.algorithm_change:
-                self.cfg.Write( '/crypto/algorithm', self.algorithm )
+        if self.algorithm_change:
+            self.cfg.Write( '/crypto/algorithm', self.algorithm )
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
         # This should be handled via SetUmask(), but it's not implemented in the Python bindings
@@ -297,9 +295,9 @@ class AuthenticationStore:
         return unicode( base64.standard_b64encode( ciphertext ) )
 
 
-    def Decrypt( self, ciphertext ):
+    def Decrypt( self, ciphertext, force_decrypt = False ):
         """Decrypt a secret using the current password."""
-        if self.storage_key == None or self.read_cleartext:
+        if self.storage_key == None or ( self.read_cleartext and not force_decrypt ):
             return ciphertext
         b = base64.standard_b64decode( ciphertext )
         iv = b[0:AES.block_size]

@@ -95,7 +95,7 @@ def GetIconBundle( name ):
         input_strm = pkg_resources.resource_stream( 'pyauth', filename )
         icon_bundle = wx.IconBundleFromStream( input_strm, wx.BITMAP_TYPE_ICO )
     except Exception as e:
-        GetLogger().error( "Error in %s icon bundle: %s", name, str( e ) )
+        GetLogger().error( "Error in %s icon bundle: %s", name, unicode( e ) )
     return icon_bundle
 
 def GetTaskbarIcon( name ):
@@ -117,5 +117,5 @@ def GetTaskbarIcon( name ):
         if bm != None:
             icon = wx.IconFromBitmap( bm )
     except Exception as e:
-        GetLogger().error( "Error in %s taskbar icon: %s", name, str(e) )
+        GetLogger().error( "Error in %s taskbar icon: %s", name, unicode(e) )
     return icon

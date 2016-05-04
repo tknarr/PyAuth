@@ -239,10 +239,10 @@ class AuthEntryPanel( wx.Panel ):
         self.label_panel.SetClientSize( s )
         self.Fit()
 
-        ## GetLogger().debug( "AEP UC provider size: %s", str( self.provider_text.GetSize() ) )
-        ## GetLogger().debug( "AEP UC account size:  %s", str( self.account_text.GetSize() ) )
+        ## GetLogger().debug( "AEP UC provider size: %s", unicode( self.provider_text.GetSize() ) )
+        ## GetLogger().debug( "AEP UC account size:  %s", unicode( self.account_text.GetSize() ) )
         ## GetLogger().debug( "AEP UC label width:   %d", self.label_width )
-        ## GetLogger().debug( "AEP UC panel size:    %s", str( self.GetSize() ) )
+        ## GetLogger().debug( "AEP UC panel size:    %s", unicode( self.GetSize() ) )
 
 
     def ChangeContents( self ):

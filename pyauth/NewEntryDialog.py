@@ -115,6 +115,10 @@ class NewEntryDialog( wx.Dialog ):
         GetLogger().debug( "NED init done" )
 
 
+    def SetFocus( self ):
+        self.provider_text.SetFocus()
+
+
     def OnOK( self, event ):
         """Handle the OK button and check for required fields."""
         err = False
@@ -166,6 +170,7 @@ class NewEntryDialog( wx.Dialog ):
         self.secret_text.Clear()
         self.digits_radio.SetSelection( 0 )
         self.original_label_text.Clear()
+        self.SetFocus()
 
     def ColorLabel( self, ctrl, error ):
         """Set the color of the label depending on the error state."""

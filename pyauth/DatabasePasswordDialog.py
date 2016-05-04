@@ -50,6 +50,10 @@ class DatabasePasswordDialog( wx.Dialog ):
         GetLogger().debug( "PWD init done" )
 
 
+    def SetFocus( self ):
+        self.password_text.SetFocus()
+
+
     def OnOK( self, event ):
         """Handle the OK button event."""
         GetLogger().debug( "PWD OK button" )
@@ -65,6 +69,7 @@ class DatabasePasswordDialog( wx.Dialog ):
         """Reset the dialog box contents."""
         GetLogger().debug( "PWD reset" )
         self.password_text.Clear()
+        self.SetFocus()
 
 
     def MakeLabel( self, ctrl, txt, required ):

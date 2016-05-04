@@ -99,6 +99,10 @@ class UpdateEntryDialog( wx.Dialog ):
         GetLogger().debug( "UED init done" )
 
 
+    def SetFocus( self ):
+        self.provider_text.SetFocus()
+
+
     def OnOK( self, event ):
         """Handle the OK button and check for required fields."""
         err = False
@@ -145,6 +149,7 @@ class UpdateEntryDialog( wx.Dialog ):
         self.secret_text.SetValue( secret )
         self.ColorLabel( self.secret_label, self.secret_text.IsEmpty() )
         self.digits_radio.SetSelection( ( digits - 6 ) / 2 )
+        self.SetFocus()
 
     def ColorLabel( self, ctrl, error ):
         """Set the color of the label depending on the error state."""
