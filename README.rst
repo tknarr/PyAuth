@@ -24,6 +24,11 @@ and other software and hardware using the standard TOTP algorithm outlined in
 `RFC 6238 <https://tools.ietf.org/html/rfc6238>`_ (support for the HOTP algorithm
 outlined in `RFC 4226 <https://tools.ietf.org/html/rfc4226>`_ is planned).
 
+Secrets are encrypted in the database using AES encryption in CBC mode. There is
+no option for storing unencrypted secrets. If you were using an older beta version
+of this program, you will be prompted for a password and upon first save the
+secrets will be encrypted using it.
+
 PyPI page: `https://pypi.python.org/pypi/PyAuth <https://pypi.python.org/pypi/PyAuth>`_
 
 
@@ -67,15 +72,6 @@ Known areas of concern
 Currently the TOTP implementation is coded to use a 30-second time period
 compatible with Google Authenticator. Future work will include allowing for
 different time periods.
-
-Encryption of the database. Right now it's a plain wxWidgets configuration
-file with one section per entry. The code sets permissions to keep the file
-readable only by the user themselves. That's problematic on Windows, but I'm
-not really targeting that platform since it's got a good option in
-WinAuth. I'm planning on adding encryption to keep the secret strings in the
-database from being easily read by malware, at the cost of having to
-manually enter a password when the program starts (with the user having the
-option of leaving the password blank and the secrets unencrypted).
 
 Usage
 -----
