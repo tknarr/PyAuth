@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Frame for the main window."""
 
 import math
 import sysconfig
@@ -16,8 +17,10 @@ from HTMLTextDialog import HTMLTextDialog
 from Logging import GetLogger
 
 class AuthTaskbarIcon( wx.TaskBarIcon ):
+    """Notification tray icon."""
 
     def __init__( self, frame, icon ):
+        """Initialize the icon."""
         wx.TaskBarIcon.__init__( self )
 
         self.frame = frame
@@ -36,6 +39,7 @@ class AuthTaskbarIcon( wx.TaskBarIcon ):
 
 
     def CreatePopupMenu( self ):
+        """Create the pop-up menu when needed."""
         GetLogger().debug( "TBI popup menu created" )
         menu = wx.Menu()
         menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
@@ -43,21 +47,25 @@ class AuthTaskbarIcon( wx.TaskBarIcon ):
         return menu
 
     def OnMenuAbout( self, event ):
+        """Display the About dialog box."""
         GetLogger().debug( "TBI menu about" )
         info = GetAboutInfo( wx.ClientDC( self.frame ) )
         wx.AboutBox( info )
 
     def OnMenuExit( self, event ):
+        """Exit the program."""
         GetLogger().debug( "TBI menu exit" )
         # Pass this on to the frame as a forced-close operation
         self.frame.Close( True )
 
 
 class AuthFrame( wx.Frame ):
+    """Frame for the main window."""
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
                   initial_systray = None, initial_minimized = False, iconset = None ):
+        """Initialize the parts of the frame that can be initialized before window creation."""
 
         # Flag so we don't save anything if the user asked us to abort in the face
         # of a lockfile problem.
@@ -154,6 +162,7 @@ class AuthFrame( wx.Frame ):
 
 
     def KeyBind( self, event_type, func ):
+        """Bind a key event."""
         self.Bind( event_type, func )
         self.entries_window.Bind( event_type, func )
         for panel in self.entry_panels:
@@ -161,6 +170,13 @@ class AuthFrame( wx.Frame ):
 
 
     def OnCreate( self, event ):
+        """
+        Finish initialization once the window exists.
+
+        This portion of initialization has to be deferred because it will involve
+        displaying a password dialog box, which can't happen until the window exists
+        and the event loop is running.
+        """
         self.Unbind( wx.EVT_WINDOW_CREATE )
         GetLogger().debug( "AF created" )
 
@@ -221,14 +237,15 @@ class AuthFrame( wx.Frame ):
         self.populate_entries_window()
 
         # Window event handlers
-        self.entries_window.Bind( wx.EVT_SIZE, self.OnSize )
+        self.entries_window.Bind( wx.EVT_SIZE, self.OnEntryWindowSize )
         self.toolbar.Bind( wx.EVT_SIZE, self.OnToolbarSize )
         self.toolbar.Bind( wx.EVT_SHOW, self.OnToolbarShow )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
         self.Bind( wx.EVT_SHOW, self.OnShow )
         ## TODO self.KeyBind( wx.EVT_CHAR, self.OnKey )
-        ## self.Bind( wx.EVT_IDLE, self.OnIdle ) # Enable for size information during idle
+        if self.idle_output:
+            self.Bind( wx.EVT_IDLE, self.OnIdle )
         # Menu event handlers
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
@@ -253,24 +270,32 @@ class AuthFrame( wx.Frame ):
         self.record_toolbar_height()
 
 
-    def OnSize( self, event ):
-        ## GetLogger().debug( "OnSize event on entries window" )
+    def OnEntryWindowSize( self, event ):
+        """React to resizing of the entries window."""
+        GetLogger().debug( "OnSize event on entries window" )
         self.visible_entries = self.CalcItemsShown()
-        ## GetLogger.debug( "OnSize entries window done" )
+        GetLogger().debug( "OnSize entries window done" )
 
     def OnToolbarSize( self, event ):
+        """React to resizing of the toolbar."""
         GetLogger().debug( "OnSize event on toolbar" )
         GetLogger().debug( "Toolbar size: %s", self.toolbar.GetSize() )
+        GetLogger().debug( "OnSize event on toolbar done" )
 
     def OnToolbarShow( self, event ):
-        GetLogger().debug( "OnShow event on toolbar" )
+        """React to show/hide of the toolbar."""
+        GetLogger().debug( "OnShow event on toolbar: %s", event.IsShown() ? "SHOW" : "HIDE" )
         GetLogger().debug( "Toolbar size: %s", self.toolbar.GetSize() )
+        GetLogger().debug( "OnShow event on toolbar done" )
 
 
     def OnTimerTick( self, event ):
-        # Make sure we don't broadcast any more timer ticks after shutdown
-        # even if we do get called by straggling tick events. We also don't
-        # need to update entry panels while we're minimized.
+        """
+        React to timer ticks.
+
+        Insures timer ticks are not broadcast after shutdown begins or while
+        minimized (entry panels don't need to update while not visible).
+        """
         if self.timer != None and not self.iconized:
             # Broadcast the event to all entry panels for processing
             for panel in self.entry_panels:
@@ -278,6 +303,14 @@ class AuthFrame( wx.Frame ):
 
 
     def OnIdle( self, event ):
+        """
+        React to idle events.
+
+        The only thing occurring during idle events is regular logging of the sizes and
+        states of selected windows to aid debugging sizing-related issues. The idle event
+        won't be bound to this method when the idle_output flag is set False, so normally
+        this method won't be called in production releases.
+        """
         if self.idle_output:
             now = wx.GetUTCTime()
             t = now - self.since_idle
@@ -296,6 +329,12 @@ class AuthFrame( wx.Frame ):
 
 
     def OnIconize( self, event ):
+        """
+        React to being iconified or restored.
+
+        When restored it forces an immediate update of the countdown timer bars in the
+        entry panels and a refresh of their current code display.
+        """
         was_iconized = self.iconized
         self.iconized = event.IsIconized()
         if was_iconized and not self.iconized:
@@ -306,11 +345,19 @@ class AuthFrame( wx.Frame ):
 
 
     def OnShow( self, event ):
+        """
+        React to the window being shown.
+
+        Needed so that the window-close code can tell whether the window was ever shown
+        or not. If it was never shown, saving of the last window size will be skipped
+        because the size may never have been set.
+        """
         if event.IsShown():
             self.displayed = True
 
 
     def OnKey( self, event ):
+        """Process a keypress event."""
         key = event.GetUnicodeKey()
         if key == WXK_NONE:
             key = event.GetKeyCode()
@@ -336,6 +383,15 @@ class AuthFrame( wx.Frame ):
 
 
     def OnCloseWindow( self, event ):
+        """
+        React to the window being closed.
+
+        If using the notification tray icon and the close event can be vetoed, it will
+        be vetoed and converted into hiding the window instead. This makes the close
+        button act like minimize-to-notificat-tray. If the close event can't be vetoed
+        or the notification tray icon isn't in use, the normal shutdown code will be
+        executed.
+        """
         GetLogger().debug( "AF close window" )
         # If we're using the taskbar icon and not being forced to close, just hide the
         # window and remove it's entry from the taskbar list of active applications.
@@ -385,6 +441,7 @@ class AuthFrame( wx.Frame ):
 
 
     def OnTaskbarDClick( self, event ):
+        """React to the notification tray icon being double-clicked."""
         if self.IsShown():
             GetLogger().debug( "AF taskbar clicked Hide" )
             window_style = self.GetWindowStyle()
@@ -398,10 +455,12 @@ class AuthFrame( wx.Frame ):
 
 
     def OnMenuQuit( self, event ):
+        """React to the Quit menu command by closing the window."""
         GetLogger().debug( "AF menu Quit command" )
         self.Close( True )
 
     def OnMenuNewEntry( self, event ):
+        """Handle creating a new authentication entry via the menu or toolbar."""
         GetLogger().debug( "AF menu New Entry command" )
         if self.new_entry_dialog == None:
             self.new_entry_dialog = NewEntryDialog( self, wx.ID_ANY, "New Entry" )
@@ -450,6 +509,7 @@ class AuthFrame( wx.Frame ):
                 dlg.Destroy()
 
     def OnMenuEditEntry( self, event ):
+        """Handle editing an existing authentication entry via the menu or toolbar."""
         GetLogger().debug( "AF menu Edit Entry command" )
         if self.update_entry_dialog == None:
             self.update_entry_dialog = UpdateEntryDialog( self, wx.ID_ANY, "Edit Entry" )
@@ -505,6 +565,7 @@ class AuthFrame( wx.Frame ):
                             self.UpdatePanelSize()
 
     def OnMenuDeleteEntry( self, event ):
+        """Handle deleting an authentication entry via the menu or toolbar."""
         GetLogger().debug( "AF menu Delete Entry command" )
         if self.selected_panel != None:
             GetLogger().debug( "AF DE deleting panel %s", self.selected_panel.GetName() )
@@ -535,6 +596,12 @@ class AuthFrame( wx.Frame ):
 
 
     def OnMenuCopyCode( self, event ):
+        """
+        Handle copying the current code via the menu or toolbar.
+
+        The current code of the selected entry is copied to the clipboard. If no entry is
+        selected an error is reported.
+        """
         GetLogger().debug( "AF tool CopyCode command" )
         if self.selected_panel != None:
             if not self.selected_panel.CopyCodeToClipboard():
@@ -552,6 +619,7 @@ class AuthFrame( wx.Frame ):
 
 
     def OnMenuMoveUp( self, event ):
+        """Handle moving an authentication entry up one position."""
         ## GetLogger().debug( "AF menu Move Up command" )
         if self.selected_panel != None:
             i = self.entry_panels.index( self.selected_panel )
@@ -581,6 +649,7 @@ class AuthFrame( wx.Frame ):
                 wx.Bell()
 
     def OnMenuMoveDown( self, event ):
+        """Handle moving an authentication entry down one position."""
         ## GetLogger().debug( "AF menu Move Down command" )
         if self.selected_panel != None:
             i = self.entry_panels.index( self.selected_panel )
@@ -610,6 +679,7 @@ class AuthFrame( wx.Frame ):
                 wx.Bell()
 
     def OnMenuShowTimers( self, event ):
+        """Handle showing/hiding timer bars from the menu."""
         GetLogger().debug( "AF menu Show Timers command: %s", "Show" if event.IsChecked() else "Hide" )
         self.show_timers = event.IsChecked()
         for panel in self.entry_panels:
@@ -619,17 +689,20 @@ class AuthFrame( wx.Frame ):
         self.UpdatePanelSize()
 
     def OnMenuShowAllCodes( self, event ):
+        """Handle showing/masking all codes from the menu."""
         GetLogger().debug( "AF menu Show Codes command: %s", "Show" if event.IsChecked() else "Mask" )
         self.show_all_codes = event.IsChecked()
         for panel in self.entry_panels:
             panel.MaskCode( not self.show_all_codes )
 
     def OnMenuShowToolbar( self, event ):
+        """Handle showing/hiding the toolbar from the menu."""
         GetLogger().debug( "AF menu Show Toolbar command: %s", "Show" if event.IsChecked() else "Hide" )
         self.set_toolbar_state( event.IsChecked() )
         self.AdjustWindowSizes( toolbar_state_changed = True )
 
     def OnMenuUseSystray( self, event ):
+        """Handle using or not using the notification tray icon from the menu."""
         GetLogger().debug( "AF menu Tray Icon command: %s", "Use" if event.IsChecked() else "None" )
         should_use = event.IsChecked()
         if should_use:
@@ -647,10 +720,12 @@ class AuthFrame( wx.Frame ):
             self.use_systray_icon = False
 
     def OnMenuHelpContents( self, event ):
+        """Handle displaying the help system from the menu."""
         # TODO menu handler
         GetLogger().warning( "Help Contents" )
 
     def OnMenuLicense( self, event ):
+        """Handle displaying the license from the menu."""
         GetLogger().debug( "AF menu License dialog" )
         if self.license_dialog == None:
             self.license_dialog = HTMLTextDialog( self, wx.ID_ANY, "License" )
@@ -660,11 +735,13 @@ class AuthFrame( wx.Frame ):
         self.license_dialog.ShowModal()
 
     def OnMenuAbout( self, event ):
+        """Handle showing the About dialog from the menu."""
         GetLogger().debug( "AF menu About dialog" )
         info = GetAboutInfo( wx.ClientDC( self ) )
         wx.AboutBox( info )
 
     def OnMenuReindex( self, event ):
+        """Handle a request to reindex the database from the menu."""
         GetLogger().debug( "AF menu Reindex command" )
         GetLogger().info( "Database reindex ordered" )
         self.auth_store.Reindex()
@@ -673,6 +750,7 @@ class AuthFrame( wx.Frame ):
         self.UpdatePanelSize()
 
     def OnMenuRegroup( self, event ):
+        """Handle a request to re-group the database from the menu."""
         GetLogger().debug( "AF menu Regroup command" )
         GetLogger().info( "Database regroup and reindex ordered" )
         self.auth_store.Regroup()
@@ -682,6 +760,7 @@ class AuthFrame( wx.Frame ):
 
 
     def create_menu_bar( self ):
+        """Create and populate the menu bar."""
         GetLogger().debug( "AF create menu bar" )
         mb = wx.MenuBar()
 
@@ -755,6 +834,7 @@ class AuthFrame( wx.Frame ):
 
 
     def create_toolbar( self ):
+        """Create and populate the toolbar."""
         GetLogger().debug( "AF create toolbar" )
         toolbar = self.CreateToolBar( name = 'tool_bar' )
         toolbar.SetToolBitmapSize( self.toolbar_icon_size )
@@ -784,6 +864,7 @@ class AuthFrame( wx.Frame ):
         return toolbar
 
     def set_toolbar_state( self, show ):
+        """Set the shown/hidden state of the toolbar."""
         ## GetLogger().debug( "AF set toolbar state %s -> %s",
         ##                    "Show" if self.show_toolbar else "Hide",
         ##                    "Show" if show else "Hide" )
@@ -797,6 +878,7 @@ class AuthFrame( wx.Frame ):
         ##                    self.toolbar.GetSize(), self.toolbar.GetToolSize(), self.toolbar.GetMargins() )
 
     def record_toolbar_height( self, code = 'def' ):
+        """Record the height of the toolbar if it's reasonably valid."""
         changed = False
         if self.toolbar != None:
             ts = self.toolbar.GetToolSize()
@@ -813,6 +895,7 @@ class AuthFrame( wx.Frame ):
 
 
     def create_entries_window( self ):
+        """Create the scrolled window entries will be displayed in."""
         GetLogger().debug( "AF create entries window" )
         sw = wx.ScrolledWindow( self, wx.ID_ANY, style = wx.VSCROLL, name = 'entries_window' )
         sw.ShowScrollbars( wx.SHOW_SB_NEVER, wx.SHOW_SB_DEFAULT )
@@ -822,6 +905,7 @@ class AuthFrame( wx.Frame ):
 
 
     def populate_entries_window( self ):
+        """Populate the entries window with authentication entry panels."""
         GetLogger().debug( "AF populating the entries window" )
         # Create our entry item panels and put them in the scrollable window
         self.entry_panels = []
@@ -849,6 +933,7 @@ class AuthFrame( wx.Frame ):
 
 
     def depopulate_entries_window( self ):
+        """Depopulate the entries window and destroy the entry panels."""
         GetLogger().debug( "AF depopulating the entries window" )
         # Clear out the entries window sizer and then destroy the individual entry panels
         self.entries_window.GetSizer().Clear( False )
@@ -859,6 +944,13 @@ class AuthFrame( wx.Frame ):
 
 
     def CalcItemsShown( self ):
+        """
+        Calculate the number of entries visible.
+
+        The calculation is based on the height of the entries window and the height of a
+        single entry. The calculation rounds the result up so any partially-visible entry
+        becomes completely visible.
+        """
         height = self.entries_window.GetSize().GetHeight()
         ## GetLogger().debug( "AF CIS win height = %d, entry height = %d", height, self.entry_height )
         r = self.visible_entries
@@ -872,6 +964,13 @@ class AuthFrame( wx.Frame ):
 
 
     def AdjustWindowSizes( self, toolbar_state_changed = False ):
+        """
+        Adjust the size of the main frame and entries window.
+
+        The calculation is supposed to result in window sizes that exactly show a certain number
+        of entries without any partially-visible entries. This requires taking into account the
+        toolbar's height.
+        """
         ## GetLogger().debug( "AF AWS entry size:  %dx%d, visible = %d", self.entry_width, self.entry_height,
         ##                    self.visible_entries )
         # Need to adjust this here, it depends on the entry height which may change
@@ -932,6 +1031,12 @@ class AuthFrame( wx.Frame ):
 
 
     def AdjustPanelSizes( self ):
+        """
+        Adjust the panels so all their labels are the same width.
+
+        All panels should have their labels set to the width needed by the widest label, so that
+        all panels end up being the same total width to make a nice even column.
+        """
         ## GetLogger().debug( "AF APS" )
         label_width = 0
         self.entry_width = 0
@@ -954,6 +1059,12 @@ class AuthFrame( wx.Frame ):
 
 
     def UpdatePanelSize( self ):
+        """
+        Update entry panel sizes.
+
+        First adjusts all panels to an even width, then adjusts the window sizes to exactly show
+        the correct number of panels.
+        """
         ## GetLogger().debug( "AF UPS" )
         self.AdjustPanelSizes()
         self.AdjustWindowSizes()
@@ -961,6 +1072,7 @@ class AuthFrame( wx.Frame ):
 
 
     def SelectPanel( self, panel, selected = True ):
+        """React to a panel being selected."""
         GetLogger().debug( "AF panel %s: %s", panel.GetName(), "select" if selected else "deselect" )
         if selected:
             if self.selected_panel != None:
@@ -975,4 +1087,5 @@ class AuthFrame( wx.Frame ):
 
 
     def InSystray( self ):
+        """Report whether the notification tray icon will be in use or not."""
         return self.taskbar_icon != None

@@ -1,13 +1,22 @@
 # -*- coding: utf-8 -*-
+"""Authentication code entry panel."""
 
 import wx
 from AuthenticationStore import AuthenticationEntry
 from Logging import GetLogger
 
 class AuthEntryPanel( wx.Panel ):
+    """Authentication code entry panel."""
 
     def __init__( self, parent, id = wx.ID_ANY, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.TAB_TRAVERSAL, name = wx.PanelNameStr, entry = None, code_max_digits = 6 ):
+        """
+        Initialize the panel.
+
+        Normal initialization includes a reference to the panel's entry in the
+        authentication store plus the number of code digits the panel should display.
+        Omitting these arguments results in a blank panel.
+        """
         wx.Panel.__init__ ( self, parent, id, pos, size, style, name )
 
         self.entry = entry
@@ -108,6 +117,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def MouseBind( self, event_type, func ):
+        """Bind a mouse event."""
         self.Bind( event_type, func )
         self.label_panel.Bind( event_type, func )
         self.provider_text.Bind( event_type, func )
@@ -116,22 +126,32 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def __cmp__( self, other ):
+        """Compare two entries by name."""
         return cmp( self.GetName(), other.GetName() ) if other != None else -1
 
 
     def OnCreate( self, event ):
+        """Handle window creation."""
         self.Unbind( wx.EVT_WINDOW_CREATE )
         ## GetLogger().debug( "AEP created" )
         self.ChangeContents()
 
     def OnTimerTick( self, event ):
+        """Update the timer countdown bar once per tick."""
         self.UpdateTimerGauge()
 
     def OnLeftDown( self, event ):
+        """Handle left-button-down event."""
         self.left_down = True
         event.Skip
 
     def OnLeftUp( self, event ):
+        """
+        Handle left-button-up event.
+
+        If preceeded by a left-button-down event, the panel is selected. Otherwise
+        the event is ignored. The frame is notified when the panel is selected.
+        """
         if self.left_down:
             self.left_down = False
             gp = self.GetGrandParent()
@@ -140,6 +160,12 @@ class AuthEntryPanel( wx.Panel ):
         event.Skip()
 
     def OnDoubleClick( self, event ):
+        """
+        Handle a double-click event.
+
+        Causes the current code to be copied to the clipboard. This also selects the
+        panel and causes the frame to be notified.
+        """
         self.left_down = False
         gp = self.GetGrandParent()
         if gp != None:
@@ -151,17 +177,21 @@ class AuthEntryPanel( wx.Panel ):
         event.Skip()
 
     def OnMouseEnter( self, event ):
+        """Clear mouse button state when the mouse enters the panel."""
         self.left_down = False
         event.Skip()
 
     def OnMouseLeave( self, event ):
+        """Clear mouse button state when the mouse leaves the panel."""
         self.left_down = False
         event.Skip()
 
     def GetEntry( self ):
+        """Return the authentication store entry associated with the panel."""
         return self.entry
 
     def SetEntry( self, entry ):
+        """Set the authentication store entry associated with the panel."""
         self.entry = entry
         self.sort_index = entry.GetSortIndex()
         self.code_digits = entry.GetDigits()
@@ -172,16 +202,19 @@ class AuthEntryPanel( wx.Panel ):
         self.ChangeContents()
 
     def GetSortIndex( self ):
+        "Return the panel's sort index."""
         if self.entry != None:
             self.sort_index = self.entry.GetSortIndex()
         return self.sort_index
 
     def SetSortIndex( self, index ):
+        """Set the panel's sort index."""
         self.sort_index = index
         if self.entry != None:
             self.entry.SetSortIndex( index )
 
     def MaskCode( self, state ):
+        """Set the code masking state of the panel."""
         self.code_masked = state
         if self.code_masked and not self.selected:
             self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
@@ -189,6 +222,7 @@ class AuthEntryPanel( wx.Panel ):
             self.code_text.SetLabelText( self.code )
 
     def ShowTimer( self, state ):
+        """Set the show-timer state of the panel."""
         self.show_timer = state
         if self.show_timer:
             self.timer_gauge.Show()
@@ -197,9 +231,11 @@ class AuthEntryPanel( wx.Panel ):
         # AuthFrame knows to check panel sizes and resize after showing/hiding timers
 
     def GetPanelSize( self ):
+        """Return the panel's current size."""
         return self.GetSize()
 
     def GetLabelWidth( self ):
+        """Return the panel's current label width."""
         w = self.provider_text.GetSize().GetWidth()
         x = self.account_text.GetSize().GetWidth()
         if x > w:
@@ -208,6 +244,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def SizeLabels( self, label_width ):
+        """Resize the labels to the given width to keep columns even."""
         ## GetLogger().debug( "AEP SL new label width %d", label_width )
         self.label_width = label_width
 
@@ -218,6 +255,7 @@ class AuthEntryPanel( wx.Panel ):
         self.Fit()
 
     def UpdateContents( self ):
+        """Update the panel's displayed contents based on the current state and entry."""
         if self.entry != None:
             ## GetLogger().debug( "AEP UC updating %s", self.GetName() )
             if self.code_masked and not self.selected:
@@ -246,6 +284,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def ChangeContents( self ):
+        """Handle a change in contents and signal the change to the frame."""
         ## GetLogger().debug( "AEP CC" )
         self.UpdateContents()
         gp = self.GetGrandParent()
@@ -255,6 +294,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def Select( self ):
+        """Select this panel."""
         self.selected = True
         bg = wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHT )
         fg = wx.SystemSettings.GetColour( wx.SYS_COLOUR_HIGHLIGHTTEXT )
@@ -266,6 +306,7 @@ class AuthEntryPanel( wx.Panel ):
         self.code_text.SetLabelText( self.code )
 
     def Deselect( self ):
+        """Deselect this panel."""
         self.selected = False
         for item in [ self, self.label_panel, self.provider_text, self.account_text,
                       self.code_text, self.timer_gauge ]:
@@ -279,6 +320,7 @@ class AuthEntryPanel( wx.Panel ):
 
 
     def UpdateTimerGauge( self ):
+        """Update the countdown bar and code based on the current time and cycle."""
         current_time = wx.GetUTCTime()
         ## GetLogger().debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
         last_cycle = self.totp_cycle
@@ -295,6 +337,7 @@ class AuthEntryPanel( wx.Panel ):
         self.timer_gauge.SetValue( self.totp_period - self.totp_cycle - 1 )
 
     def CopyCodeToClipboard( self ):
+        """Copy the current code to the clipboard."""
         sts = True
         if wx.TheClipboard.Open():
             if  wx.TheClipboard.SetData( wx.TextDataObject( self.code ) ):
