@@ -78,8 +78,7 @@ Usage
 
 Command line:
 
-``PyAuth [-n] [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME] [--no-logfile]``
-  ``[--loglevel (debug|info|warning|error|critical)]``
+``PyAuth [-n] [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME] [--no-logfile] [--loglevel (debug|info|warning|error|critical)]``
 
 * ``-s`` enables use of the notification (systray) icon if possible.
 
