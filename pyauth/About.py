@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Metadata about the program."""
 
 import sysconfig
 import base64
@@ -40,24 +41,30 @@ along with this program.  If not, see http://www.gnu.org/licenses/
     }
 
 def GetProgramName():
+    """Program's canonical name."""
     return about_data['name']
 
 def GetProgramVersion():
-    v = about_data['version'] + about_data['version-tag']
+    """Standard version number."""
+    return about_data['version'] + about_data['version-tag']
+
+def GetProgramVersionString():
+    """Extended version number."""
+    v = GetProgramVersion()
     if about_data['version-status'] != '':
         v += ' (' + about_data['version-status'] + ')'
     return v
 
-def GetProgramVersionString():
-    return about_data['name'] + ' ' + GetProgramVersion()
-
 def GetVendorName():
+    """Software vendor's name."""
     return "Silverglass Technical"
 
 def GetAboutInfo( dc, desc_width = 600 ):
+    """Fill in and return the About dialog box info structure."""
+
     about_info = wx.AboutDialogInfo()
     about_info.SetName( about_data['name'] )
-    about_info.SetVersion( GetProgramVersion() )
+    about_info.SetVersion( GetProgramVersionString() )
     about_info.SetCopyright( about_data['copyright'] )
     about_info.SetWebSite( about_data['website'] )
     about_info.SetLicense( wordwrap( about_data['license'], desc_width, dc ) )
@@ -73,6 +80,12 @@ def GetAboutInfo( dc, desc_width = 600 ):
     return about_info
 
 def GetIconBundle( name ):
+    """
+    Find and return the program's icon bundle.
+
+    The name indicates the color/kind of background desired for the icons.
+    """
+
     icon_bundle = None
     filename = 'images/' + GetProgramName()
     if name != 'transparent':
@@ -82,10 +95,16 @@ def GetIconBundle( name ):
         input_strm = pkg_resources.resource_stream( 'pyauth', filename )
         icon_bundle = wx.IconBundleFromStream( input_strm, wx.BITMAP_TYPE_ICO )
     except Exception as e:
-        GetLogger().error( "Error in %s icon bundle: %s", name, str( e ) )
+        GetLogger().error( "Error in %s icon bundle: %s", name, unicode( e ) )
     return icon_bundle
 
 def GetTaskbarIcon( name ):
+    """
+    Find and return the program's notification bar icon.
+
+    The name indicates the color/kind of background desired for the icon.
+    """
+
     icon = None
     filename = 'images/' + GetProgramName() + '-systray'
     if name != 'transparent':
@@ -98,5 +117,5 @@ def GetTaskbarIcon( name ):
         if bm != None:
             icon = wx.IconFromBitmap( bm )
     except Exception as e:
-        GetLogger().error( "Error in %s taskbar icon: %s", name, str(e) )
+        GetLogger().error( "Error in %s taskbar icon: %s", name, unicode(e) )
     return icon

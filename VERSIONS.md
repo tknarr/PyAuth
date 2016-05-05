@@ -1,5 +1,9 @@
 # PyAuth version history:
 
+* 0.9.4 - Database encryption
+  - Secrets are now encrypted in the database.
+  - Docstrings filled in.
+
 * 0.9.3 - Removed post-install creation of .desktop file
   - Post-install scripts just aren't working, so the template's been replaced by a filled-in
     version the user can edit.
