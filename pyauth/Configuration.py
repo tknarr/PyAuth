@@ -222,7 +222,7 @@ def GetLoggingLevel():
 
 def GetLogFilename():
     """Return the name of the log file."""
-    return wx.Config.Get().Read( '/logging/filename', '' )
+    return wx.Config.Get().Read( '/logging/filename', GetConfigDirectory() + "/errors.log" )
 
 def GetLogMaxSize():
     """Return the log file maximum size."""

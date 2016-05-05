@@ -13,6 +13,7 @@ from About import GetProgramName, GetAboutInfo, GetIconBundle, GetTaskbarIcon
 from NewEntryDialog import NewEntryDialog
 from UpdateEntryDialog import UpdateEntryDialog
 from DatabasePasswordDialog import DatabasePasswordDialog
+from ChangeDatabasePasswordDialog import ChangeDatabasePasswordDialog
 from HTMLTextDialog import HTMLTextDialog
 from Logging import GetLogger
 
@@ -127,6 +128,7 @@ class AuthFrame( wx.Frame ):
         self.toolbar_button_height = 0
 
         self.password_dialog = None
+        self.change_password_dialog = None
         self.new_entry_dialog = None
         self.update_entry_dialog = None
         self.license_dialog = None
@@ -188,9 +190,16 @@ class AuthFrame( wx.Frame ):
             if self.password_dialog == None:
                 self.password_dialog = DatabasePasswordDialog( self, wx.ID_ANY, "Database Password" )
             self.password_dialog.Reset()
-            result = self.password_dialog.ShowModal()
+            if self.change_password_dialog == None:
+                self.change_password_dialog = ChangeDatabasePasswordDialog( self, wx.ID_ANY, "Database Password" )
+            self.change_password_dialog.Reset()
+            if AuthenticationStore.IsEncryptionActive( Configuration.GetDatabaseFilename() ):
+                dlg = self.password_dialog
+            else:
+                dlg = self.change_password_dialog
+            result = dlg.ShowModal()
             if result == wx.ID_OK:
-                password = self.password_dialog.GetPasswordValue()
+                password = dlg.GetPasswordValue()
             else:
                 authentication_store_ok = False
                 break
@@ -284,7 +293,7 @@ class AuthFrame( wx.Frame ):
 
     def OnToolbarShow( self, event ):
         """React to show/hide of the toolbar."""
-        GetLogger().debug( "OnShow event on toolbar: %s", event.IsShown() ? "SHOW" : "HIDE" )
+        GetLogger().debug( "OnShow event on toolbar: %s", "SHOW" if event.IsShown() else "HIDE" )
         GetLogger().debug( "Toolbar size: %s", self.toolbar.GetSize() )
         GetLogger().debug( "OnShow event on toolbar done" )
 
@@ -433,6 +442,8 @@ class AuthFrame( wx.Frame ):
                 self.new_entry_dialog.Destroy()
             if self.update_entry_dialog != None:
                 self.update_entry_dialog.Destroy()
+            if self.change_password_dialog != None:
+                self.change_password_dialog.Destroy()
             if self.password_dialog != None:
                 self.password_dialog.Destroy()
             if self.taskbar_icon != None:

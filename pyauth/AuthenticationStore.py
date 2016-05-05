@@ -28,6 +28,18 @@ class AuthenticationStore:
     during a regroup operation just before the store is saved.
     """
 
+    @staticmethod
+    def IsEncryptionActive( filename ):
+        """Determine if encryption is in use for the named database."""
+        cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
+                             style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
+        if cfg != None:
+            algorithm = cfg.Read( '/crypto/algorithm', 'cleartext' )
+        else:
+            algorithm = 'cleartext'
+        return algorithm != 'cleartext'
+
+
     def __init__( self, filename, password ):
         """Initialize the store from the given filename, using a password to encrypt secrets."""
         self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,

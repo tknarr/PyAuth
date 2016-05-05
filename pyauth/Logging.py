@@ -32,7 +32,7 @@ def ConfigureLogging( log_filename_args, log_level_args ):
         if not isinstance( log_lvl, int ):
             log_lvl = Configuration.GetLoggingLevel()
 
-    if log_filename_args == None or log_filename_args == '':
+    if log_filename_args == None:
         lfn = Configuration.GetLogFilename()
     else:
         lfn = log_filename_args

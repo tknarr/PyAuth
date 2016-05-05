@@ -41,6 +41,8 @@ class PyAuthApp( wx.App ):
                              help = "Select a given background for the program icons: %(choices)s" )
         parser.add_argument( "--logfile", metavar = "FILENAME", dest = 'logfile', default = None,
                              help = "Redirect logging to the named file, may include user and variable expansion" )
+        parser.add_argument( "--no-logfile", action = 'store_true', dest = 'no_logfile',
+                             help = "Suppress the log file completely" )
         parser.add_argument( "--loglevel", metavar = "LEVEL", dest = 'loglevel', default = '',
                              choices = [ 'critical', 'error', 'warning', 'info', 'debug' ],
                              help = "Set the logging level: %(choices)s" )
@@ -57,8 +59,11 @@ class PyAuthApp( wx.App ):
             initial_systray = False
         if args.iconset != None:
             iconset = args.iconset
-        if args.logfile != None:
-            log_filename = args.logfile
+        if args.no_logfile:
+            log_filename = ''
+        else:
+            if args.logfile != None:
+                log_filename = args.logfile
         if args.loglevel != None:
             log_level = args.loglevel
 
