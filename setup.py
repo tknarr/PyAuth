@@ -81,7 +81,9 @@ setup(
     packages = find_packages( exclude = ['contrib', 'docs', 'tests*'] ),
 
     install_requires = [
-        'pyotp>=2.0.1'
+        'wxPython>=3.0',
+        'pyotp>=2.0.1',
+        'pycrypto>=2.6.1'
         ],
 
     package_data = {
@@ -105,10 +107,5 @@ setup(
         'gui_scripts': [
             'PyAuth=pyauth.__main__:main',
         ],
-    },
-
-    cmdclass = {
-        'install': my_install,  # override install
-        'develop': my_develop   # develop is used for pip install -e .
-        }
+    }
 )

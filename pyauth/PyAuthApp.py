@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Application main module."""
 
 import sys
 import os.path
@@ -11,15 +12,12 @@ from AuthFrame import AuthFrame as AuthFrame
 from About import GetProgramVersionString, GetProgramName, GetVendorName
 from Logging import ConfigureLogging, GetLogger
 
-# Command line options:
-#   --systray, -s                            Start with the systray icon if possible
-#   --minimized, -m                          Start minimized to the systray (implies -s)
-#   --icons=(white|grey|dark|transparent)    Use icons with the given background, default white
-#   --logfile=<filename>                     Redirect log to named file
-
 class PyAuthApp( wx.App ):
+    """Application main class."""
 
     def OnInit( self ):
+        """Initialize the application."""
+
         initial_systray = None
         initial_minimized = None
         iconset = None
@@ -43,10 +41,13 @@ class PyAuthApp( wx.App ):
                              help = "Select a given background for the program icons: %(choices)s" )
         parser.add_argument( "--logfile", metavar = "FILENAME", dest = 'logfile', default = None,
                              help = "Redirect logging to the named file, may include user and variable expansion" )
+        parser.add_argument( "--no-logfile", action = 'store_true', dest = 'no_logfile',
+                             help = "Suppress the log file completely" )
         parser.add_argument( "--loglevel", metavar = "LEVEL", dest = 'loglevel', default = '',
                              choices = [ 'critical', 'error', 'warning', 'info', 'debug' ],
                              help = "Set the logging level: %(choices)s" )
-        parser.add_argument( "--version", action = 'version', version = GetProgramVersionString() )
+        parser.add_argument( "--version", action = 'version',
+                             version = GetProgramName() + ' ' + GetProgramVersionString() )
         args = parser.parse_args()
         if args.systray:
             initial_systray = True
@@ -58,8 +59,11 @@ class PyAuthApp( wx.App ):
             initial_systray = False
         if args.iconset != None:
             iconset = args.iconset
-        if args.logfile != None:
-            log_filename = args.logfile
+        if args.no_logfile:
+            log_filename = ''
+        else:
+            if args.logfile != None:
+                log_filename = args.logfile
         if args.loglevel != None:
             log_level = args.loglevel
 
@@ -117,15 +121,18 @@ class PyAuthApp( wx.App ):
 
 
     def OnQES( self, event ):
+        """Handle query-end-session events."""
         GetLogger().info( "Event: query end session" )
         event.Skip()
 
     def OnES( self, event ):
+        """Handle end-session events."""
         GetLogger().info( "Event: end session" )
         event.Skip()
 
 
     def OnExit( self ):
+        """Handle the exit event."""
         GetLogger().info( "Exiting" )
         logging.shutdown()
         return 0

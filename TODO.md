@@ -2,6 +2,7 @@
 
 Future enhancements:
 
+* Switch database to SQLite
 * Pegging the window position relative to a corner of the screen so
   it maintains that relative position as the screen size changes. That'd
   also include automatically reducing the vertical size to keep the

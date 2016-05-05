@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
+"""Update entry dialog box."""
 
 import wx
 from Logging import GetLogger
 
 class UpdateEntryDialog( wx.Dialog ):
+    """Update entry dialog box."""
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
+        """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
         GetLogger().debug( "UED init" )
@@ -96,7 +99,12 @@ class UpdateEntryDialog( wx.Dialog ):
         GetLogger().debug( "UED init done" )
 
 
+    def SetFocus( self ):
+        self.provider_text.SetFocus()
+
+
     def OnOK( self, event ):
+        """Handle the OK button and check for required fields."""
         err = False
         f = self.provider_text.IsEmpty()
         err = err or f
@@ -116,18 +124,23 @@ class UpdateEntryDialog( wx.Dialog ):
 
 
     def GetProviderValue( self ):
+        """Return the contents of the provider field."""
         return self.provider_text.GetValue()
 
     def GetAccountValue( self ):
+        """Return the contents of the account field."""
         return self.account_text.GetValue()
 
     def GetSecretValue( self ):
+        """Return the contents of the secret field."""
         return self.secret_text.GetValue()
 
     def GetDigitsValue( self ):
+        """Return the value of the digits selection."""
         return 6 + ( self.digits_radio.GetSelection() * 2 )
 
     def Reset( self, provider, account, secret, digits ):
+        """Reset the contents of the dialog box to the initial state."""
         GetLogger().debug( "UED reset" )
         self.provider_text.SetValue( provider )
         self.ColorLabel( self.provider_label, self.provider_text.IsEmpty() )
@@ -136,14 +149,17 @@ class UpdateEntryDialog( wx.Dialog ):
         self.secret_text.SetValue( secret )
         self.ColorLabel( self.secret_label, self.secret_text.IsEmpty() )
         self.digits_radio.SetSelection( ( digits - 6 ) / 2 )
+        self.SetFocus()
 
     def ColorLabel( self, ctrl, error ):
+        """Set the color of the label depending on the error state."""
         if error:
             ctrl.SetForegroundColour( wx.RED )
         else:
             ctrl.SetForegroundColour( self.text_color )
 
     def MakeLabel( self, ctrl, txt, required ):
+        """Set up the text of a label control."""
         lbl = txt
         if required:
             lbl += ' ' + self.required_literal

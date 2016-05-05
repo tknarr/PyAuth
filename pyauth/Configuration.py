@@ -1,27 +1,39 @@
 # -*- coding: utf-8 -*-
+"""
+Configuration routines.
 
-# ${HOME}/.PyAuth/ - configuration directory
-#   config.cfg - configuration
-#   database.cfg - authorization secrets storage
+${HOME}/.PyAuth/ - configuration directory
+    pyauth.cfg - configuration data
+    database.cfg - authorization secrets storage
 
-# Config items:
-#   Last number of visible items in window
-#   Last window position
-#   Peg to top-left, top-right, bottom-left, bottom-right corner (TL, TR, BL, BR, or XX for not pegged)
-#       The last window position is in screen coordinates when not pegged to a corner.
-#       When pegged, it's a delta from the pegged corner of the display to the same corner of the window.
-#   Number of items shown
-#   Last auth secrets file
-#   Show timers
-#   Show codes for all entries
-#   Database filename
-#   Logging level name, will be converted to the correct value for use
+Config items:
+    Last window position
+    Last window size
+    Peg to top-left, top-right, bottom-left, bottom-right corner (TL, TR, BL, BR, or XX for not pegged)
+        The last window position is in screen coordinates when not pegged to a corner.
+        When pegged, it's a delta from the pegged corner of the display to the same corner of the window.
+    Last number of visible items in window
+    Start minimized flag
+    Show timers
+    Show codes for all entries
+    Show toolbar flag
+    Use notification tray flag
+    Icon set name
+    Toolbar icon size setting
+    Database filename
+    Logging level name
+    Log file name
+    Log file maximum size
+    Log file backup count
+    Remembered toolbar height
+"""
 
 import logging
 import os.path
 import wx
 
 def Save():
+    """Force save of configuration to disk."""
     wx.Config.Get().Flush()
 
 def GetLastWindowPosition():
@@ -38,6 +50,7 @@ def GetLastWindowPosition():
     return wp
 
 def GetPeggedCornerPosition():
+    """Return remembered window corner position."""
     x = wx.Config.Get().ReadInt( '/window/last_x', -1 )
     y = wx.Config.Get().ReadInt( '/window/last_y', -1 )
     wp = None
@@ -46,9 +59,11 @@ def GetPeggedCornerPosition():
     return wp
 
 def GetPeggedCorner():
+    """Return which corner the position is pegged to."""
     return wx.Config.Get().Read( '/window/pegged_corner', 'XX' )
 
 def SetLastWindowPosition( wp, corner = 'XX' ):
+    """Save the last window position and pegged corner."""
     x = wp.x
     y = wp.y
     c = corner.upper()
@@ -66,6 +81,7 @@ def SetLastWindowPosition( wp, corner = 'XX' ):
     wx.Config.Get().Write( '/window/pegged_corner', c )
 
 def GetLastWindowSize():
+    """Return remembered window size."""
     x = wx.Config.Get().ReadInt( '/window/width', -1 )
     y = wx.Config.Get().ReadInt( '/window/height', -1 )
     ws = None
@@ -74,6 +90,7 @@ def GetLastWindowSize():
     return ws
 
 def SetLastWindowSize( ws ):
+    """Save last window size."""
     x = ws.x
     y = ws.y
     if x >= 0:
@@ -82,54 +99,71 @@ def SetLastWindowSize( ws ):
         wx.Config.Get().WriteInt( '/window/height', y )
 
 def GetStartMinimized():
+    """Return whether or not to start minimized."""
     return wx.Config.Get().ReadBool( '/window/start_minimized', False )
 
 def SetStartMinimized( state ):
+    """Set whether or not to start minimized."""
     wx.Config.Get().WriteBool( '/window/start_minimized', state )
 
 def GetNumberOfItemsShown():
+    """Return last number of items visible in window."""
     return wx.Config.Get().ReadInt( '/window/items_shown', 2 )
 
 def SetNumberOfItemsShown( n ):
+    """Set last number of items visible in window."""
     wx.Config.Get().WriteInt( '/window/items_shown', n )
 
 def GetShowTimers():
+    """Return show-timers flag."""
     return wx.Config.Get().ReadBool( '/window/show_timers', True )
 
 def SetShowTimers( state ):
+    """Set show-timers flag state."""
     wx.Config.Get().WriteBool( '/window/show_timers', state )
 
 def GetShowAllCodes():
+    """Return show-all-codes flag."""
     return wx.Config.Get().ReadBool( '/window/show_all_codes', True )
 
 def SetShowAllCodes( state ):
+    """Set show-all-codes flag state."""
     wx.Config.Get().WriteBool( '/window/show_all_codes', state )
 
 def GetShowToolbar():
+    """Return show-toolbar flag."""
     return wx.Config.Get().ReadBool( '/window/show_toolbar', True )
 
 def SetShowToolbar( state ):
+    """Set show-toolbar flag state."""
     wx.Config.Get().WriteBool( '/window/show_toolbar', state )
 
 def GetToolbarHeight():
+    """Return remembered toolbar height."""
     return wx.Config.Get().ReadInt( '/window/toolbar_height', 0 )
 
 def SetToolbarHeight( h ):
+    """Set remembered toolbar height."""
     wx.Config.Get().WriteInt( '/window/toolbar_height', h )
 
 def GetUseTaskbarIcon():
+    """Return use-notification-tray flag."""
     return wx.Config.Get().ReadBool( '/window/use_taskbar_icon', False )
 
 def SetUseTaskbarIcon( state ):
+    """Set use-notification-tray flag."""
     wx.Config.Get().WriteBool( '/window/use_taskbar_icon', state )
 
 def GetIconSet():
+    """Return the current icon set name."""
     return wx.Config.Get().Read( '/window/icon_set', 'white' )
 
 def SetIconSet( setname ):
+    """Set the name of the icon set to use."""
     wx.Config.Get().Write( '/window/icon_set', setname )
 
 def GetToolIconSize():
+    """Return the current toolbar icon size."""
     size_string = wx.Config.Get().Read( '/window/tool_icon_size', 'default' )
     s = wx.DefaultSize
     if size_string == 'small':
@@ -149,8 +183,9 @@ def GetToolIconSize():
     return s
 
 def SetToolIconSize( s ):
+    """Set the toolbar icon size."""
     if s.GetWidth() != s.GetHeight():
-        logging.warning( "Tool icon width and height not equal: %s", str( s ) )
+        logging.warning( "Tool icon width and height not equal: %s", unicode( s ) )
     x = s.GetWidth()
     if x != 16 and x != 24 and x != 32 and x != 48 and x != wx.DefaultSize.GetWidth():
         logging.warning( "Tool icon size not standard, using default size." )
@@ -167,18 +202,18 @@ def SetToolIconSize( s ):
     wx.Config.Get().Write( '/window/tool_icon_size', size_string )
 
 def GetConfigDirectory():
+    """Return the configuration directory path."""
     cfgfile = wx.FileConfig.GetLocalFileName( 'pyauth.cfg', wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
     cfgdir = os.path.dirname( cfgfile )
     return cfgdir
 
 def GetDatabaseFilename():
+    """Return the authentication secrets database filename."""
     return wx.Config.Get().Read( '/database/file_name', 'database.cfg' )
 
-def GetLoggingLevel( level_args ):
-    if level_args != None and level_args != '':
-        level_string = level_args
-    else:
-        level_string = wx.Config.Get().Read( '/logging/level', 'warning' )
+def GetLoggingLevel():
+    """Return the current logging level."""
+    level_string = wx.Config.Get().Read( '/logging/level', 'warning' )
     loglevel = getattr( logging, level_string.upper(), None )
     if not isinstance( loglevel, int ):
         logging.warning( "Invalid logging level %s, using WARNING instead", level_string )
@@ -186,22 +221,29 @@ def GetLoggingLevel( level_args ):
     return loglevel
 
 def GetLogFilename():
-    return wx.Config.Get().Read( '/logging/filename', '' )
+    """Return the name of the log file."""
+    return wx.Config.Get().Read( '/logging/filename', GetConfigDirectory() + "/errors.log" )
 
 def GetLogMaxSize():
+    """Return the log file maximum size."""
     return wx.Config.Get().ReadInt( '/logging/max_size', 1024 * 1024 )
 
 def GetLogBackupCount():
-    return wx.Config.Get().ReadInt( 'logging/backup_count', 5 )
+    """Return the log file backup count."""
+    return wx.Config.Get().ReadInt( '/logging/backup_count', 5 )
 
 
 def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
-    # If corner is TL/BL/TR/BR then the screen coordinates are converted to pegged-relative
-    # offsets from the given corner of the screen to the matching corner of the frame.
-    # Otherwise an appropriate corner is determined based on what quarter of the screen
-    # the centerpoint of the frame is in (ie. it will peg to the corner nearest the
-    # matching corner of the frame).
-    # The result is a tuple ( corner, x, y )
+    """
+    Convert screen coordinates to relative-to-pegged-corner.
+
+    If corner is TL/BL/TR/BR then the screen coordinates are converted to pegged-relative
+    offsets from the given corner of the screen to the matching corner of the frame.
+    Otherwise an appropriate corner is determined based on what quarter of the screen
+    the centerpoint of the frame is in (ie. it will peg to the corner nearest the
+    matching corner of the frame).
+    The result is a tuple ( corner, x, y )
+    """
 
     scr_x = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_X )
     scr_y = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_Y )
@@ -236,8 +278,12 @@ def ConvertScreenToPegged( x_pos, y_pox, corner = 'XX' ):
     return ( peg_corner, peg_x, peg_y )
 
 def ConvertPeggedToScreen( corner, x_offset, y_offset ):
-    # Reverses the calculations in ConvertScreenToPegged()
-    # The result is a tuple ( x, y ) giving screen coordinates for the frame's top-left corner
+    """
+    Convert relative-to-pegged-corner coordinates to screen coordinates.
+
+    Reverses the calculations in ConvertScreenToPegged()
+    The result is a tuple ( x, y ) giving screen coordinates for the frame's top-left corner
+    """
 
     scr_x = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_X )
     scr_y = wx.SystemSettings.GetMetric( wx.SYS_SCREEN_Y )
