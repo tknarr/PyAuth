@@ -1,5 +1,7 @@
 # PyAuth version history:
 
+* 0.9.5 - Bugfixes
+
 * 0.9.4 - Database encryption
   - Secrets are now encrypted in the database.
   - Docstrings filled in.

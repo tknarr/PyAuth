@@ -78,8 +78,7 @@ Usage
 
 Command line:
 
-``PyAuth [-n] [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME]
-  [--loglevel (debug|info|warning|error|critical)]``
+``PyAuth [-n] [-s] [-m] [--icons=(white|grey|dark|transparent)] [--logfile FILENAME] [--no-logfile] [--loglevel (debug|info|warning|error|critical)]``
 
 * ``-s`` enables use of the notification (systray) icon if possible.
 
@@ -94,6 +93,8 @@ Command line:
 * ``--logfile`` allows you to set a log file for errors and messages logged by
   the program. Errors always appear on the console regardless. You may use variable
   and user expansions in the filename.
+
+* ``--no-logfile`` suppresses the log file completely.
 
 * ``--loglevel`` sets the level of log messages to output to the log file.
 
