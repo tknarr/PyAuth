@@ -3,7 +3,7 @@
 Configuration routines.
 
 ${HOME}/.PyAuth/ - configuration directory
-    config.cfg - configuration data
+    pyauth.cfg - configuration data
     database.cfg - authorization secrets storage
 
 Config items:
