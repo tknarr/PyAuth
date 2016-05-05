@@ -962,6 +962,9 @@ class AuthFrame( wx.Frame ):
         single entry. The calculation rounds the result up so any partially-visible entry
         becomes completely visible.
         """
+        if self.entries_window == None:
+            return self.visible_entries
+
         height = self.entries_window.GetSize().GetHeight()
         ## GetLogger().debug( "AF CIS win height = %d, entry height = %d", height, self.entry_height )
         r = self.visible_entries
