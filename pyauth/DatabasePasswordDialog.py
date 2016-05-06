@@ -17,7 +17,7 @@ class DatabasePasswordDialog( wx.Dialog ):
         self.password_label = None
         self.password_text = None
 
-        self.password_literal = "Password:"
+        self.password_literal = "Enter your password:"
 
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )

@@ -19,7 +19,7 @@ class ChangeDatabasePasswordDialog( wx.Dialog ):
         self.confirmation_label = None
         self.confirmation_text = None
 
-        self.password_literal = "New password:"
+        self.password_literal = "Enter your new password:"
         self.confirmation_literal = "Confirm password:"
         self.no_match_literal = "DOES NOT MATCH new password"
 

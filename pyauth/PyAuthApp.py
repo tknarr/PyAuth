@@ -116,7 +116,7 @@ class PyAuthApp( wx.App ):
         # hidden. If we're starting minimized and aren't in the systray, minimize
         # the frame as soon as it's shown. If we aren't starting minimized, show
         # the frame.
-        self.frame.Show( not ( initial_minimized and self.frame.InSystray() ) )
+        self.frame.Show( not self.frame.StartMinimized() )
         return True
 
 
