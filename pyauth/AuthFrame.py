@@ -786,26 +786,26 @@ class AuthFrame( wx.Frame ):
 
         # File menu
         menu = wx.Menu()
-        menu.Append( wx.ID_NEW, "&New entry", "Create a new account entry" )
+        menu.Append( wx.ID_NEW, "&New entry\tCtrl-N", "Create a new account entry" )
         menu.AppendSeparator()
         menu.AppendSubMenu( db_menu, "DB Maintenance" )
         menu.AppendSeparator()
-        menu.Append( wx.ID_EXIT, "E&xit", "Exit the program" )
+        menu.Append( wx.ID_EXIT, "E&xit\tCtrl-Q", "Exit the program" )
         mb.Append( menu, "&File" )
 
         # Edit menu
         menu = wx.Menu()
-        mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code", "Copy the current code to clipboard" )
+        mi = wx.MenuItem( menu, wx.ID_ANY, "&Copy code\tCtrl-C", "Copy the current code to clipboard" )
         self.MENU_COPY_CODE = mi.GetId()
         mi_icon = wx.ArtProvider.GetBitmap( wx.ART_COPY, wx.ART_MENU )
         mi.SetBitmap( mi_icon )
         menu.AppendItem( mi )
         menu.AppendSeparator()
-        menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected entry" )
-        menu.Append( wx.ID_DELETE, "Delete", "Delete the selected entry" )
+        menu.Append( wx.ID_EDIT, "&Edit\tCtrl-E", "Edit the selected entry" )
+        menu.Append( wx.ID_DELETE, "Delete\tDELETE", "Delete the selected entry" )
         menu.AppendSeparator()
-        menu.Append( wx.ID_UP, "Move &Up", "Move the selected entry up one position" )
-        menu.Append( wx.ID_DOWN, "Move &Down", "Move the selected entry down one position" )
+        menu.Append( wx.ID_UP, "Move &Up\tUP", "Move the selected entry up one position" )
+        menu.Append( wx.ID_DOWN, "Move &Down\tDOWN", "Move the selected entry down one position" )
         mb.Append( menu, "&Edit" )
 
         # View menu
@@ -832,7 +832,7 @@ class AuthFrame( wx.Frame ):
 
         # Help menu
         menu = wx.Menu()
-        menu.Append( wx.ID_HELP, "&Help", "Help index" )
+        menu.Append( wx.ID_HELP, "&Help\tCtrl-H", "Help index" )
         menu.Enable( wx.ID_HELP, False ) # TODO enable after help implemented
         menu.AppendSeparator()
         mi = wx.MenuItem( menu, wx.ID_ANY, "License", "Show license" )
