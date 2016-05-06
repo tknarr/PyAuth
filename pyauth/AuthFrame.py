@@ -252,7 +252,7 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ICONIZE, self.OnIconize )
         self.Bind( wx.EVT_SHOW, self.OnShow )
-        ## TODO self.KeyBind( wx.EVT_CHAR, self.OnKey )
+        self.KeyBind( wx.EVT_CHAR_HOOK, self.OnKey )
         if self.idle_output:
             self.Bind( wx.EVT_IDLE, self.OnIdle )
         # Menu event handlers
@@ -368,7 +368,7 @@ class AuthFrame( wx.Frame ):
     def OnKey( self, event ):
         """Process a keypress event."""
         key = event.GetUnicodeKey()
-        if key == WXK_NONE:
+        if key == wx.WXK_NONE:
             key = event.GetKeyCode()
         GetLogger().debug( "AF OnKey code %d", key )
         # The Escape key deselects any selected entry
@@ -802,11 +802,11 @@ class AuthFrame( wx.Frame ):
         menu.AppendItem( mi )
         menu.AppendSeparator()
         menu.Append( wx.ID_EDIT, "&Edit", "Edit the selected entry" )
-        menu.Append( wx.ID_DELETE, "&Delete", "Delete the selected entry" )
+        menu.Append( wx.ID_DELETE, "Delete", "Delete the selected entry" )
         menu.AppendSeparator()
-        menu.Append( wx.ID_UP, "Move Up", "Move the selected entry up one position" )
-        menu.Append( wx.ID_DOWN, "Move Down", "Move the selected entry down one position" )
-        mb.Append( menu, "Edit" )
+        menu.Append( wx.ID_UP, "Move &Up", "Move the selected entry up one position" )
+        menu.Append( wx.ID_DOWN, "Move &Down", "Move the selected entry down one position" )
+        mb.Append( menu, "&Edit" )
 
         # View menu
         menu = wx.Menu()
@@ -838,8 +838,8 @@ class AuthFrame( wx.Frame ):
         mi = wx.MenuItem( menu, wx.ID_ANY, "License", "Show license" )
         self.MENU_LICENSE = mi.GetId()
         menu.AppendItem( mi )
-        menu.Append( wx.ID_ABOUT, "About", "About PyAuth" )
-        mb.Append( menu, "Help" )
+        menu.Append( wx.ID_ABOUT, "&About", "About PyAuth" )
+        mb.Append( menu, "&Help" )
 
         return mb
 
