@@ -1,5 +1,7 @@
 # PyAuth version history:
 
+* 0.9.6 - Fix bug with initial shown/minimized state
+
 * 0.9.5 - Bugfixes
 
 * 0.9.4 - Database encryption
