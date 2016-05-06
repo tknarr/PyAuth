@@ -65,7 +65,7 @@ class AuthFrame( wx.Frame ):
 
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr,
-                  initial_systray = None, initial_minimized = False, iconset = None ):
+                  initial_systray = None, initial_minimized = None, iconset = None ):
         """Initialize the parts of the frame that can be initialized before window creation."""
 
         # Flag so we don't save anything if the user asked us to abort in the face
@@ -1103,3 +1103,7 @@ class AuthFrame( wx.Frame ):
     def InSystray( self ):
         """Report whether the notification tray icon will be in use or not."""
         return self.taskbar_icon != None
+
+    def StartMinimized( self ):
+        """Report whether we will start minimized or not."""
+        return self.start_minimized
