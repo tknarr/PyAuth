@@ -277,6 +277,7 @@ class AuthFrame( wx.Frame ):
         self.iconized = self.IsIconized()
         self.timer.Start( 1000 )
         self.record_toolbar_height()
+        self.entries_window.SetFocus()
 
 
     def OnEntryWindowSize( self, event ):
@@ -379,16 +380,35 @@ class AuthFrame( wx.Frame ):
         elif key == wx.WXK_UP or key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_UP or key == wx.WXK_NUMPAD_UP:
             if not event.HasModifiers():
                 GetLogger().debug( "AF OnKey up/down key" )
-                # TODO Alone, Up/Down arrow keys change the selected panel
+                # Alone, Up/Down arrow keys change the selected panel
+                if self.selected_panel == None:
+                    i = 0
+                else:
+                    i = self.entry_panels.index( self.selected_panel )
+                    if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP:
+                        if i > 0:
+                            i -= 1
+                    elif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN:
+                        if i < len( self.entry_panels ) - 1:
+                            i += 1
+                    self.selected_panel.Deselect()
+                self.selected_panel = self.entry_panels[i]
+                self.selected_panel.Select()
+                # Scroll to make selected panel visible
+                x, y = self.entries_window.GetViewStart().Get()
+                if i <= y:
+                    self.entries_window.Scroll( 0, i )
+                elif i >= y + self.visible_entries:
+                    self.entries_window.Scroll( 0, i - self.visible_entries + 1 )
             elif event.HasModifiers() == wx.MOD_CONTROL:
                 GetLogger().debug( "AF OnKey Control-up/down key" )
-                # TODO With Control key, move entries up/down in the list
-        elif key == wx.WXK_DELETE or key == wx.WXK_NUMPAD_DELETE:
-            if not event.HasModifiers():
-                GetLogger().debug( "AF OnKey delete key" )
-                # TODO Delete key deletes the selected entry
-        # TODO other keycodes
-        event.Skip()
+                # With Control key, move entries up/down in the list
+                if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP:
+                    self.OnMenuMoveUp( event )
+                elif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN:
+                    self.OnMenuMoveDown( event )
+        else:
+            event.Skip()
 
 
     def OnCloseWindow( self, event ):
@@ -655,6 +675,12 @@ class AuthFrame( wx.Frame ):
                     self.depopulate_entries_window()
                     self.populate_entries_window()
                     self.UpdatePanelSize()
+                # Scroll to make selected panel visible
+                x, y = self.entries_window.GetViewStart().Get()
+                if i <= y:
+                    self.entries_window.Scroll( 0, i )
+                elif i >= y + self.visible_entries:
+                    self.entries_window.Scroll( 0, i - self.visible_entries + 1 )
             else:
                 GetLogger().debug( "AF entry %d out-of-range", i )
                 wx.Bell()
@@ -685,6 +711,12 @@ class AuthFrame( wx.Frame ):
                     self.depopulate_entries_window()
                     self.populate_entries_window()
                     self.UpdatePanelSize()
+                # Scroll to make selected panel visible
+                x, y = self.entries_window.GetViewStart().Get()
+                if i <= y:
+                    self.entries_window.Scroll( 0, i )
+                elif i >= y + self.visible_entries:
+                    self.entries_window.Scroll( 0, i - self.visible_entries + 1 )
             else:
                 GetLogger().debug( "AF entry %d out-of-range", i )
                 wx.Bell()
@@ -911,6 +943,7 @@ class AuthFrame( wx.Frame ):
         sw = wx.ScrolledWindow( self, wx.ID_ANY, style = wx.VSCROLL, name = 'entries_window' )
         sw.ShowScrollbars( wx.SHOW_SB_NEVER, wx.SHOW_SB_DEFAULT )
         sw.EnableScrolling( False, True )
+        sw.DisableKeyboardScrolling()
         sw.SetSizer( wx.BoxSizer( wx.VERTICAL ) )
         return sw
 
