@@ -108,9 +108,6 @@ class PyAuthApp( wx.App ):
             return False
         self.SetTopWindow( self.frame )
 
-        self.Bind( wx.EVT_QUERY_END_SESSION, self.OnQES )
-        self.Bind( wx.EVT_END_SESSION, self.OnES )
-
         # Display main frame and start running
         # If we're starting minimized and are in the systray, leave the frame
         # hidden. If we're starting minimized and aren't in the systray, minimize
@@ -118,17 +115,6 @@ class PyAuthApp( wx.App ):
         # the frame.
         self.frame.Show( not self.frame.StartMinimized() )
         return True
-
-
-    def OnQES( self, event ):
-        """Handle query-end-session events."""
-        GetLogger().info( "Event: query end session" )
-        event.Skip()
-
-    def OnES( self, event ):
-        """Handle end-session events."""
-        GetLogger().info( "Event: end session" )
-        event.Skip()
 
 
     def OnExit( self ):
