@@ -1,5 +1,7 @@
 # PyAuth version history:
 
+* 1.0.0 - Initial release
+
 * 0.9.7 - Keyboard accelerators working
 
 * 0.9.6 - Fix bug with initial shown/minimized state
