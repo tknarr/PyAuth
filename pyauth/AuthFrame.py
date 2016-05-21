@@ -379,7 +379,6 @@ class AuthFrame( wx.Frame ):
                 self.selected_panel = None
         elif key == wx.WXK_UP or key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_UP or key == wx.WXK_NUMPAD_UP:
             if not event.HasModifiers():
-                GetLogger().debug( "AF OnKey up/down key" )
                 # Alone, Up/Down arrow keys change the selected panel
                 if self.selected_panel == None:
                     i = 0
@@ -400,13 +399,6 @@ class AuthFrame( wx.Frame ):
                     self.entries_window.Scroll( 0, i )
                 elif i >= y + self.visible_entries:
                     self.entries_window.Scroll( 0, i - self.visible_entries + 1 )
-            elif event.HasModifiers() == wx.MOD_CONTROL:
-                GetLogger().debug( "AF OnKey Control-up/down key" )
-                # With Control key, move entries up/down in the list
-                if key == wx.WXK_UP or key == wx.WXK_NUMPAD_UP:
-                    self.OnMenuMoveUp( event )
-                elif key == wx.WXK_DOWN or key == wx.WXK_NUMPAD_DOWN:
-                    self.OnMenuMoveDown( event )
         else:
             event.Skip()
 
@@ -834,10 +826,10 @@ class AuthFrame( wx.Frame ):
         menu.AppendItem( mi )
         menu.AppendSeparator()
         menu.Append( wx.ID_EDIT, "&Edit\tCtrl-E", "Edit the selected entry" )
-        menu.Append( wx.ID_DELETE, "Delete\tDELETE", "Delete the selected entry" )
+        menu.Append( wx.ID_DELETE, "Delete", "Delete the selected entry" )
         menu.AppendSeparator()
-        menu.Append( wx.ID_UP, "Move &Up\tUP", "Move the selected entry up one position" )
-        menu.Append( wx.ID_DOWN, "Move &Down\tDOWN", "Move the selected entry down one position" )
+        menu.Append( wx.ID_UP, "Move &Up", "Move the selected entry up one position" )
+        menu.Append( wx.ID_DOWN, "Move &Down", "Move the selected entry down one position" )
         mb.Append( menu, "&Edit" )
 
         # View menu
