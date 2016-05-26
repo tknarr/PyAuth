@@ -9,10 +9,7 @@ import wx
 import pyotp
 from About import GetProgramName, GetVendorName
 from Logging import GetLogger
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
-from Crypto import Random
+from Encryption import AES_unauthenticated, AES_HMAC
 
 class AuthenticationStore:
     """

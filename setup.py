@@ -83,6 +83,7 @@ setup(
     install_requires = [
         'wxPython>=3.0',
         'pyotp>=2.0.1',
+        'pycrypto>=2.6.1',
         'cryptography>=1.3'
         ],
 

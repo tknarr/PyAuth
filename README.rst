@@ -39,6 +39,8 @@ Prerequisites
   `wxWidgets <http://www.wxwidgets.org/>`_
 * `pyotp 2.0.1 <https://pypi.python.org/pypi/pyotp>`_ or higher
 * `cryptography 1.3 <https://pypi.python.org/pypi/cryptography>`_ or higher
+* `pycrypto 2.6.1 <https://pypi/python.org/pypi/pycrypto>`_ or higher, strictly for
+  decrypting older databases
 
 wxPython isn't automatically pulled in by ``pip`` because the version at PyPI is
 still 2.9. Your distribution probably includes a pre-packaged version, or you can
