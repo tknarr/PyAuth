@@ -38,6 +38,8 @@ class AuthenticationStore:
             algorithm = cfg.Read( '/crypto/algorithm', 'cleartext' )
         else:
             algorithm = 'cleartext'
+        cfg.Destroy()
+        cfg = None
         return algorithm != 'cleartext'
 
 
@@ -187,7 +189,7 @@ class AuthenticationStore:
         try:
             self.Save()
         except PasswordError:
-            # TODO implement
+            raise PasswordError( "Missing password." )
 
 
     def Regroup( self ):
@@ -214,7 +216,7 @@ class AuthenticationStore:
         try:
             self.Save()
         except PasswordError:
-            # TODO implement
+            raise PasswordError( "Missing password." )
 
 
     def Add( self, provider, account, secret, digits = 6, original_label = None ):
@@ -239,7 +241,7 @@ class AuthenticationStore:
         try:
             entry.Save( self.cfg, self )
         except PasswordError:
-            # TODO implement
+            raise PasswordError( "Missing password." )
         self.cfg.Flush()
         return entry
 
@@ -288,7 +290,7 @@ class AuthenticationStore:
         try:
             entry.Save( self.cfg, self )
         except PasswordError:
-            # TODO implement
+            raise PasswordError( "Missing password." )
         self.cfg.Flush()
         return 1
 

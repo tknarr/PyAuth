@@ -503,7 +503,12 @@ class AuthFrame( wx.Frame ):
             GetLogger().debug( "AF NE account  %s", account )
             GetLogger().debug( "AF NE digits   %d", digits )
             GetLogger().debug( "AF NE orig lbl %s", original_label )
-            entry = self.auth_store.Add( provider, account, secret, digits, original_label )
+            try:
+                entry = self.auth_store.Add( provider, account, secret, digits, original_label )
+                sts = ''
+            except PasswordError:
+                entry = None
+                sts = 'password'
             if entry != None:
                 GetLogger().debug( "AF NE new panel: %d", entry.GetGroup() )
                 # If all we have is the dummy entry then replace it, otherwise add the new entry at the end
@@ -524,10 +529,15 @@ class AuthFrame( wx.Frame ):
                 ##                    unicode( panel.GetMinSize() ) )
                 self.UpdatePanelSize()
             else:
-                GetLogger().debug( "AF NE duplicate item" )
-                dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
-                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                dlg.SetExtendedMessage( "Provider: {0}\nAccount: {1}".format( provider, account ) )
+                if sts == 'password':
+                    GetLogger().debug( "AF NE password error" )
+                    dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                            style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                else:
+                    GetLogger().debug( "AF NE duplicate item" )
+                    dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
+                                            style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                    dlg.SetExtendedMessage( "Provider: {0}\nAccount: {1}".format( provider, account ) )
                 dlg.ShowModal()
                 dlg.Destroy()
 
