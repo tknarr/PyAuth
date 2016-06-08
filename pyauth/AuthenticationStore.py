@@ -10,7 +10,7 @@ import pyotp
 from About import GetProgramName, GetVendorName
 from Logging import GetLogger
 from Encryption import create_encryption_object, generate_salt
-import Errors
+from Errors import DecryptionError, PasswordError
 
 class AuthenticationStore:
     """
@@ -25,9 +25,6 @@ class AuthenticationStore:
     value is assigned when a new entry is created and doesn't change after that except
     during a regroup operation just before the store is saved.
     """
-
-    class AuthenticationError( RuntimeError ):
-        pass
 
     # Current encryption algorithm name
     CURRENT_ALGORITHM = 'FERNET-256'
@@ -92,9 +89,9 @@ class AuthenticationStore:
                 try:
                     entry = AuthenticationEntry.Load( self.cfg, entry_group, self )
                 except DecryptionError:
-                    raise AuthenticationError( "Incorrect password." )
+                    raise PasswordError( "Incorrect password." )
                 except PasswordError:
-                    raise AuthenticationError( "Missing password." )
+                    raise PasswordError( "Missing password." )
                 sort_index = entry.GetSortIndex()
                 ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
@@ -114,7 +111,7 @@ class AuthenticationStore:
             try:
                 self.Save( True )
             except PasswordError:
-                raise AuthenticationError( "Missing password." )
+                raise PasswordError( "Missing password." )
 
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()

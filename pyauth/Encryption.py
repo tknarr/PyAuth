@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 from fernet256 import Fernet256
-import Errors
+from Errors import DecryptionError, PasswordError
 
 class Fernet_256:
     """
