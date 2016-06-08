@@ -287,12 +287,13 @@ class AuthenticationStore:
         if original_label != None:
             GetLogger().debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
+        ret_status = 1
         try:
             entry.Save( self.cfg, self )
         except PasswordError:
-            raise PasswordError( "Missing password." )
+            ret_status = -100
         self.cfg.Flush()
-        return 1
+        return ret_status
 
 
 def make_deltbl():

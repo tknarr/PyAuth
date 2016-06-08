@@ -427,7 +427,14 @@ class AuthFrame( wx.Frame ):
             self.timer = None
             if not self.do_not_save:
                 if self.auth_store != None:
-                    self.auth_store.Save()
+                    try:
+                        self.auth_store.Save()
+                    except PasswordError:
+                        dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                                style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                        dlg.SetExtendedMessage( "The database could not be properly saved." )
+                        dlg.ShowModal()
+                        dlg.Destroy()
                 wp = self.GetPosition()
                 Configuration.SetLastWindowPosition( wp )
                 if self.displayed:
@@ -578,10 +585,14 @@ class AuthFrame( wx.Frame ):
                         GetLogger().debug( "AF UE updating entry" )
                         status = self.auth_store.Update( entry.GetGroup(), provider, account, secret, digits )
                         if status < 0:
-                            dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
-                                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                            dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
-                                                    "The database is likely corrupted and needs repaired." )
+                            if status == -100:
+                                dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                            else:
+                                dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
+                                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                                dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
+                                                        "The database is likely corrupted and needs repaired." )
                             dlg.ShowModal()
                             dlg.Destroy()
                         elif status == 0:
@@ -789,7 +800,13 @@ class AuthFrame( wx.Frame ):
         """Handle a request to reindex the database from the menu."""
         GetLogger().debug( "AF menu Reindex command" )
         GetLogger().info( "Database reindex ordered" )
-        self.auth_store.Reindex()
+        try:
+            self.auth_store.Reindex()
+        except PasswordError:
+            dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.ShowModal()
+            dlg.Destroy()
         self.depopulate_entries_window()
         self.populate_entries_window()
         self.UpdatePanelSize()
@@ -798,7 +815,13 @@ class AuthFrame( wx.Frame ):
         """Handle a request to re-group the database from the menu."""
         GetLogger().debug( "AF menu Regroup command" )
         GetLogger().info( "Database regroup and reindex ordered" )
-        self.auth_store.Regroup()
+        try:
+            self.auth_store.Regroup()
+        except PasswordError:
+            dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.ShowModal()
+            dlg.Destroy()
         self.depopulate_entries_window()
         self.populate_entries_window()
         self.UpdatePanelSize()
