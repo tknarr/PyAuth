@@ -1,15 +1,15 @@
 PyAuth
 ======
 
-.. image:: https://img.shields.io/pypi/v/PyAuth.svg
+.. image:: https://img.shields.io/pypi/v/PyAuth.png
     :target: https://pypi.python.org/pypi/PyAuth/
     :alt: Latest Version
 
-.. image:: https://img.shields.io/pypi/pyversions/PyAuth.svg
+.. image:: https://img.shields.io/pypi/pyversions/PyAuth.png
     :target: https://pypi.python.org/pypi/PyAuth/
     :alt: Latest Version
     
-.. image:: https://img.shields.io/github/release/tknarr/PyAuth.svg
+.. image:: https://img.shields.io/github/release/tknarr/PyAuth.png
     :target: https://github.com/tknarr/PyAuth/releases/latest
     :alt: Latest Version
 
