@@ -1,6 +1,18 @@
 PyAuth
 ======
 
+.. image:: https://img.shields.io/pypi/v/PyAuth.png
+    :target: https://pypi.python.org/pypi/PyAuth/
+    :alt: Latest Version
+
+.. image:: https://img.shields.io/pypi/pyversions/PyAuth.png
+    :target: https://pypi.python.org/pypi/PyAuth/
+    :alt: Latest Version
+    
+.. image:: https://img.shields.io/github/release/tknarr/PyAuth.png
+    :target: https://github.com/tknarr/PyAuth/releases/latest
+    :alt: Latest Version
+
 Copyright 2016 Todd T Knarr <tknarr@silverglass.org>
 
 This program is free software: you can redistribute it and/or modify it under
