@@ -81,7 +81,7 @@ setup(
     packages = find_packages( exclude = ['contrib', 'docs', 'tests*'] ),
 
     install_requires = [
-        'wxPython>=3.0',
+        #'wxPython>=3.0',
         'pyotp>=2.0.1',
         'pycrypto>=2.6.1',
         'cryptography>=1.3'
