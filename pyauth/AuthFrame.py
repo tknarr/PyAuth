@@ -16,6 +16,8 @@ from DatabasePasswordDialog import DatabasePasswordDialog
 from ChangeDatabasePasswordDialog import ChangeDatabasePasswordDialog
 from HTMLTextDialog import HTMLTextDialog
 from Logging import GetLogger
+from Errors import DecryptionError, PasswordError
+import traceback
 
 class AuthTaskbarIcon( wx.TaskBarIcon ):
     """Notification tray icon."""
@@ -205,13 +207,23 @@ class AuthFrame( wx.Frame ):
                 break
             try:
                 self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename(), password )
-            except ValueError:
+            except DecryptionError as e:
+                GetLogger().error( str( e ) )
+                GetLogger().error( "Failure decrypting database." )
                 retry = True
-            else:
+            except PasswordError as e:
+                GetLogger().error( str( e ) )
+                GetLogger().error( "Password problem decrypting database." )
+                retry = True
+            except Exception as e:
+                print traceback.print_exc()
+                GetLogger().error( str( e ) )
+                GetLogger().critical( "Unexpected exception decrypting database." )
                 retry = False
             finally:
                 if self.auth_store != None:
                     authentication_store_ok = True
+                    retry = False
         if not authentication_store_ok:
             GetLogger().critical( "Database could not be opened" )
             self.do_not_save = True

@@ -4,7 +4,6 @@
 import os
 import errno
 import string
-import base64
 import wx
 import pyotp
 from About import GetProgramName, GetVendorName
@@ -38,7 +37,6 @@ class AuthenticationStore:
             algorithm = cfg.Read( '/crypto/algorithm', 'cleartext' )
         else:
             algorithm = 'cleartext'
-        cfg.Destroy()
         cfg = None
         return algorithm != 'cleartext'
 
@@ -61,14 +59,14 @@ class AuthenticationStore:
         # and salt. Encryption will be done using the current algorithm and either
         # the existing salt (if the algorithm isn't changing) or a new salt (if the
         # algorithm has changed).
-        self.algorithm = CURRENT_ALGORITHM
+        self.algorithm = AuthenticationStore.CURRENT_ALGORITHM
         self.old_algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
-        self.old_password_salt = self.cfg.Read( '/crypto/salt', None )
+        self.old_password_salt = self.cfg.Read( '/crypto/salt', '' ).encode()
         self.decryptor = create_encryption_object( self.old_algorithm, password,
                                                    self.old_password_salt )
-        self.algorithm_changed = self.decryptor.algorithm_name != self.algorithm
+        self.algorithm_changed = self.decryptor.algorithm != self.algorithm
         if self.algorithm_changed:
-            self.password_salt = generate_salt( self.algorithm )
+            self.password_salt = generate_salt( self.algorithm ).encode()
             self.password_changed = True
             self.encryptor = create_encryption_object( self.algorithm, password,
                                                        self.password_salt )
@@ -89,11 +87,11 @@ class AuthenticationStore:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
                 try:
-                    entry = AuthenticationEntry.Load( self.cfg, entry_group, self )
-                except DecryptionError:
-                    raise PasswordError( "Incorrect password." )
-                except PasswordError:
-                    raise PasswordError( "Missing password." )
+                    entry = AuthenticationEntry.Load( self.cfg, entry_group, self.decryptor )
+                except DecryptionError as e:
+                    raise PasswordError( "Decryption failure: " + str( e ) )
+                except PasswordError as e:
+                    raise PasswordError( "Missing password:" + str( e ) )
                 sort_index = entry.GetSortIndex()
                 ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
@@ -146,7 +144,7 @@ class AuthenticationStore:
         """Save any modifications back to disk."""
         GetLogger().debug( "AS saving all" )
         for entry in self.entry_list:
-            entry.Save( self.cfg, self, force )
+            entry.Save( self.cfg, "/entries", self.encryptor, force )
         if self.password_changed:
             self.cfg.Write( '/crypto/salt', self.password_salt )
             self.password_changed = False
@@ -332,9 +330,9 @@ class AuthenticationEntry:
 
 
     @classmethod
-    def Load( klass, cfg, entry_group_path, entry_group, decryptor ):
+    def Load( klass, cfg, entry_group, decryptor ):
         """Create a new entry based on an entry group from the database."""
-        cfgpath = entry_group_path + '{0:d}/'.format( entry_group )
+        cfgpath = '{0:d}/'.format( entry_group )
         old_path = cfg.GetPath()
         cfg.SetPath( cfgpath )
         sort_index = cfg.ReadInt( 'sort_index' )
