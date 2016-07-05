@@ -11,7 +11,6 @@ from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
 from fernet256 import Fernet256, InvalidToken
 from Errors import DecryptionError, PasswordError
-import traceback
 
 class Fernet_256:
     """
@@ -73,7 +72,6 @@ class Fernet_256:
         try:
             cleartext = f.decrypt( token.encode() )
         except InvalidToken as e:
-            print traceback.print_exc()
             raise DecryptionError( "Decryption failure: Invalid token: " + str( e ) )
         unpadder = padding.PKCS7( algorithms.AES.block_size ).unpadder()
         secret = unpadder.update( cleartext )

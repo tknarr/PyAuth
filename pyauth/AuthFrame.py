@@ -17,7 +17,6 @@ from ChangeDatabasePasswordDialog import ChangeDatabasePasswordDialog
 from HTMLTextDialog import HTMLTextDialog
 from Logging import GetLogger
 from Errors import DecryptionError, PasswordError
-import traceback
 
 class AuthTaskbarIcon( wx.TaskBarIcon ):
     """Notification tray icon."""
@@ -216,7 +215,6 @@ class AuthFrame( wx.Frame ):
                 GetLogger().error( "Password problem decrypting database." )
                 retry = True
             except Exception as e:
-                print traceback.print_exc()
                 GetLogger().error( str( e ) )
                 GetLogger().critical( "Unexpected exception decrypting database." )
                 retry = False
