@@ -2,7 +2,6 @@
 """Metadata about the program."""
 
 import sysconfig
-import base64
 import io
 import pkg_resources
 import wx

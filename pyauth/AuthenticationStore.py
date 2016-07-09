@@ -9,10 +9,8 @@ import wx
 import pyotp
 from About import GetProgramName, GetVendorName
 from Logging import GetLogger
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
-from Crypto import Random
+from Encryption import create_encryption_object, generate_salt
+from Errors import DecryptionError, PasswordError
 
 class AuthenticationStore:
     """
@@ -28,6 +26,9 @@ class AuthenticationStore:
     during a regroup operation just before the store is saved.
     """
 
+    # Current encryption algorithm name
+    CURRENT_ALGORITHM = 'FERNET-256'
+
     @staticmethod
     def IsEncryptionActive( filename ):
         """Determine if encryption is in use for the named database."""
@@ -37,6 +38,7 @@ class AuthenticationStore:
             algorithm = cfg.Read( '/crypto/algorithm', 'cleartext' )
         else:
             algorithm = 'cleartext'
+        cfg = None
         return algorithm != 'cleartext'
 
 
@@ -53,19 +55,30 @@ class AuthenticationStore:
         self.next_index = 1
         self.max_digits = 8
 
-        # Set up an RNG object and derive the encryption key from the supplied
-        # password. The salt for the key derivation is taken from the database,
-        # or generated randomly and stored in the database if not already present.
-        self.rng = Random.new()
-
         # Check the encryption algorithm entry. If it's missing, the database must
-        # have cleartext secrets. If we have a password but cleartext secrets, we'll
-        # read them without encryption and then properly encrypt them upon saving.
-        self.algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
-        self.algorithm_change = False
-        self.UpdatePassword( password )
-        if not self.CheckPassword():
-            raise ValueError( "Invalid password" )
+        # have cleartext secrets. We'll decrypt the secrets using the old algorithm
+        # and salt. Encryption will be done using the current algorithm and either
+        # the existing salt (if the algorithm isn't changing) or a new salt (if the
+        # algorithm has changed).
+        self.algorithm = AuthenticationStore.CURRENT_ALGORITHM
+        self.old_algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
+        oldsalt = self.cfg.Read( '/crypto/salt', '' )
+        if self.old_algorithm == 'AES' or self.old_algorithm == 'cleartext':
+            self.old_password_salt = oldsalt.encode()
+        else:
+            self.old_password_salt = base64.urlsafe_b64decode( oldsalt.encode() )
+        self.decryptor = create_encryption_object( self.old_algorithm, password,
+                                                   self.old_password_salt )
+        self.algorithm_changed = self.decryptor.algorithm != self.algorithm
+        if self.algorithm_changed:
+            self.password_salt = generate_salt( self.algorithm )
+            self.password_changed = True
+            self.encryptor = create_encryption_object( self.algorithm, password,
+                                                       self.password_salt )
+        else:
+            self.password_salt = self.old_password_salt
+            self.password_changed = False
+            self.encryptor = self.decryptor
 
         # Read configuration entries into a list
         # Make sure to update next_group and next_index if we encounter
@@ -78,9 +91,12 @@ class AuthenticationStore:
             if entry_group > 0:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
-                entry = AuthenticationEntry.Load( self.cfg, entry_group, self )
-                if self.algorithm_change:
-                    entry.modified = True # Make sure we rewrite entries when encryption changes
+                try:
+                    entry = AuthenticationEntry.Load( self.cfg, entry_group, self.decryptor )
+                except DecryptionError as e:
+                    raise PasswordError( "Decryption failure: " + str( e ) )
+                except PasswordError as e:
+                    raise PasswordError( "Missing password:" + str( e ) )
                 sort_index = entry.GetSortIndex()
                 ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
@@ -95,53 +111,29 @@ class AuthenticationStore:
         GetLogger().debug( "AS next group %d", self.next_group )
         GetLogger().debug( "AS next index %d", self.next_index )
 
+        # Force save if algorithm or password changes happened
+        if self.password_changed or self.algorithm_changed:
+            try:
+                self.Save( True )
+            except PasswordError:
+                raise PasswordError( "Missing password." )
+
         # Make sure they're sorted at the start
         keyfunc = lambda x: x.GetSortIndex()
         self.entry_list.sort( key = keyfunc )
 
 
-    def UpdatePassword( self, password, new_password = False ):
+    def UpdatePassword( self, password ):
         """Update the encryption password and algorithm."""
         if password == None or password == '':
-            self.storage_key = None
             return False # Passwordless database not allowed
-        self.read_cleartext = False
-        if self.algorithm == 'cleartext':
-            new_password = True
-            self.read_cleartext = True
-            self.algorithm = 'AES'
-            self.algorithm_change = True
-        salt = self.cfg.Read( '/crypto/salt', '' )
-        # Generate a new salt if there is none or if we're changing the password
-        if salt == '' or new_password:
-            s = self.rng.read( AES.block_size )
-            salt = unicode( base64.standard_b64encode( s ) )
-            self.cfg.Write( '/crypto/salt', salt )
-            self.cfg.Flush()
-        self.storage_key = PBKDF2( password, salt, AES.block_size, 10000 )
-        # Generate new check data every time the password is changed
-        if new_password:
-            check_data = unicode( base64.standard_b64encode( self.rng.read( AES.block_size * 4 ) ) )
-            check_ciphertext = self.Encrypt( check_data )
-            self.cfg.Write( '/crypto/check_data', check_ciphertext )
-            h = SHA256.new()
-            h.update( check_data )
-            check_hash = unicode( base64.standard_b64encode( h.digest() ) )
-            self.cfg.Write( '/crypto/check_hash', check_hash )
-            self.cfg.Flush()
-        return self.EncryptionEnabled()
-
-    def CheckPassword( self ):
-        """Check whether the current password is correct or not."""
-        check_ciphertext = self.cfg.Read( '/crypto/check_data', '' )
-        if check_ciphertext == '':
-            raise ValueError( "Password check data not present." )
-        check_data = self.Decrypt( check_ciphertext, True )
-        h = SHA256.new()
-        h.update( check_data )
-        check_hash = unicode( base64.standard_b64encode( h.digest() ) )
-        stored_hash = self.cfg.Read( '/crypto/check_hash', '' )
-        return check_hash == stored_hash
+        self.password_salt = generate_salt( self.algorithm )
+        self.password_changed = True
+        try:
+            self.encryptor.SetPassword( password, salt )
+        except PasswordError:
+            return False
+        return True
 
 
     def EntryList( self ):
@@ -152,18 +144,22 @@ class AuthenticationStore:
         """Return the maximum number of code digits supported."""
         return self.max_digits
 
-    def EncryptionEnabled( self ):
-        """Indicate whether encryption is active or not."""
-        return self.algorithm != 'cleartext'
 
-
-    def Save( self ):
+    def Save( self, force = False ):
         """Save any modifications back to disk."""
         GetLogger().debug( "AS saving all" )
         for entry in self.entry_list:
-            entry.Save( self.cfg, self )
-        if self.algorithm_change:
+            entry.Save( self.cfg, "/entries", self.encryptor, force )
+        if self.password_changed:
+            self.cfg.Write( '/crypto/salt', base64.urlsafe_b64encode( self.password_salt ) )
+            self.password_changed = False
+        if self.algorithm_changed:
             self.cfg.Write( '/crypto/algorithm', self.algorithm )
+            # Clear out entries from old algorithms
+            if self.old_algorithm == 'AES':
+                self.cfg.DeleteEntry( '/crypto/check_data' )
+                self.cfg.DeleteEntry( '/crypto/check_hash' )
+            self.algorithm_changed = False
         self.cfg.Flush()
         # Make sure our database of secrets is only accessible by us
         # This should be handled via SetUmask(), but it's not implemented in the Python bindings
@@ -190,11 +186,13 @@ class AuthenticationStore:
         i = 1;
         for e in self.entry_list:
             e.SetSortIndex( i )
-            e.Save( self.cfg, self )
             i += 1
         self.next_index = i
         GetLogger().debug( "AS next index = %d", self.next_index )
-        self.cfg.Flush()
+        try:
+            self.Save()
+        except PasswordError:
+            raise PasswordError( "Missing password." )
 
 
     def Regroup( self ):
@@ -214,12 +212,14 @@ class AuthenticationStore:
         for e in self.entry_list:
             e.SetGroup( i )
             e.SetSortIndex( i )
-            e.Save( self.cfg, self )
             i += 1
         self.next_group = i
         self.next_index = i
         GetLogger().debug( "AS next group and index = %d", i )
-        self.cfg.Flush()
+        try:
+            self.Save()
+        except PasswordError:
+            raise PasswordError( "Missing password." )
 
 
     def Add( self, provider, account, secret, digits = 6, original_label = None ):
@@ -241,7 +241,10 @@ class AuthenticationStore:
         self.entry_list.append( entry )
         self.next_index += 1
         self.next_group += 1
-        entry.Save( self.cfg, self )
+        try:
+            entry.Save( self.cfg, self )
+        except PasswordError:
+            raise PasswordError( "Missing password." )
         self.cfg.Flush()
         return entry
 
@@ -287,36 +290,13 @@ class AuthenticationStore:
         if original_label != None:
             GetLogger().debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
-        entry.Save( self.cfg, self )
+        ret_status = 1
+        try:
+            entry.Save( self.cfg, self )
+        except PasswordError:
+            ret_status = -100
         self.cfg.Flush()
-        return 1
-
-
-    def Encrypt( self, secret ):
-        """Encrypt a secret with the current password."""
-        if self.storage_key == None:
-            return secret
-        iv = self.rng.read( AES.block_size )
-        cipher = AES.new( self.storage_key, AES.MODE_CBC, iv )
-        excess = len( secret ) % AES.block_size
-        if excess > 0:
-            cleartext = secret + ( ' ' * ( AES.block_size - excess ) )
-        else:
-            cleartext = secret
-        ciphertext = iv + cipher.encrypt( cleartext )
-        return unicode( base64.standard_b64encode( ciphertext ) )
-
-
-    def Decrypt( self, ciphertext, force_decrypt = False ):
-        """Decrypt a secret using the current password."""
-        if self.storage_key == None or ( self.read_cleartext and not force_decrypt ):
-            return ciphertext
-        b = base64.standard_b64decode( ciphertext )
-        iv = b[0:AES.block_size]
-        raw_ciphertext = b[AES.block_size:]
-        cipher = AES.new( self.storage_key, AES.MODE_CBC, iv )
-        cleartext = cipher.decrypt( raw_ciphertext )
-        return unicode( cleartext ).rstrip()
+        return ret_status
 
 
 def make_deltbl():
@@ -355,15 +335,16 @@ class AuthenticationEntry:
 
 
     @classmethod
-    def Load( klass, cfg, entry_group, auth_store ):
+    def Load( klass, cfg, entry_group, decryptor ):
         """Create a new entry based on an entry group from the database."""
-        cfgpath = '/entries/{0:d}/'.format( entry_group )
+        cfgpath = '{0:d}/'.format( entry_group )
         old_path = cfg.GetPath()
         cfg.SetPath( cfgpath )
         sort_index = cfg.ReadInt( 'sort_index' )
         provider = cfg.Read( 'provider' )
         account = cfg.Read( 'account' )
-        secret = auth_store.Decrypt( cfg.Read( 'secret' ) )
+        encrypted_secret = cfg.Read( 'secret' )
+        secret = decryptor.Decrypt( encrypted_secret )
         digits = cfg.ReadInt( 'digits', 6 )
         original_label = cfg.Read( 'original_label', '' )
         if original_label == '':
@@ -375,17 +356,20 @@ class AuthenticationEntry:
         return obj
 
 
-    def Save( self, cfg, auth_store ):
+    def Save( self, cfg, entry_group_path, encryptor, force = False ):
         """Save the entry to the database file if modified."""
-        if self.modified:
-            cfgpath = '/entries/{0:d}/'.format( self.entry_group )
+        if self.modified or force:
+            old_path = cfg.GetPath()
+            cfg.SetPath( entry_group_path )
+            cfgpath = '{0:d}/'.format( self.entry_group )
             cfg.Write( cfgpath + 'type', 'totp' )
             cfg.WriteInt( cfgpath + 'sort_index', self.sort_index )
             cfg.Write( cfgpath + 'provider', self.provider )
             cfg.Write( cfgpath + 'account', self.account )
-            cfg.Write( cfgpath + 'secret', auth_store.Encrypt( self.secret ) )
+            cfg.Write( cfgpath + 'secret', encryptor.Encrypt( self.secret ) )
             cfg.WriteInt( cfgpath + 'digits', self.digits )
             cfg.Write( cfgpath + 'original_label', self.original_label )
+            cfg.SetPath( old_path )
             self.modified = False
 
 
