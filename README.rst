@@ -18,7 +18,9 @@ Copyright 2016 Todd T Knarr <tknarr@silverglass.org>
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
-version.
+version. The Fernet AES256 implementation (fernet256.py) is dual licensed
+under the terms of the Apache License version 2.0 and the BSD License as
+noted in the source file.
 
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -36,10 +38,10 @@ and other software and hardware using the standard TOTP algorithm outlined in
 `RFC 6238 <https://tools.ietf.org/html/rfc6238>`_ (support for the HOTP algorithm
 outlined in `RFC 4226 <https://tools.ietf.org/html/rfc4226>`_ is planned).
 
-Secrets are encrypted in the database using AES encryption in CBC mode. There is
-no option for storing unencrypted secrets. If you were using an older beta version
-of this program, you will be prompted for a password and upon first save the
-secrets will be encrypted using it.
+Secrets are encrypted using AES256, there is no option for storing unencrypted
+secrets. If you were using an older beta version, you will be prompted for a
+password and the stored secrets will be migrated to the current encryption without
+requiring any more user intervention.
 
 PyPI page: `https://pypi.python.org/pypi/PyAuth <https://pypi.python.org/pypi/PyAuth>`_
 
@@ -50,7 +52,9 @@ Prerequisites
 * `wxPython <http://www.wxpython.org/>`_ 3.0 or higher, which requires matching
   `wxWidgets <http://www.wxwidgets.org/>`_
 * `pyotp 2.0.1 <https://pypi.python.org/pypi/pyotp>`_ or higher
-* `pycrypto 2.6.1 <https://pypi.python.org/pypi/pycrypto>`_ or higher
+* `cryptography 1.3 <https://pypi.python.org/pypi/cryptography>`_ or higher
+* `pycrypto 2.6.1 <https://pypi/python.org/pypi/pycrypto>`_ or higher, strictly for
+  decrypting older databases
 
 wxPython isn't automatically pulled in by ``pip`` because the version at PyPI is
 still 2.9. Your distribution probably includes a pre-packaged version, or you can

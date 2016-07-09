@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""PyAuth - Google Authenticator (TOTP) desktop client."""
+"""Exceptions used by other modules."""
 
 ## PyAuth - Google Authenticator desktop application
 ## Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
@@ -17,9 +17,8 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see http://www.gnu.org/licenses/
 
-__program_name__ = "PyAuth"
+class PasswordError( RuntimeError ):
+    pass
 
-# Version info
-__version__ = '0.9.10'
-__version_tag__ = ''
-__version_status__ = 'rc'
+class DecryptionError( RuntimeError ):
+    pass

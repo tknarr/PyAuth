@@ -1,6 +1,6 @@
 # PyAuth version history:
 
-* 1.0.0 - Initial release
+* 0.9.10 - Implement authenticated 256-bit encryption
 
 * 0.9.7 - Keyboard accelerators working
 

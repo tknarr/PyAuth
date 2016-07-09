@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 """Frame for the main window."""
 
+## PyAuth - Google Authenticator desktop application
+## Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
+
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see http://www.gnu.org/licenses/
+
 import math
 import sysconfig
 import pkg_resources
@@ -16,6 +32,7 @@ from DatabasePasswordDialog import DatabasePasswordDialog
 from ChangeDatabasePasswordDialog import ChangeDatabasePasswordDialog
 from HTMLTextDialog import HTMLTextDialog
 from Logging import GetLogger
+from Errors import DecryptionError, PasswordError
 
 class AuthTaskbarIcon( wx.TaskBarIcon ):
     """Notification tray icon."""
@@ -205,13 +222,22 @@ class AuthFrame( wx.Frame ):
                 break
             try:
                 self.auth_store = AuthenticationStore( Configuration.GetDatabaseFilename(), password )
-            except ValueError:
+            except DecryptionError as e:
+                GetLogger().error( str( e ) )
+                GetLogger().error( "Failure decrypting database." )
                 retry = True
-            else:
+            except PasswordError as e:
+                GetLogger().error( str( e ) )
+                GetLogger().error( "Password problem decrypting database." )
+                retry = True
+            except Exception as e:
+                GetLogger().error( str( e ) )
+                GetLogger().critical( "Unexpected exception decrypting database." )
                 retry = False
             finally:
                 if self.auth_store != None:
                     authentication_store_ok = True
+                    retry = False
         if not authentication_store_ok:
             GetLogger().critical( "Database could not be opened" )
             self.do_not_save = True
@@ -427,7 +453,14 @@ class AuthFrame( wx.Frame ):
             self.timer = None
             if not self.do_not_save:
                 if self.auth_store != None:
-                    self.auth_store.Save()
+                    try:
+                        self.auth_store.Save()
+                    except PasswordError:
+                        dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                                style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                        dlg.SetExtendedMessage( "The database could not be properly saved." )
+                        dlg.ShowModal()
+                        dlg.Destroy()
                 wp = self.GetPosition()
                 Configuration.SetLastWindowPosition( wp )
                 if self.displayed:
@@ -503,7 +536,12 @@ class AuthFrame( wx.Frame ):
             GetLogger().debug( "AF NE account  %s", account )
             GetLogger().debug( "AF NE digits   %d", digits )
             GetLogger().debug( "AF NE orig lbl %s", original_label )
-            entry = self.auth_store.Add( provider, account, secret, digits, original_label )
+            try:
+                entry = self.auth_store.Add( provider, account, secret, digits, original_label )
+                sts = ''
+            except PasswordError:
+                entry = None
+                sts = 'password'
             if entry != None:
                 GetLogger().debug( "AF NE new panel: %d", entry.GetGroup() )
                 # If all we have is the dummy entry then replace it, otherwise add the new entry at the end
@@ -524,10 +562,15 @@ class AuthFrame( wx.Frame ):
                 ##                    unicode( panel.GetMinSize() ) )
                 self.UpdatePanelSize()
             else:
-                GetLogger().debug( "AF NE duplicate item" )
-                dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
-                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                dlg.SetExtendedMessage( "Provider: {0}\nAccount: {1}".format( provider, account ) )
+                if sts == 'password':
+                    GetLogger().debug( "AF NE password error" )
+                    dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                            style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                else:
+                    GetLogger().debug( "AF NE duplicate item" )
+                    dlg = wx.MessageDialog( self, "That entry already exists.", "Error",
+                                            style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                    dlg.SetExtendedMessage( "Provider: {0}\nAccount: {1}".format( provider, account ) )
                 dlg.ShowModal()
                 dlg.Destroy()
 
@@ -568,10 +611,14 @@ class AuthFrame( wx.Frame ):
                         GetLogger().debug( "AF UE updating entry" )
                         status = self.auth_store.Update( entry.GetGroup(), provider, account, secret, digits )
                         if status < 0:
-                            dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
-                                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-                            dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
-                                                    "The database is likely corrupted and needs repaired." )
+                            if status == -100:
+                                dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                            else:
+                                dlg = wx.MessageDialog( self, "Database is corrupted.", "Error",
+                                                        style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+                                dlg.SetExtendedMessage( "Multiple copies of the entry were found.\n" +
+                                                        "The database is likely corrupted and needs repaired." )
                             dlg.ShowModal()
                             dlg.Destroy()
                         elif status == 0:
@@ -779,7 +826,13 @@ class AuthFrame( wx.Frame ):
         """Handle a request to reindex the database from the menu."""
         GetLogger().debug( "AF menu Reindex command" )
         GetLogger().info( "Database reindex ordered" )
-        self.auth_store.Reindex()
+        try:
+            self.auth_store.Reindex()
+        except PasswordError:
+            dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.ShowModal()
+            dlg.Destroy()
         self.depopulate_entries_window()
         self.populate_entries_window()
         self.UpdatePanelSize()
@@ -788,7 +841,13 @@ class AuthFrame( wx.Frame ):
         """Handle a request to re-group the database from the menu."""
         GetLogger().debug( "AF menu Regroup command" )
         GetLogger().info( "Database regroup and reindex ordered" )
-        self.auth_store.Regroup()
+        try:
+            self.auth_store.Regroup()
+        except PasswordError:
+            dlg = wx.MessageDialog( self, "A database password is required.", "Error",
+                                    style = wx.OK | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+            dlg.ShowModal()
+            dlg.Destroy()
         self.depopulate_entries_window()
         self.populate_entries_window()
         self.UpdatePanelSize()
