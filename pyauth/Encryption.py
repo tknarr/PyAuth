@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Encryption for the authentication store."""
+"""
+Encryption for the authentication store.
+
+Passwords and cleartext are Unicode text strings. Ciphertext is a
+Unicode string containing base64-encoded data. The salt used for
+key derivation is an unencoded byte string representing raw byte
+data (the obsolete AES encryption method uses an unencoded or
+Unicode string containing base64 data directly).
+"""
 
 import os
 import string
@@ -33,7 +41,7 @@ class Fernet_256:
                               salt = self.storage_key_salt,
                               iterations = 100000,
                               backend = self.backend )
-            self.storage_key = base64.urlsafe_b64encode( kdf.derive( password ) )
+            self.storage_key = base64.urlsafe_b64encode( kdf.derive( password.encode() ) )
 
     @classmethod
     def GenerateSalt( cls ):
@@ -62,7 +70,7 @@ class Fernet_256:
         cleartext = padder.update( secret.encode() )
         cleartext += padder.finalize()
         ciphertext = f.encrypt( cleartext.encode() )
-        return ciphertext
+        return unicode( ciphertext )
 
     def Decrypt( self, token ):
         """Decrypt a secret using the current key."""
@@ -95,7 +103,7 @@ class Old_AES:
                               salt = self.storage_key_salt,
                               iterations = 10000,
                               backend = self.backend )
-            self.storage_key = base64.b64encode( kdf.derive( password ) )
+            self.storage_key = kdf.derive( password.encode() )
 
     @classmethod
     def GenerateSalt( cls ):
@@ -126,7 +134,7 @@ class Old_AES:
             b = base64.standard_b64decode( ciphertext )
             iv = b[0:self.BLOCK_SIZE]
             raw_ciphertext = b[self.BLOCK_SIZE:]
-            cipher = Cipher( algorithms.AES( base64.b64decode( self.storage_key ) ),
+            cipher = Cipher( algorithms.AES( self.storage_key ),
                              modes.CBC( iv ), self.backend )
             decryptor = cipher.decryptor()
             cleartext = decryptor.update( raw_ciphertext ) + decryptor.finalize()
@@ -150,23 +158,23 @@ class Cleartext:
         pass
 
     def Encrypt( self, cleartext ):
-        return cleartext
+        raise NotImplementedError( "Encryption is not supported by the cleartext algorithm." )
 
     def Decrypt( self, ciphertext ):
         return ciphertext
 
 def generate_salt( algorithm_name ):
     if algorithm_name == 'FERNET-256':
-        s = base64.urlsafe_b64encode( Fernet_256.GenerateSalt() )
+        salt = Fernet_256.GenerateSalt()
     else:
         raise NotImplementedError( "Algorithm not implemented: " + algorithm_name )
-    return s
+    return salt
 
 def create_encryption_object( algorithm_name, password = None, salt = None ):
     if algorithm_name == 'FERNET-256':
-        e = Fernet_256( password.encode(), salt )
+        e = Fernet_256( password, salt )
     elif algorithm_name == 'AES':
-        e = Old_AES( password.encode(), salt )
+        e = Old_AES( password, salt )
     elif algorithm_name == 'cleartext':
         e = Cleartext()
     else:

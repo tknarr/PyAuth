@@ -4,6 +4,7 @@
 import os
 import errno
 import string
+import base64
 import wx
 import pyotp
 from About import GetProgramName, GetVendorName
@@ -61,12 +62,16 @@ class AuthenticationStore:
         # algorithm has changed).
         self.algorithm = AuthenticationStore.CURRENT_ALGORITHM
         self.old_algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
-        self.old_password_salt = self.cfg.Read( '/crypto/salt', '' ).encode()
+        oldsalt = self.cfg.Read( '/crypto/salt', '' )
+        if self.old_algorithm == 'AES' or self.old_algorithm == 'cleartext':
+            self.old_password_salt = oldsalt.encode()
+        else:
+            self.old_password_salt = base64.urlsafe_b64decode( oldsalt.encode() )
         self.decryptor = create_encryption_object( self.old_algorithm, password,
                                                    self.old_password_salt )
         self.algorithm_changed = self.decryptor.algorithm != self.algorithm
         if self.algorithm_changed:
-            self.password_salt = generate_salt( self.algorithm ).encode()
+            self.password_salt = generate_salt( self.algorithm )
             self.password_changed = True
             self.encryptor = create_encryption_object( self.algorithm, password,
                                                        self.password_salt )
@@ -146,7 +151,7 @@ class AuthenticationStore:
         for entry in self.entry_list:
             entry.Save( self.cfg, "/entries", self.encryptor, force )
         if self.password_changed:
-            self.cfg.Write( '/crypto/salt', self.password_salt )
+            self.cfg.Write( '/crypto/salt', base64.urlsafe_b64encode( self.password_salt ) )
             self.password_changed = False
         if self.algorithm_changed:
             self.cfg.Write( '/crypto/algorithm', self.algorithm )
@@ -338,7 +343,8 @@ class AuthenticationEntry:
         sort_index = cfg.ReadInt( 'sort_index' )
         provider = cfg.Read( 'provider' )
         account = cfg.Read( 'account' )
-        secret = decryptor.Decrypt( cfg.Read( 'secret' ) )
+        encrypted_secret = cfg.Read( 'secret' )
+        secret = decryptor.Decrypt( encrypted_secret )
         digits = cfg.ReadInt( 'digits', 6 )
         original_label = cfg.Read( 'original_label', '' )
         if original_label == '':
