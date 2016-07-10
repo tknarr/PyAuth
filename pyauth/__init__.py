@@ -20,6 +20,6 @@
 __program_name__ = "PyAuth"
 
 # Version info
-__version__ = '0.9.10'
+__version__ = '1.0.0'
 __version_tag__ = ''
-__version_status__ = 'rc'
+__version_status__ = ''
