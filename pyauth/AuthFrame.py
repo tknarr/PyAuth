@@ -285,6 +285,7 @@ class AuthFrame( wx.Frame ):
         self.Bind( wx.EVT_MENU, self.OnMenuNewEntry,     id = wx.ID_NEW )
         self.Bind( wx.EVT_MENU, self.OnMenuReindex,      id = self.MENU_REINDEX )
         self.Bind( wx.EVT_MENU, self.OnMenuRegroup,      id = self.MENU_REGROUP )
+        self.Bind( wx.EVT_MENU, self.OnMenuExportProvisioningUris, id = self.MENU_EXPORT_PROVISIONING_URIS )
         self.Bind( wx.EVT_MENU, self.OnMenuQuit,         id = wx.ID_EXIT )
         self.Bind( wx.EVT_MENU, self.OnMenuCopyCode,     id = self.MENU_COPY_CODE )
         self.Bind( wx.EVT_MENU, self.OnMenuEditEntry,    id = wx.ID_EDIT )
@@ -852,6 +853,19 @@ class AuthFrame( wx.Frame ):
         self.populate_entries_window()
         self.UpdatePanelSize()
 
+    def OnMenuExportProvisioningUris( self, event ):
+        """Export provisioning URIs for all entry panels to the clipboard in one block."""
+        uri_text = ""
+        for panel in self.entry_panels:
+            uri_text += panel.GetProvisioningUri() + "\n"
+        if wx.TheClipboard.Open():
+            if  wx.TheClipboard.SetData( wx.TextDataObject( uri_text ) ):
+                wx.TheClipboard.Flush()
+            else:
+                GetLogger().error( "Encountered an error exporting the provisioning URIs to the clipboard." )
+            wx.TheClipboard.Close()
+        else:
+            GetLogger().error( "Cannot open clipboard." )
 
     def create_menu_bar( self ):
         """Create and populate the menu bar."""
@@ -867,11 +881,23 @@ class AuthFrame( wx.Frame ):
         self.MENU_REGROUP = mi.GetId()
         db_menu.AppendItem( mi )
 
+        # Export submenu
+        export_menu = wx.Menu()
+        mi = wx.MenuItem( export_menu, wx.ID_ANY, "Provisioning URIs",
+                          "Copy all provisioning URIs to the clipboard" )
+        self.MENU_EXPORT_PROVISIONING_URIS = mi.GetId()
+        export_menu.AppendItem( mi )
+        mi = wx.MenuItem( export_menu, wx.ID_ANY, "QR code URLs",
+                          "Copy all QR code image URLs to the clipboard" )
+        self.MENU_EXPORT_QRCODE_URLS = mi.GetId()
+        export_menu.AppendItem( mi )
+
         # File menu
         menu = wx.Menu()
         menu.Append( wx.ID_NEW, "&New entry\tCtrl-N", "Create a new account entry" )
         menu.AppendSeparator()
         menu.AppendSubMenu( db_menu, "DB Maintenance" )
+        menu.AppendSubMenu( export_menu, "Export" )
         menu.AppendSeparator()
         menu.Append( wx.ID_EXIT, "E&xit\tCtrl-Q", "Exit the program" )
         mb.Append( menu, "&File" )

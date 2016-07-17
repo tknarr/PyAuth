@@ -21,6 +21,7 @@ import os
 import errno
 import string
 import base64
+import urllib
 import wx
 import pyotp
 from About import GetProgramName, GetVendorName
@@ -425,6 +426,15 @@ class AuthenticationEntry:
         self.account = account
         self.modified = True
 
+    def GetQualifiedAccount( self ):
+        """Return the complete provider-qualified account identifier string."""
+        if self.provider != '':
+            qacct = self.provider + ':'
+        else:
+            qacct = ''
+        qacct += self.account
+        return qacct
+
     def GetDigits( self ):
         """Return the number of code digits."""
         return self.digits
@@ -472,6 +482,23 @@ class AuthenticationEntry:
     def GetPeriod( self ):
         """Return the time period between code changes."""
         return 30 # Google Authenticator uses a 30-second period
+
+    def GetAlgorithm( self ):
+        """The hashing algorithm to use."""
+        return 'SHA1'
+
+    def GetKeyUri( self ):
+        """Get the provisioning key URI."""
+        uri = "otpauth://totp/" + urllib.quote( self.GetQualifiedAccount() )
+        qs_params = {}
+        qs_params['secret'] = self.secret
+        if self.provider != '':
+            qs_params['issuer'] = self.provider
+        qs_params['digits'] = self.digits
+        qs_params['period'] = self.GetPeriod()
+        qs_params['algorithm'] = self.GetAlgorithm()
+        uri += '?' + urllib.urlencode( qs_params )
+        return uri
 
 
     def GenerateNextCode( self ):

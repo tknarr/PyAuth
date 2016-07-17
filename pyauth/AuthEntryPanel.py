@@ -17,9 +17,11 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see http://www.gnu.org/licenses/
 
+import urllib
 import wx
 from AuthenticationStore import AuthenticationEntry
 from Logging import GetLogger
+from qrcode import QrCodeImage, QrCodeFrame
 
 class AuthEntryPanel( wx.Panel ):
     """Authentication code entry panel."""
@@ -115,6 +117,13 @@ class AuthEntryPanel( wx.Panel ):
         self.timer_gauge.SetMinSize( self.timer_gauge.GetSize() )
         sizer.Add( self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2 )
 
+        # Create our context menu
+        self.context_menu = wx.Menu()
+        item = self.context_menu.Append( wx.ID_ANY, "Copy provisioning URI to clipboard" )
+        self.Bind( wx.EVT_MENU, self.OnProvisioningUri, item )
+        item = self.context_menu.Append( wx.ID_ANY, "Display QR code image" )
+        self.Bind( wx.EVT_MENU, self.OnQrCodeImage, item )
+
         self.UpdateContents()
 
         if entry != None:
@@ -125,6 +134,7 @@ class AuthEntryPanel( wx.Panel ):
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
         self.Bind( wx.EVT_ENTER_WINDOW, self.OnMouseEnter )
         self.Bind( wx.EVT_LEAVE_WINDOW, self.OnMouseLeave )
+        self.Bind( wx.EVT_CONTEXT_MENU, self.OnContextMenu )
         self.MouseBind( wx.EVT_LEFT_DCLICK, self.OnDoubleClick )
         self.MouseBind( wx.EVT_LEFT_DOWN, self.OnLeftDown )
         self.MouseBind( wx.EVT_LEFT_UP, self.OnLeftUp )
@@ -190,6 +200,26 @@ class AuthEntryPanel( wx.Panel ):
             GetLogger().info( "%s copying code to the clipboard.", self.GetName() )
             if not self.CopyCodeToClipboard():
                 wx.Bell()
+        event.Skip()
+
+    def OnContextMenu( self, event ):
+        """Offer choice of provisioning URL or QR code image URL from right-click menu."""
+        pos = event.GetPosition()
+        cl_pos = self.ScreenToClient( pos )
+        self.PopupMenu( self.context_menu, cl_pos )
+
+    def OnProvisioningUri( self, event ):
+        """Copy the provisioning URI to the clipboard."""
+        GetLogger().info( "%s copying provisioning URI to the clipboard.", self.GetName() )
+        if not self.CopyProvisioningUriToClipboard():
+            wx.Bell()
+        event.Skip()
+
+    def OnQrCodeImage( self, event ):
+        """Display the QR code image."""
+        GetLogger().info( "%s displaying QR code image.", self.GetName() )
+        if not self.DisplayQrCodeImage():
+            wx.Bell()
         event.Skip()
 
     def OnMouseEnter( self, event ):
@@ -365,4 +395,40 @@ class AuthEntryPanel( wx.Panel ):
         else:
             GetLogger().error( "%s cannot open clipboard.", self.GetName() )
             sts = False
+        return sts
+
+    def GetProvisioningUri( self ):
+        return self.entry.GetKeyUri()
+
+    def GetQrCodeUrl( self ):
+        qr = QrCodeImage( self.entry )
+        return qr.GetUrl()
+
+    def GetQrCodeImage( self ):
+        qr = QrCodeImage( self.entry )
+        return qr.GetImage()
+
+    def CopyProvisioningUriToClipboard( self ):
+        """Copy the provisioning URI to the clipboard."""
+        sts = True
+        if wx.TheClipboard.Open():
+            if  wx.TheClipboard.SetData( wx.TextDataObject( self.GetProvisioningUri() ) ):
+                wx.TheClipboard.Flush()
+            else:
+                GetLogger().error( "%s encountered an error copying the provisioning URI to the clipboard.",
+                                   self.GetName() )
+                sts = False
+            wx.TheClipboard.Close()
+        else:
+            GetLogger().error( "%s cannot open clipboard.", self.GetName() )
+            sts = False
+        return sts
+
+    def DisplayQrCodeImage( self ):
+        """Display the QR code image."""
+        sts = True
+        title = self.entry.GetQualifiedAccount()
+        image = self.GetQrCodeImage()
+        fr = QrCodeFrame( self, wx.ID_ANY, title, image = image )
+        fr.Show()
         return sts
