@@ -1,5 +1,9 @@
 # PyAuth version history:
 
+* 1.1.0 - Provisioning URIs
+  - Generate provisioning URIs.
+  - Display the QR code representation of the provisioning URI for scanning.
+
 * 1.0.0 - Initial release
 
 * 0.9.10 - Implement authenticated 256-bit encryption
