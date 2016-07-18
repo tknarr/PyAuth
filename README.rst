@@ -129,7 +129,10 @@ deselects it. Double-clicking on an entry selects it and copies the current
 code for it to the clipboard. The toolbar contains a tool for copying the
 code of the currently-selected entry to the clipboard, and tools to move the
 currently-selected entry up and down in the list so you can order entries the
-way you want them
+way you want them. Right-clicking on an item brings up a context menu to let
+you copy the provisioning URI for the entry to the clipboard or display the
+QR code representation of the provisioning URI for scanning into another
+authenticator app.
 
 When you run PyAuth with an empty database of authentication entries, it'll
 display a single dummy entry with a fake code that won't change. The first new
