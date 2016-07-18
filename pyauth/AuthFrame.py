@@ -883,13 +883,9 @@ class AuthFrame( wx.Frame ):
 
         # Export submenu
         export_menu = wx.Menu()
-        mi = wx.MenuItem( export_menu, wx.ID_ANY, "Provisioning URIs",
+        mi = wx.MenuItem( export_menu, wx.ID_ANY, "Provisioning URIs to clipboard",
                           "Copy all provisioning URIs to the clipboard" )
         self.MENU_EXPORT_PROVISIONING_URIS = mi.GetId()
-        export_menu.AppendItem( mi )
-        mi = wx.MenuItem( export_menu, wx.ID_ANY, "QR code URLs",
-                          "Copy all QR code image URLs to the clipboard" )
-        self.MENU_EXPORT_QRCODE_URLS = mi.GetId()
         export_menu.AppendItem( mi )
 
         # File menu

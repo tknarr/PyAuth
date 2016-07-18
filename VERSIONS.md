@@ -1,5 +1,7 @@
 # PyAuth version history:
 
+* 1.1.1 - Minor fixes to menus and documentation related to provisioning URIs and QR codes
+
 * 1.1.0 - Provisioning URIs
   - Generate provisioning URIs.
   - Display the QR code representation of the provisioning URI for scanning.
