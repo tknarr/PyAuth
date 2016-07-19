@@ -30,29 +30,10 @@ about_data = {
     'version': pyauth.__version__,
     'version-tag': pyauth.__version_tag__,
     'version-status': pyauth.__version_status__,
-    'copyright': "(C) 2016 Todd T Knarr",
+    'copyright': "(C) 2016 Todd T Knarr\nLicense: GPL v3.0 or any later version",
     'website': 'https://github.com/tknarr/PyAuth.git',
     'developers': [ 'Todd T Knarr' ],
     'description': "Google Authenticator desktop application",
-
-    'license': """\
-PyAuth - Google Authenticator desktop application
-Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
-
-This program is free software: you can redistribute it and/or modify \
-it under the terms of the GNU General Public License as published by \
-the Free Software Foundation, either version 3 of the License, or \
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful, \
-but WITHOUT ANY WARRANTY; without even the implied warranty of \
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the \
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License \
-along with this program.  If not, see http://www.gnu.org/licenses/
-"""
-
     }
 
 def GetProgramName():
@@ -82,7 +63,6 @@ def GetAboutInfo( dc, desc_width = 600 ):
     about_info.SetVersion( GetProgramVersionString() )
     about_info.SetCopyright( about_data['copyright'] )
     about_info.SetWebSite( about_data['website'] )
-    about_info.SetLicense( wordwrap( about_data['license'], desc_width, dc ) )
     about_info.SetDescription( about_data['description'] )
     for s in about_data['developers']:
         about_info.AddDeveloper( s )
