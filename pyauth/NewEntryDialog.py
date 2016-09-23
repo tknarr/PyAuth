@@ -20,6 +20,7 @@
 import wx
 from Logging import GetLogger
 
+
 class NewEntryDialog( wx.Dialog ):
     """New entry dialog box."""
 
@@ -28,7 +29,7 @@ class NewEntryDialog( wx.Dialog ):
         """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        GetLogger().debug( "NED init" )
+        GetLogger( ).debug( "NED init" )
 
         self.provider_label = None
         self.provider_text = None
@@ -48,7 +49,7 @@ class NewEntryDialog( wx.Dialog ):
         self.original_label_literal = "Original label:"
         self.required_literal = "(required)"
 
-        self.text_color = self.GetForegroundColour()
+        self.text_color = self.GetForegroundColour( )
 
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )
@@ -124,69 +125,66 @@ class NewEntryDialog( wx.Dialog ):
         if btnsizer != None:
             vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
-        self.GetSizer().Fit( self )
+        self.GetSizer( ).Fit( self )
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        GetLogger().debug( "NED init done" )
-
+        GetLogger( ).debug( "NED init done" )
 
     def SetFocus( self ):
-        self.provider_text.SetFocus()
-
+        self.provider_text.SetFocus( )
 
     def OnOK( self, event ):
         """Handle the OK button and check for required fields."""
         err = False
-        f = self.provider_text.IsEmpty()
+        f = self.provider_text.IsEmpty( )
         err = err or f
         self.ColorLabel( self.provider_label, f )
-        f = self.account_text.IsEmpty()
+        f = self.account_text.IsEmpty( )
         err = err or f
         self.ColorLabel( self.account_label, f )
-        f = self.secret_text.IsEmpty()
+        f = self.secret_text.IsEmpty( )
         err = err or f
         self.ColorLabel( self.secret_label, f )
         if err:
-            GetLogger().debug( "NED OK button missing required items" )
-            wx.Bell()
+            GetLogger( ).debug( "NED OK button missing required items" )
+            wx.Bell( )
         else:
-            GetLogger().debug( "NED OK button" )
+            GetLogger( ).debug( "NED OK button" )
             event.Skip( True )
-
 
     def GetProviderValue( self ):
         """Return the value of the provider field."""
-        return self.provider_text.GetValue()
+        return self.provider_text.GetValue( )
 
     def GetAccountValue( self ):
         """Return the value of the account field."""
-        return self.account_text.GetValue()
+        return self.account_text.GetValue( )
 
     def GetSecretValue( self ):
         """Return the value of the secret field."""
-        return self.secret_text.GetValue()
+        return self.secret_text.GetValue( )
 
     def GetDigitsValue( self ):
         """Return the value of the digits selection."""
-        return 6 + ( self.digits_radio.GetSelection() * 2 )
+        return 6 + (self.digits_radio.GetSelection( ) * 2)
 
     def GetOriginalLabel( self ):
         """Return the value of the original label field."""
-        return self.original_label_text.GetValue()
+        return self.original_label_text.GetValue( )
 
     def Reset( self ):
         """Reset the contents of the dialog box to the initial state."""
-        GetLogger().debug( "NED reset" )
+        GetLogger( ).debug( "NED reset" )
         self.ColorLabel( self.provider_label, False )
         self.ColorLabel( self.account_label, False )
         self.ColorLabel( self.secret_label, False )
-        self.provider_text.Clear()
-        self.account_text.Clear()
-        self.secret_text.Clear()
+        self.provider_text.Clear( )
+        self.account_text.Clear( )
+        self.secret_text.Clear( )
         self.digits_radio.SetSelection( 0 )
-        self.original_label_text.Clear()
-        self.SetFocus()
+        self.original_label_text.Clear( )
+        self.SetFocus( )
 
     def ColorLabel( self, ctrl, error ):
         """Set the color of the label depending on the error state."""
@@ -201,4 +199,4 @@ class NewEntryDialog( wx.Dialog ):
         if required:
             lbl += ' ' + self.required_literal
         ctrl.SetLabelText( lbl )
-        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )
+        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText( ) ) ) )

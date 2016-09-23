@@ -21,6 +21,7 @@ import wx
 import wx.html
 from Logging import GetLogger
 
+
 class ClickableHTMLWindow( wx.html.HtmlWindow ):
     """Clickable HTML window."""
 
@@ -28,11 +29,11 @@ class ClickableHTMLWindow( wx.html.HtmlWindow ):
         """Initialize the window."""
         wx.html.HtmlWindow.__init__( self, parent, id, size = size )
         if 'gtk2' in wx.PlatformInfo:
-            self.SetStandardFonts()
+            self.SetStandardFonts( )
 
     def OnLinkClicked( self, link ):
         """Handle clicking on a link by launching a browser."""
-        wx.LaunchDefaultBrowser( link.GetHref() )
+        wx.LaunchDefaultBrowser( link.GetHref( ) )
 
 
 class HTMLTextDialog( wx.Dialog ):
@@ -44,7 +45,7 @@ class HTMLTextDialog( wx.Dialog ):
         """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        GetLogger().debug( "HTML text dialog init" )
+        GetLogger( ).debug( "HTML text dialog init" )
 
         self.browser = None
 
@@ -63,18 +64,16 @@ class HTMLTextDialog( wx.Dialog ):
         if btnsizer != None:
             vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
-        self.GetSizer().Fit( self )
+        self.GetSizer( ).Fit( self )
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        GetLogger().debug( "HTML text dialog init done" )
-
+        GetLogger( ).debug( "HTML text dialog init done" )
 
     def SetPage( self, src ):
         """Set the HTML source code to display."""
         if self.browser != None:
             self.browser.SetPage( src )
-
 
     def OnOK( self, event ):
         """Handle the OK button to dismiss the dialog box."""

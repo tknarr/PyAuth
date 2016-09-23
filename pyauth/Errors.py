@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Exceptions used by other modules."""
 
+
 ## PyAuth - Google Authenticator desktop application
 ## Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
 
@@ -19,6 +20,7 @@
 
 class PasswordError( RuntimeError ):
     pass
+
 
 class DecryptionError( RuntimeError ):
     pass

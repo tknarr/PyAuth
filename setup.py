@@ -9,24 +9,23 @@ import os
 import pkg_resources
 import pyauth
 
-here = os.path.abspath(os.path.dirname(__file__))
+here = os.path.abspath( os.path.dirname( __file__ ) )
 
 # Get the long description from the README file
-with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+with open( os.path.join( here, 'README.rst' ), encoding = 'utf-8' ) as f:
+    long_description = f.read( )
 
 # Icon files to add to system
-icon_files = []
+icon_files = [ ]
 # Large program icons plus icon bundles
 files = glob( 'pyauth/images/*.png' )
-entry = ( 'share/icons/hicolor/512x512/apps', files )
+entry = ('share/icons/hicolor/512x512/apps', files)
 icon_files.append( entry )
 # Specific sizes of icons
 for s in [ 16, 24, 32, 48, 64, 128, 256 ]:
-    files = glob( 'pyauth/images/{0}x{0}/*.png'.format( str(s) ) )
-    entry = ( 'share/icons/hicolor/{0}x{0}/apps'.format( str(s) ), files )
+    files = glob( 'pyauth/images/{0}x{0}/*.png'.format( str( s ) ) )
+    entry = ('share/icons/hicolor/{0}x{0}/apps'.format( str( s ) ), files)
     icon_files.append( entry )
-
 
 setup(
     name = pyauth.__program_name__,
@@ -78,32 +77,32 @@ setup(
 
     keywords = 'authentication totp hotp 2fa',
 
-    packages = find_packages( exclude = ['contrib', 'docs', 'tests*'] ),
+    packages = find_packages( exclude = [ 'contrib', 'docs', 'tests*' ] ),
 
     install_requires = [
-        #'wxPython>=3.0',
+        # 'wxPython>=3.0',
         'requests>=2.10',
         'pyotp>=2.0.1',
         'pycrypto>=2.6.1',
         'cryptography>=1.3'
-        ],
+    ],
 
     package_data = {
         'pyauth': [ 'LICENSE.html',
                     'images/*.ico',
                     'images/PyAuth-systray*.png'
                     ]
-        },
+    },
 
     data_files = icon_files + [
-        ( 'share/doc/' + pyauth.__program_name__,
-          [ 'README.rst',
-            'pyauth/LICENSE.html',
-            'TODO.md',
-            'VERSIONS.md',
-            'PyAuth.desktop'
-          ] )
-        ],
+        ('share/doc/' + pyauth.__program_name__,
+         [ 'README.rst',
+           'pyauth/LICENSE.html',
+           'TODO.md',
+           'VERSIONS.md',
+           'PyAuth.desktop'
+           ])
+    ],
 
     entry_points = {
         'gui_scripts': [

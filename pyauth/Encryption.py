@@ -36,6 +36,7 @@ from cryptography.hazmat.backends import default_backend
 from fernet256 import Fernet256, InvalidToken
 from Errors import DecryptionError, PasswordError
 
+
 class Fernet_256:
     """
     Encryption for the authentication store.
@@ -50,14 +51,14 @@ class Fernet_256:
         self.algorithm = 'FERNET-256'
         self.storage_key = None
         self.storage_key_salt = salt
-        self.backend = default_backend()
+        self.backend = default_backend( )
         if password != None and self.storage_key_salt != None:
-            kdf = PBKDF2HMAC( algorithm = hashes.SHA256(),
+            kdf = PBKDF2HMAC( algorithm = hashes.SHA256( ),
                               length = 64,
                               salt = self.storage_key_salt,
                               iterations = 100000,
                               backend = self.backend )
-            self.storage_key = base64.urlsafe_b64encode( kdf.derive( password.encode() ) )
+            self.storage_key = base64.urlsafe_b64encode( kdf.derive( password.encode( ) ) )
 
     @classmethod
     def GenerateSalt( cls ):
@@ -70,7 +71,7 @@ class Fernet_256:
             self.storage_key_salt = new_salt
         if self.storage_key_salt == None:
             raise PasswordError( "No password salt set." )
-        kdf = PBKDF2HMAC( algorithm = hashes.SHA256(),
+        kdf = PBKDF2HMAC( algorithm = hashes.SHA256( ),
                           length = 64,
                           salt = self.storage_key_salt,
                           iterations = 100000,
@@ -82,10 +83,10 @@ class Fernet_256:
         if self.storage_key == None:
             raise PasswordError( "No password set." )
         f = Fernet256( self.storage_key )
-        padder = padding.PKCS7( algorithms.AES.block_size ).padder()
-        cleartext = padder.update( secret.encode() )
-        cleartext += padder.finalize()
-        ciphertext = f.encrypt( cleartext.encode() )
+        padder = padding.PKCS7( algorithms.AES.block_size ).padder( )
+        cleartext = padder.update( secret.encode( ) )
+        cleartext += padder.finalize( )
+        ciphertext = f.encrypt( cleartext.encode( ) )
         return unicode( ciphertext )
 
     def Decrypt( self, token ):
@@ -94,12 +95,12 @@ class Fernet_256:
             raise PasswordError( "No password set." )
         f = Fernet256( self.storage_key )
         try:
-            cleartext = f.decrypt( token.encode() )
+            cleartext = f.decrypt( token.encode( ) )
         except InvalidToken as e:
             raise DecryptionError( "Decryption failure: Invalid token: " + str( e ) )
-        unpadder = padding.PKCS7( algorithms.AES.block_size ).unpadder()
+        unpadder = padding.PKCS7( algorithms.AES.block_size ).unpadder( )
         secret = unpadder.update( cleartext )
-        secret += unpadder.finalize()
+        secret += unpadder.finalize( )
         return unicode( secret )
 
 
@@ -112,14 +113,14 @@ class Old_AES:
         self.algorithm = 'AES'
         self.storage_key = None
         self.storage_key_salt = salt
-        self.backend = default_backend()
+        self.backend = default_backend( )
         if password != None and self.storage_key_salt != None:
-            kdf = PBKDF2HMAC( algorithm = hashes.SHA1(),
+            kdf = PBKDF2HMAC( algorithm = hashes.SHA1( ),
                               length = 16,
                               salt = self.storage_key_salt,
                               iterations = 10000,
                               backend = self.backend )
-            self.storage_key = kdf.derive( password.encode() )
+            self.storage_key = kdf.derive( password.encode( ) )
 
     @classmethod
     def GenerateSalt( cls ):
@@ -131,7 +132,7 @@ class Old_AES:
             self.storage_key_salt = new_salt
         if self.storage_key_salt == None:
             raise PasswordError( "No password salt set." )
-        kdf = PBKDF2HMAC( algorithm = hashes.SHA1(),
+        kdf = PBKDF2HMAC( algorithm = hashes.SHA1( ),
                           length = 16,
                           salt = self.storage_key_salt,
                           iterations = 10000,
@@ -148,15 +149,16 @@ class Old_AES:
             raise PasswordError( "No password set." )
         try:
             b = base64.standard_b64decode( ciphertext )
-            iv = b[0:self.BLOCK_SIZE]
-            raw_ciphertext = b[self.BLOCK_SIZE:]
+            iv = b[ 0:self.BLOCK_SIZE ]
+            raw_ciphertext = b[ self.BLOCK_SIZE: ]
             cipher = Cipher( algorithms.AES( self.storage_key ),
                              modes.CBC( iv ), self.backend )
-            decryptor = cipher.decryptor()
-            cleartext = decryptor.update( raw_ciphertext ) + decryptor.finalize()
+            decryptor = cipher.decryptor( )
+            cleartext = decryptor.update( raw_ciphertext ) + decryptor.finalize( )
         except Exception as e:
             raise DecryptionError( "Decryption failure: " + str( e ) )
-        return unicode( cleartext ).rstrip()
+        return unicode( cleartext ).rstrip( )
+
 
 class Cleartext:
     """No encryption."""
@@ -179,12 +181,14 @@ class Cleartext:
     def Decrypt( self, ciphertext ):
         return ciphertext
 
+
 def generate_salt( algorithm_name ):
     if algorithm_name == 'FERNET-256':
-        salt = Fernet_256.GenerateSalt()
+        salt = Fernet_256.GenerateSalt( )
     else:
         raise NotImplementedError( "Algorithm not implemented: " + algorithm_name )
     return salt
+
 
 def create_encryption_object( algorithm_name, password = None, salt = None ):
     if algorithm_name == 'FERNET-256':
@@ -192,7 +196,7 @@ def create_encryption_object( algorithm_name, password = None, salt = None ):
     elif algorithm_name == 'AES':
         e = Old_AES( password, salt )
     elif algorithm_name == 'cleartext':
-        e = Cleartext()
+        e = Cleartext( )
     else:
         raise NotImplementedError( "Algorithm not implemented: " + algorithm_name )
     return e

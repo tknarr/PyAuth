@@ -20,6 +20,7 @@
 import wx
 from Logging import GetLogger
 
+
 class DatabasePasswordDialog( wx.Dialog ):
     """Database password dialog box."""
 
@@ -28,7 +29,7 @@ class DatabasePasswordDialog( wx.Dialog ):
         """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        GetLogger().debug( "PWD init" )
+        GetLogger( ).debug( "PWD init" )
 
         self.password_label = None
         self.password_text = None
@@ -59,36 +60,31 @@ class DatabasePasswordDialog( wx.Dialog ):
         if btnsizer != None:
             vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
-        self.GetSizer().Fit( self )
+        self.GetSizer( ).Fit( self )
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        GetLogger().debug( "PWD init done" )
-
+        GetLogger( ).debug( "PWD init done" )
 
     def SetFocus( self ):
-        self.password_text.SetFocus()
-
+        self.password_text.SetFocus( )
 
     def OnOK( self, event ):
         """Handle the OK button event."""
-        GetLogger().debug( "PWD OK button" )
+        GetLogger( ).debug( "PWD OK button" )
         event.Skip( True )
-
 
     def GetPasswordValue( self ):
         """Return the contents of the password field."""
-        return self.password_text.GetValue()
-
+        return self.password_text.GetValue( )
 
     def Reset( self ):
         """Reset the dialog box contents."""
-        GetLogger().debug( "PWD reset" )
-        self.password_text.Clear()
-        self.SetFocus()
-
+        GetLogger( ).debug( "PWD reset" )
+        self.password_text.Clear( )
+        self.SetFocus( )
 
     def MakeLabel( self, ctrl, txt ):
         """Set up a label control's text."""
         ctrl.SetLabelText( txt )
-        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )
+        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText( ) ) ) )

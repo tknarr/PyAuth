@@ -24,43 +24,42 @@ from io import BytesIO
 from AuthenticationStore import AuthenticationEntry
 from Logging import GetLogger
 
+
 class QrCodeImage:
     """Represents a QR code image."""
 
     def __init__( self, entry ):
-        self.provisioning_uri = entry.GetKeyUri()
+        self.provisioning_uri = entry.GetKeyUri( )
 
     def GetUrl( self ):
         return "https://www.google.com/chart?chs=240x240&chld=M|0&cht=qr&chl=" + urllib.quote( self.provisioning_uri )
 
     def GetImage( self ):
-        url = self.GetUrl()
-        GetLogger().debug( "Requesting QR code image from %s", url )
+        url = self.GetUrl( )
+        GetLogger( ).debug( "Requesting QR code image from %s", url )
         resp = requests.get( url )
-        GetLogger().debug( "HTTP status: %d", resp.status_code )
+        GetLogger( ).debug( "HTTP status: %d", resp.status_code )
         if resp.status_code == requests.codes.ok:
             input_strm = BytesIO( resp.content )
             image = wx.ImageFromStream( input_strm, wx.BITMAP_TYPE_PNG )
         else:
-            GetLogger().error( "HTTP error %d", resp.status_code )
-            GetLogger().error( "Error response body:\n%s", resp.text )
+            GetLogger( ).error( "HTTP error %d", resp.status_code )
+            GetLogger( ).error( "Error response body:\n%s", resp.text )
             image = None
         return image
 
 
 class QrCodeFrame( wx.Frame ):
-
     def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
                   style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr, image = None, border = 0 ):
-
         self.border = border
         self.x_loc = border
         self.y_loc = border
-        self.bitmap = image.ConvertToBitmap()
+        self.bitmap = image.ConvertToBitmap( )
 
         wx.Frame.__init__( self, parent, id, title, pos, size, style, name )
 
-        client_size = self.bitmap.GetSize()
+        client_size = self.bitmap.GetSize( )
         client_size.IncBy( self.border * 2, self.border * 2 )
         self.SetClientSize( client_size )
 

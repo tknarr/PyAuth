@@ -20,6 +20,7 @@
 import wx
 from Logging import GetLogger
 
+
 class UpdateEntryDialog( wx.Dialog ):
     """Update entry dialog box."""
 
@@ -28,7 +29,7 @@ class UpdateEntryDialog( wx.Dialog ):
         """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        GetLogger().debug( "UED init" )
+        GetLogger( ).debug( "UED init" )
 
         self.provider_label = None
         self.provider_text = None
@@ -45,7 +46,7 @@ class UpdateEntryDialog( wx.Dialog ):
         self.digits_literal = "Digits in code:"
         self.required_literal = "(required)"
 
-        self.text_color = self.GetForegroundColour()
+        self.text_color = self.GetForegroundColour( )
 
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )
@@ -108,64 +109,61 @@ class UpdateEntryDialog( wx.Dialog ):
         if btnsizer != None:
             vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
-        self.GetSizer().Fit( self )
+        self.GetSizer( ).Fit( self )
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        GetLogger().debug( "UED init done" )
-
+        GetLogger( ).debug( "UED init done" )
 
     def SetFocus( self ):
-        self.provider_text.SetFocus()
-
+        self.provider_text.SetFocus( )
 
     def OnOK( self, event ):
         """Handle the OK button and check for required fields."""
         err = False
-        f = self.provider_text.IsEmpty()
+        f = self.provider_text.IsEmpty( )
         err = err or f
         self.ColorLabel( self.provider_label, f )
-        f = self.account_text.IsEmpty()
+        f = self.account_text.IsEmpty( )
         err = err or f
         self.ColorLabel( self.account_label, f )
-        f = self.secret_text.IsEmpty()
+        f = self.secret_text.IsEmpty( )
         err = err or f
         self.ColorLabel( self.secret_label, f )
         if err:
-            GetLogger().debug( "UED OK button missing required items" )
-            wx.Bell()
+            GetLogger( ).debug( "UED OK button missing required items" )
+            wx.Bell( )
         else:
-            GetLogger().debug( "UED OK button" )
+            GetLogger( ).debug( "UED OK button" )
             event.Skip( True )
-
 
     def GetProviderValue( self ):
         """Return the contents of the provider field."""
-        return self.provider_text.GetValue()
+        return self.provider_text.GetValue( )
 
     def GetAccountValue( self ):
         """Return the contents of the account field."""
-        return self.account_text.GetValue()
+        return self.account_text.GetValue( )
 
     def GetSecretValue( self ):
         """Return the contents of the secret field."""
-        return self.secret_text.GetValue()
+        return self.secret_text.GetValue( )
 
     def GetDigitsValue( self ):
         """Return the value of the digits selection."""
-        return 6 + ( self.digits_radio.GetSelection() * 2 )
+        return 6 + (self.digits_radio.GetSelection( ) * 2)
 
     def Reset( self, provider, account, secret, digits ):
         """Reset the contents of the dialog box to the initial state."""
-        GetLogger().debug( "UED reset" )
+        GetLogger( ).debug( "UED reset" )
         self.provider_text.SetValue( provider )
-        self.ColorLabel( self.provider_label, self.provider_text.IsEmpty() )
+        self.ColorLabel( self.provider_label, self.provider_text.IsEmpty( ) )
         self.account_text.SetValue( account )
-        self.ColorLabel( self.account_label, self.account_text.IsEmpty() )
+        self.ColorLabel( self.account_label, self.account_text.IsEmpty( ) )
         self.secret_text.SetValue( secret )
-        self.ColorLabel( self.secret_label, self.secret_text.IsEmpty() )
-        self.digits_radio.SetSelection( ( digits - 6 ) / 2 )
-        self.SetFocus()
+        self.ColorLabel( self.secret_label, self.secret_text.IsEmpty( ) )
+        self.digits_radio.SetSelection( (digits - 6) / 2 )
+        self.SetFocus( )
 
     def ColorLabel( self, ctrl, error ):
         """Set the color of the label depending on the error state."""
@@ -180,4 +178,4 @@ class UpdateEntryDialog( wx.Dialog ):
         if required:
             lbl += ' ' + self.required_literal
         ctrl.SetLabelText( lbl )
-        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )
+        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText( ) ) ) )

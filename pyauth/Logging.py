@@ -26,9 +26,11 @@ import logging.handlers
 import pyauth
 import Configuration
 
-def GetLogger():
+
+def GetLogger( ):
     """Return the standard logger for the program."""
     return logging.getLogger( pyauth.__program_name__ )
+
 
 def ConfigureLogging( log_filename_args, log_level_args ):
     """
@@ -42,29 +44,29 @@ def ConfigureLogging( log_filename_args, log_level_args ):
     # If we were given a log-level argument, try to use it. If we weren't given
     # one or it isn't valid, use what's in the configuration file.
     if log_level_args == None or log_level_args == '':
-        log_lvl = Configuration.GetLoggingLevel()
+        log_lvl = Configuration.GetLoggingLevel( )
     else:
-        log_lvl = getattr( logging, log_level_args.upper(), None )
+        log_lvl = getattr( logging, log_level_args.upper( ), None )
         if not isinstance( log_lvl, int ):
-            log_lvl = Configuration.GetLoggingLevel()
+            log_lvl = Configuration.GetLoggingLevel( )
 
     if log_filename_args == None:
-        lfn = Configuration.GetLogFilename()
+        lfn = Configuration.GetLogFilename( )
     else:
         lfn = log_filename_args
     if lfn == None or lfn == '':
         log_filename = None
     else:
         log_filename = os.path.expandvars( os.path.expanduser( lfn ) )
-        max_size = Configuration.GetLogMaxSize()
-        backup_count = Configuration.GetLogBackupCount()
+        max_size = Configuration.GetLogMaxSize( )
+        backup_count = Configuration.GetLogBackupCount( )
 
     app_logger = logging.getLogger( pyauth.__program_name__ )
 
     # Console logger with just serious errors, unless no log file in which case the console
     # becomes the log file and gets all messages requested
     formatter = logging.Formatter( '%(levelname)s:%(name)s:%(message)s' )
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler( )
     handler.setFormatter( formatter )
     if log_filename == None:
         handler.setLevel( log_lvl )

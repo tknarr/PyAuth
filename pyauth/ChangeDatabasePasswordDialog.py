@@ -20,6 +20,7 @@
 import wx
 from Logging import GetLogger
 
+
 class ChangeDatabasePasswordDialog( wx.Dialog ):
     """Database change-password dialog box."""
 
@@ -28,7 +29,7 @@ class ChangeDatabasePasswordDialog( wx.Dialog ):
         """Initialize the dialog box."""
         wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
 
-        GetLogger().debug( "CHGPWD init" )
+        GetLogger( ).debug( "CHGPWD init" )
 
         self.password_label = None
         self.password_text = None
@@ -39,7 +40,7 @@ class ChangeDatabasePasswordDialog( wx.Dialog ):
         self.confirmation_literal = "Confirm password:"
         self.no_match_literal = "DOES NOT MATCH new password"
 
-        self.text_color = self.GetForegroundColour()
+        self.text_color = self.GetForegroundColour( )
 
         vbox = wx.BoxSizer( wx.VERTICAL )
         self.SetSizer( vbox )
@@ -78,52 +79,47 @@ class ChangeDatabasePasswordDialog( wx.Dialog ):
         if btnsizer != None:
             vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
 
-        self.GetSizer().Fit( self )
+        self.GetSizer( ).Fit( self )
 
         self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
 
-        GetLogger().debug( "CHGPWD init done" )
-
+        GetLogger( ).debug( "CHGPWD init done" )
 
     def SetFocus( self ):
-        self.password_text.SetFocus()
-
+        self.password_text.SetFocus( )
 
     def OnOK( self, event ):
         """Handle the OK button event."""
         err = False
-        password = self.password_text.GetValue()
-        confirmation = self.confirmation_text.GetValue()
-        err = ( password != confirmation )
+        password = self.password_text.GetValue( )
+        confirmation = self.confirmation_text.GetValue( )
+        err = (password != confirmation)
         # Set the label red if we have a password mismatch, normal otherwise
         self.MakeLabel( self.confirmation_label, self.confirmation_literal, err )
         self.ColorLabel( self.confirmation_label, err )
         if err:
             # On error clear the confirmation field and give it focus to allow entry
             # of the correct password
-            self.confirmation_text.Clear()
-            self.confirmation_text.SetFocus()
-            GetLogger().debug( "CHGPWD OK button password mismatch" )
-            wx.Bell()
+            self.confirmation_text.Clear( )
+            self.confirmation_text.SetFocus( )
+            GetLogger( ).debug( "CHGPWD OK button password mismatch" )
+            wx.Bell( )
         else:
-            GetLogger().debug( "CHGPWD OK button" )
+            GetLogger( ).debug( "CHGPWD OK button" )
             event.Skip( True )
-
 
     def GetPasswordValue( self ):
         """Return the contents of the password field."""
-        return self.password_text.GetValue()
-
+        return self.password_text.GetValue( )
 
     def Reset( self ):
         """Reset the dialog box contents."""
-        GetLogger().debug( "CHGPWD reset" )
-        self.password_text.Clear()
-        self.confirmation_text.Clear()
+        GetLogger( ).debug( "CHGPWD reset" )
+        self.password_text.Clear( )
+        self.confirmation_text.Clear( )
         self.MakeLabel( self.confirmation_label, self.confirmation_literal, False )
         self.ColorLabel( self.confirmation_label, False )
-        self.SetFocus()
-
+        self.SetFocus( )
 
     def ColorLabel( self, ctrl, error ):
         """Set the color of the label depending on the error state."""
@@ -138,4 +134,4 @@ class ChangeDatabasePasswordDialog( wx.Dialog ):
         if no_match:
             lbl += ' ' + self.no_match_literal
         ctrl.SetLabelText( lbl )
-        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText() ) ) )
+        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText( ) ) ) )

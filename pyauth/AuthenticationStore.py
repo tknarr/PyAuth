@@ -29,6 +29,7 @@ from Logging import GetLogger
 from Encryption import create_encryption_object, generate_salt
 from Errors import DecryptionError, PasswordError
 
+
 class AuthenticationStore:
     """
     Authentication secrets store.
@@ -49,7 +50,7 @@ class AuthenticationStore:
     @staticmethod
     def IsEncryptionActive( filename ):
         """Determine if encryption is in use for the named database."""
-        cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
+        cfg = wx.FileConfig( GetProgramName( ), GetVendorName( ), localFilename = filename,
                              style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         if cfg != None:
             algorithm = cfg.Read( '/crypto/algorithm', 'cleartext' )
@@ -58,16 +59,15 @@ class AuthenticationStore:
         cfg = None
         return algorithm != 'cleartext'
 
-
     def __init__( self, filename, password ):
         """Initialize the store from the given filename, using a password to encrypt secrets."""
-        self.cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = filename,
+        self.cfg = wx.FileConfig( GetProgramName( ), GetVendorName( ), localFilename = filename,
                                   style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         self.database_filename = filename
         cfgfile = wx.FileConfig.GetLocalFileName( self.database_filename,
                                                   wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
-        GetLogger().info( "Database file: %s", cfgfile )
-        self.entry_list = []
+        GetLogger( ).info( "Database file: %s", cfgfile )
+        self.entry_list = [ ]
         self.next_group = 1
         self.next_index = 1
         self.max_digits = 8
@@ -81,9 +81,9 @@ class AuthenticationStore:
         self.old_algorithm = self.cfg.Read( '/crypto/algorithm', 'cleartext' )
         oldsalt = self.cfg.Read( '/crypto/salt', '' )
         if self.old_algorithm == 'AES' or self.old_algorithm == 'cleartext':
-            self.old_password_salt = oldsalt.encode()
+            self.old_password_salt = oldsalt.encode( )
         else:
-            self.old_password_salt = base64.urlsafe_b64decode( oldsalt.encode() )
+            self.old_password_salt = base64.urlsafe_b64decode( oldsalt.encode( ) )
         self.decryptor = create_encryption_object( self.old_algorithm, password,
                                                    self.old_password_salt )
         self.algorithm_changed = self.decryptor.algorithm != self.algorithm
@@ -101,7 +101,7 @@ class AuthenticationStore:
         # Make sure to update next_group and next_index if we encounter
         #     a larger value for them than we've seen yet
         self.cfg.SetPath( '/entries' )
-        more, value, index = self.cfg.GetFirstGroup()
+        more, value, index = self.cfg.GetFirstGroup( )
         while more:
             entry_group = int( value )
             ## GetLogger().debug( "AS reading group %d", entry_group )
@@ -114,19 +114,19 @@ class AuthenticationStore:
                     raise PasswordError( "Decryption failure: " + str( e ) )
                 except PasswordError as e:
                     raise PasswordError( "Missing password:" + str( e ) )
-                sort_index = entry.GetSortIndex()
+                sort_index = entry.GetSortIndex( )
                 ## GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
                     self.next_index = sort_index + 1
-                digits = entry.GetDigits()
+                digits = entry.GetDigits( )
                 if digits > self.max_digits:
                     self.max_digits = digits
                 self.entry_list.append( entry )
-            more, value, index = self.cfg.GetNextGroup(index)
+            more, value, index = self.cfg.GetNextGroup( index )
         self.cfg.SetPath( '/' )
-        GetLogger().info( "%d entries in authentication database", len( self.entry_list ) )
-        GetLogger().debug( "AS next group %d", self.next_group )
-        GetLogger().debug( "AS next index %d", self.next_index )
+        GetLogger( ).info( "%d entries in authentication database", len( self.entry_list ) )
+        GetLogger( ).debug( "AS next group %d", self.next_group )
+        GetLogger( ).debug( "AS next index %d", self.next_index )
 
         # Force save if algorithm or password changes happened
         if self.password_changed or self.algorithm_changed:
@@ -136,14 +136,13 @@ class AuthenticationStore:
                 raise PasswordError( "Missing password." )
 
         # Make sure they're sorted at the start
-        keyfunc = lambda x: x.GetSortIndex()
+        keyfunc = lambda x: x.GetSortIndex( )
         self.entry_list.sort( key = keyfunc )
-
 
     def UpdatePassword( self, password ):
         """Update the encryption password and algorithm."""
         if password == None or password == '':
-            return False # Passwordless database not allowed
+            return False  # Passwordless database not allowed
         self.password_salt = generate_salt( self.algorithm )
         self.password_changed = True
         try:
@@ -151,7 +150,6 @@ class AuthenticationStore:
         except PasswordError:
             return False
         return True
-
 
     def EntryList( self ):
         """Return the list of entries in the store."""
@@ -161,10 +159,9 @@ class AuthenticationStore:
         """Return the maximum number of code digits supported."""
         return self.max_digits
 
-
     def Save( self, force = False ):
         """Save any modifications back to disk."""
-        GetLogger().debug( "AS saving all" )
+        GetLogger( ).debug( "AS saving all" )
         for entry in self.entry_list:
             entry.Save( self.cfg, "/entries", self.encryptor, force )
         if self.password_changed:
@@ -177,7 +174,7 @@ class AuthenticationStore:
                 self.cfg.DeleteEntry( '/crypto/check_data' )
                 self.cfg.DeleteEntry( '/crypto/check_hash' )
             self.algorithm_changed = False
-        self.cfg.Flush()
+        self.cfg.Flush( )
         # Make sure our database of secrets is only accessible by us
         # This should be handled via SetUmask(), but it's not implemented in the Python bindings
         cfgfile = wx.FileConfig.GetLocalFileName( self.database_filename,
@@ -186,9 +183,8 @@ class AuthenticationStore:
             os.chmod( cfgfile, 0o600 )
         except OSError as e:
             if e.errno != errno.ENOENT:
-                GetLogger().warning( "Problem with database file %s", cfgfile )
-                GetLogger().warning( "Error code %d: %s ", e.errno, e.strerror )
-
+                GetLogger( ).warning( "Problem with database file %s", cfgfile )
+                GetLogger( ).warning( "Error code %d: %s ", e.errno, e.strerror )
 
     def Reindex( self ):
         """
@@ -197,20 +193,19 @@ class AuthenticationStore:
         The entry list will be sorted and then each entry will be assigned
         a new sort index and the change saved.
         """
-        GetLogger().debug( "AS reindexing" )
-        keyfunc = lambda x: x.GetSortIndex()
+        GetLogger( ).debug( "AS reindexing" )
+        keyfunc = lambda x: x.GetSortIndex( )
         self.entry_list.sort( key = keyfunc )
         i = 1;
         for e in self.entry_list:
             e.SetSortIndex( i )
             i += 1
         self.next_index = i
-        GetLogger().debug( "AS next index = %d", self.next_index )
+        GetLogger( ).debug( "AS next index = %d", self.next_index )
         try:
-            self.Save()
+            self.Save( )
         except PasswordError:
             raise PasswordError( "Missing password." )
-
 
     def Regroup( self ):
         """
@@ -221,8 +216,8 @@ class AuthenticationStore:
         be assigned. The new entries will be saved, resulting in a database file
         with group numbers starting from 1 again.
         """
-        GetLogger().debug( "AS regroup" )
-        keyfunc = lambda x: x.GetSortIndex()
+        GetLogger( ).debug( "AS regroup" )
+        keyfunc = lambda x: x.GetSortIndex( )
         self.entry_list.sort( key = keyfunc )
         self.cfg.DeleteGroup( '/entries' )
         i = 1
@@ -232,12 +227,11 @@ class AuthenticationStore:
             i += 1
         self.next_group = i
         self.next_index = i
-        GetLogger().debug( "AS next group and index = %d", i )
+        GetLogger( ).debug( "AS next group and index = %d", i )
         try:
-            self.Save()
+            self.Save( )
         except PasswordError:
             raise PasswordError( "Missing password." )
-
 
     def Add( self, provider, account, secret, digits = 6, original_label = None ):
         """
@@ -246,13 +240,13 @@ class AuthenticationStore:
         The new entry will receive a sort index and group number one greater than the
         highest currently present in the database.
         """
-        f = lambda x: x.GetProvider() == provider and x.GetAccount() == account
+        f = lambda x: x.GetProvider( ) == provider and x.GetAccount( ) == account
         elist = list( filter( f, self.entry_list ) )
         if len( elist ) > 0:
-            GetLogger().warning( "Entry already exists for %s:%s", provider, account )
+            GetLogger( ).warning( "Entry already exists for %s:%s", provider, account )
             return None
-        GetLogger().debug( "AS adding new entry %s:%s, group %d, sort index %d",
-                           provider, account, self.next_group, self.next_index )
+        GetLogger( ).debug( "AS adding new entry %s:%s, group %d, sort index %d",
+                            provider, account, self.next_group, self.next_index )
         entry = AuthenticationEntry( self.next_group, self.next_index, provider, account, secret,
                                      digits, original_label )
         self.entry_list.append( entry )
@@ -262,72 +256,71 @@ class AuthenticationStore:
             entry.Save( self.cfg, self )
         except PasswordError:
             raise PasswordError( "Missing password." )
-        self.cfg.Flush()
+        self.cfg.Flush( )
         return entry
-
 
     def Delete( self, entry_group ):
         """Delete an entry from the database."""
-        GetLogger().debug( "AS deleting entry %d", entry_group )
-        f = lambda x: x.GetGroup() == entry_group
+        GetLogger( ).debug( "AS deleting entry %d", entry_group )
+        f = lambda x: x.GetGroup( ) == entry_group
         elist = list( filter( f, self.entry_list ) )
         for entry in elist:
             index = self.entry_list.index( entry )
             removed = self.entry_list.pop( index )
-            GetLogger().debug( "AS deleted entry %d", removed.entry_group )
+            GetLogger( ).debug( "AS deleted entry %d", removed.entry_group )
             self.cfg.DeleteGroup( '/entries/{0:d}'.format( removed.entry_group ) )
-        self.cfg.Flush()
-
+        self.cfg.Flush( )
 
     def Update( self, entry_group, provider = None, account = None, secret = None, digits = None,
                 original_label = None ):
         """Update an entry in the database."""
-        GetLogger().debug( "AS updating entry %d", entry_group )
-        f = lambda x: x.GetGroup() == entry_group
+        GetLogger( ).debug( "AS updating entry %d", entry_group )
+        f = lambda x: x.GetGroup( ) == entry_group
         elist = list( filter( f, self.entry_list ) )
         if len( elist ) < 1:
-            return 0 # No entry found
+            return 0  # No entry found
         if len( elist ) > 1:
-            GetLogger().error( "AS %d duplicates of entry %d found, database likely corrupt",
-                               len( elist ), entry_group )
+            GetLogger( ).error( "AS %d duplicates of entry %d found, database likely corrupt",
+                                len( elist ), entry_group )
             return -1
-        entry = elist[0]
+        entry = elist[ 0 ]
         if provider != None:
-            GetLogger().debug( "AS new provider %s", provider )
+            GetLogger( ).debug( "AS new provider %s", provider )
             entry.SetProvider( provider )
         if account != None:
-            GetLogger().debug( "AS new account %s", account )
+            GetLogger( ).debug( "AS new account %s", account )
             entry.SetAccount( account )
         if secret != None:
-            GetLogger().debug( "AS new secret" )
+            GetLogger( ).debug( "AS new secret" )
             entry.SetSecret( secret )
         if digits != None:
-            GetLogger().debug( "AS new digits %d", digits )
+            GetLogger( ).debug( "AS new digits %d", digits )
             entry.SetDigits( digits )
         if original_label != None:
-            GetLogger().debug( "AS new original label %s", original_label )
+            GetLogger( ).debug( "AS new original label %s", original_label )
             entry.SetOriginalLabel( original_label )
         ret_status = 1
         try:
             entry.Save( self.cfg, self )
         except PasswordError:
             ret_status = -100
-        self.cfg.Flush()
+        self.cfg.Flush( )
         return ret_status
 
 
-def make_deltbl():
+def make_deltbl( ):
     """Make the translation table for cleaning up secrets."""
-    tbl = { ord( '-' ) : None }
+    tbl = { ord( '-' ): None }
     for c in string.whitespace:
         tbl[ ord( c ) ] = None
     return tbl
+
 
 class AuthenticationEntry:
     """A single entry in the authentication store."""
 
     # Never changed, so just make it once
-    del_tbl = make_deltbl()
+    del_tbl = make_deltbl( )
 
     def __init__( self, group, index, provider, account, secret, digits = 6, original_label = None ):
         """Initialize the entry."""
@@ -345,17 +338,15 @@ class AuthenticationEntry:
         self.otp_problem = False
         self.modified = True
 
-
     def __cmp__( self, other ):
         """Compare two entries based on their entry group numbers."""
         return cmp( self.entry_group, other.entry_group ) if other != None else -1
-
 
     @classmethod
     def Load( klass, cfg, entry_group, decryptor ):
         """Create a new entry based on an entry group from the database."""
         cfgpath = '{0:d}/'.format( entry_group )
-        old_path = cfg.GetPath()
+        old_path = cfg.GetPath( )
         cfg.SetPath( cfgpath )
         sort_index = cfg.ReadInt( 'sort_index' )
         provider = cfg.Read( 'provider' )
@@ -369,14 +360,13 @@ class AuthenticationEntry:
         cfg.SetPath( old_path )
         obj = klass( entry_group, sort_index, provider, account, secret,
                      digits, original_label )
-        obj.modified = False # Newly-created objects are modified, ones loaded from the database aren't
+        obj.modified = False  # Newly-created objects are modified, ones loaded from the database aren't
         return obj
-
 
     def Save( self, cfg, entry_group_path, encryptor, force = False ):
         """Save the entry to the database file if modified."""
         if self.modified or force:
-            old_path = cfg.GetPath()
+            old_path = cfg.GetPath( )
             cfg.SetPath( entry_group_path )
             cfgpath = '{0:d}/'.format( self.entry_group )
             cfg.Write( cfgpath + 'type', 'totp' )
@@ -388,7 +378,6 @@ class AuthenticationEntry:
             cfg.Write( cfgpath + 'original_label', self.original_label )
             cfg.SetPath( old_path )
             self.modified = False
-
 
     def GetGroup( self ):
         """Return the entry group number."""
@@ -472,16 +461,15 @@ class AuthenticationEntry:
         # secret needs padding so we'll pad it ourselves which works right.
         m = len( self.secret ) % 8
         if m != 0:
-            self.secret += '=' * ( 8 - m )
+            self.secret += '=' * (8 - m)
         # Need a new auth object too
         self.auth = pyotp.TOTP( self.secret )
         self.otp_problem = False
         self.modified = True
 
-
     def GetPeriod( self ):
         """Return the time period between code changes."""
-        return 30 # Google Authenticator uses a 30-second period
+        return 30  # Google Authenticator uses a 30-second period
 
     def GetAlgorithm( self ):
         """The hashing algorithm to use."""
@@ -489,17 +477,16 @@ class AuthenticationEntry:
 
     def GetKeyUri( self ):
         """Get the provisioning key URI."""
-        uri = "otpauth://totp/" + urllib.quote( self.GetQualifiedAccount() )
-        qs_params = {}
-        qs_params['secret'] = self.secret
+        uri = "otpauth://totp/" + urllib.quote( self.GetQualifiedAccount( ) )
+        qs_params = { }
+        qs_params[ 'secret' ] = self.secret
         if self.provider != '':
-            qs_params['issuer'] = self.provider
-        qs_params['digits'] = self.digits
-        qs_params['period'] = self.GetPeriod()
-        qs_params['algorithm'] = self.GetAlgorithm()
+            qs_params[ 'issuer' ] = self.provider
+        qs_params[ 'digits' ] = self.digits
+        qs_params[ 'period' ] = self.GetPeriod( )
+        qs_params[ 'algorithm' ] = self.GetAlgorithm( )
         uri += '?' + urllib.urlencode( qs_params )
         return uri
-
 
     def GenerateNextCode( self ):
         """Generate the next code in sequence from the secret."""
@@ -507,9 +494,9 @@ class AuthenticationEntry:
             c = '?' * self.digits
         else:
             try:
-                c = self.auth.now()
+                c = self.auth.now( )
             except Exception as e:
                 c = '?' * self.digits
                 self.otp_problem = True
-                GetLogger().error( "%s:%s OTP error: %s", self.provider, self.account, unicode( e ) )
+                GetLogger( ).error( "%s:%s OTP error: %s", self.provider, self.account, unicode( e ) )
         return c

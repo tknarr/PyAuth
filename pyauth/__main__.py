@@ -19,6 +19,7 @@
 
 from PyAuthApp import PyAuthApp as PyAuthApp
 
-def main():
+
+def main( ):
     app = PyAuthApp( False )
-    app.MainLoop()
+    app.MainLoop( )

@@ -28,6 +28,7 @@ from AuthFrame import AuthFrame as AuthFrame
 from About import GetProgramVersionString, GetProgramName, GetVendorName
 from Logging import ConfigureLogging, GetLogger
 
+
 class PyAuthApp( wx.App ):
     """Application main class."""
 
@@ -44,8 +45,8 @@ class PyAuthApp( wx.App ):
         logging.basicConfig( level = logging.WARNING )
 
         # Set up command-line argument parser
-        program_name = GetProgramName()
-        parser = argparse.ArgumentParser( description="OTP authentication client" )
+        program_name = GetProgramName( )
+        parser = argparse.ArgumentParser( description = "OTP authentication client" )
         parser.add_argument( "-s", "--systray", action = 'store_true', dest = 'systray',
                              help = "Start the program with the notification icon showing" )
         parser.add_argument( "-m", "--minimized", action = 'store_true', dest = 'minimized',
@@ -63,8 +64,8 @@ class PyAuthApp( wx.App ):
                              choices = [ 'critical', 'error', 'warning', 'info', 'debug' ],
                              help = "Set the logging level: %(choices)s" )
         parser.add_argument( "--version", action = 'version',
-                             version = GetProgramName() + ' ' + GetProgramVersionString() )
-        args = parser.parse_args()
+                             version = GetProgramName( ) + ' ' + GetProgramVersionString( ) )
+        args = parser.parse_args( )
         if args.systray:
             initial_systray = True
         if args.minimized:
@@ -86,7 +87,7 @@ class PyAuthApp( wx.App ):
         self.SetAppName( program_name )
 
         # Set our configuration file up to be the default configuration source
-        cfg = wx.FileConfig( GetProgramName(), GetVendorName(), localFilename = 'pyauth.cfg',
+        cfg = wx.FileConfig( GetProgramName( ), GetVendorName( ), localFilename = 'pyauth.cfg',
                              style = wx.CONFIG_USE_LOCAL_FILE | wx.CONFIG_USE_SUBDIR )
         cfg.SetRecordDefaults( True )
         wx.Config.Set( cfg )
@@ -103,17 +104,17 @@ class PyAuthApp( wx.App ):
 
         # Only allow one instance pointed at a given config/database directory to run
         self.instance_check = wx.SingleInstanceChecker( '.lock', cfgdir )
-        if self.instance_check.IsAnotherRunning():
-            logging.critical( "A copy of " + GetProgramName() + " is already running." )
+        if self.instance_check.IsAnotherRunning( ):
+            logging.critical( "A copy of " + GetProgramName( ) + " is already running." )
             return False
 
         # Configure logging
         ConfigureLogging( log_filename, log_level )
-        GetLogger().info( "Configuration file: %s", cfgfile )
+        GetLogger( ).info( "Configuration file: %s", cfgfile )
 
         # Create and position main frame
-        wpos = Configuration.GetLastWindowPosition()
-        wsize = Configuration.GetLastWindowSize()
+        wpos = Configuration.GetLastWindowPosition( )
+        wsize = Configuration.GetLastWindowSize( )
         self.frame = AuthFrame( None, wx.ID_ANY, "PyAuth", name = 'main_frame',
                                 pos = wpos, size = wsize,
                                 initial_systray = initial_systray,
@@ -129,12 +130,11 @@ class PyAuthApp( wx.App ):
         # hidden. If we're starting minimized and aren't in the systray, minimize
         # the frame as soon as it's shown. If we aren't starting minimized, show
         # the frame.
-        self.frame.Show( not self.frame.StartMinimized() )
+        self.frame.Show( not self.frame.StartMinimized( ) )
         return True
-
 
     def OnExit( self ):
         """Handle the exit event."""
-        GetLogger().info( "Exiting" )
-        logging.shutdown()
+        GetLogger( ).info( "Exiting" )
+        logging.shutdown( )
         return 0
