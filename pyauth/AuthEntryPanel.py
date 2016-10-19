@@ -128,8 +128,7 @@ class AuthEntryPanel( wx.Panel ):
         self.UpdateContents( )
 
         if entry != None:
-            tmp_code = self.entry.GenerateNextCode( )
-            self.code = ((8 - len( tmp_code )) * ' ') + tmp_code
+            self.code = str( self.entry.GenerateNextCode( ) )
 
         self.Bind( wx.EVT_WINDOW_CREATE, self.OnCreate )
         self.Bind( wx.EVT_TIMER, self.OnTimerTick )
@@ -240,8 +239,7 @@ class AuthEntryPanel( wx.Panel ):
         self.sort_index = entry.GetSortIndex( )
         self.code_digits = entry.GetDigits( )
         self.SetName( 'entry_panel_{0:d}'.format( self.entry.GetGroup( ) ) )
-        tmp_code = self.entry.GenerateNextCode( )
-        self.code = ((8 - len( tmp_code )) * ' ') + tmp_code
+        self.code = str( self.entry.GenerateNextCode( ) )
         ## GetLogger().debug( "AEP SE on %s", self.GetName() )
         self.ChangeContents( )
 
@@ -260,10 +258,7 @@ class AuthEntryPanel( wx.Panel ):
     def MaskCode( self, state ):
         """Set the code masking state of the panel."""
         self.code_masked = state
-        if self.code_masked and not self.selected:
-            self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
-        else:
-            self.code_text.SetLabelText( self.code )
+        self.code_text.SetLabelText( self.GetCodeString( self.selected ) )
 
     def ShowTimer( self, state ):
         """Set the show-timer state of the panel."""
@@ -301,11 +296,7 @@ class AuthEntryPanel( wx.Panel ):
         """Update the panel's displayed contents based on the current state and entry."""
         if self.entry != None:
             ## GetLogger().debug( "AEP UC updating %s", self.GetName() )
-            if self.code_masked and not self.selected:
-                self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
-            else:
-                self.code_text.SetLabelText( self.code )
-
+            self.code_text.SetLabelText( self.GetCodeString( self.selected ) )
             self.provider_text.SetLabelText( self.entry.GetProvider( ) )
             self.provider_text.Fit( )
             self.account_text.SetLabelText( self.entry.GetAccount( ) )
@@ -344,7 +335,7 @@ class AuthEntryPanel( wx.Panel ):
             item.SetBackgroundColour( bg )
             item.SetForegroundColour( fg )
         # We always show the code when selected regardless of code_masked
-        self.code_text.SetLabelText( self.code )
+        self.code_text.SetLabelText( self.GetCodeString( True ) )
 
     def Deselect( self ):
         """Deselect this panel."""
@@ -353,11 +344,7 @@ class AuthEntryPanel( wx.Panel ):
                       self.code_text, self.timer_gauge ]:
             item.SetBackgroundColour( wx.NullColour )
             item.SetForegroundColour( wx.NullColour )
-        # We can't be selected, so only code_masked matters
-        if self.code_masked:
-            self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
-        else:
-            self.code_text.SetLabelText( self.code )
+        self.code_text.SetLabelText( self.GetCodeString( False ) )
 
     def UpdateTimerGauge( self ):
         """Update the countdown bar and code based on the current time and cycle."""
@@ -367,12 +354,8 @@ class AuthEntryPanel( wx.Panel ):
         self.totp_cycle = current_time % self.totp_period
         # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge
         if self.totp_cycle < last_cycle and self.entry != None:
-            tmp_code = self.entry.GenerateNextCode( )
-            self.code = ((8 - len( tmp_code )) * ' ') + tmp_code
-            if self.code_masked and not self.selected:
-                self.code_text.SetLabelText( self.code_mask_char * self.code_digits )
-            else:
-                self.code_text.SetLabelText( self.code )
+            self.code = str( self.entry.GenerateNextCode( ) )
+            self.code_text.SetLabelText( self.GetCodeString( self.selected ) )
         # Make our timer gauge count down to zero
         self.timer_gauge.SetValue( self.totp_period - self.totp_cycle - 1 )
 
@@ -390,6 +373,18 @@ class AuthEntryPanel( wx.Panel ):
             GetLogger( ).error( "%s cannot open clipboard.", self.GetName( ) )
             sts = False
         return sts
+
+    def GetCodeString( self, selected ):
+        """Generate a string containing the code or mask characters."""
+        if self.code_masked and not selected:
+            s = self.code_mask_char * self.code_digits
+        else:
+            s = self.code
+        if len( s ) < self.code_max_digits:
+            pad_len = (self.code_max_digits - len( s )) / 2
+            tail_len = self.code_max_digits - len( s ) - pad_len
+            s = (' ' * pad_len) + s + (' ' * tail_len)
+        return s
 
     def GetProvisioningUri( self ):
         return self.entry.GetKeyUri( )

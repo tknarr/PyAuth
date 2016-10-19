@@ -1,6 +1,9 @@
 # PyAuth version history:
 
-* 1.1.2 - Rearrange license text display, no functional changes
+* 1.2.0
+  - Rearrange license text display.
+  - Clean up code display for 6- vs. 8-digit codes.
+  - Replace the web service call with an internal library for generating QR codes.
 
 * 1.1.1 - Minor fixes to menus and documentation related to provisioning URIs and QR codes
 
