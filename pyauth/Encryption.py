@@ -26,7 +26,6 @@ Unicode string containing base64 data directly).
 ## along with this program.  If not, see http://www.gnu.org/licenses/
 
 import os
-import string
 import base64
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes

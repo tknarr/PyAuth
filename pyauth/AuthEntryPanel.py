@@ -21,7 +21,7 @@ import urllib
 import wx
 from AuthenticationStore import AuthenticationEntry
 from Logging import GetLogger
-from qrcode import QrCodeImage, QrCodeFrame
+from QrCode import QrCodeImage, QrCodeFrame
 
 
 class AuthEntryPanel( wx.Panel ):
@@ -388,10 +388,6 @@ class AuthEntryPanel( wx.Panel ):
 
     def GetProvisioningUri( self ):
         return self.entry.GetKeyUri( )
-
-    def GetQrCodeUrl( self ):
-        qr = QrCodeImage( self.entry )
-        return qr.GetUrl( )
 
     def GetQrCodeImage( self ):
         qr = QrCodeImage( self.entry )

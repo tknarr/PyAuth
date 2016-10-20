@@ -8,7 +8,7 @@ PyAuth
 .. image:: https://img.shields.io/pypi/pyversions/PyAuth.png
     :target: https://pypi.python.org/pypi/PyAuth/
     :alt: Latest Version
-    
+
 .. image:: https://img.shields.io/github/release/tknarr/PyAuth.png
     :target: https://github.com/tknarr/PyAuth/releases/latest
     :alt: Latest Version
@@ -53,8 +53,8 @@ Prerequisites
   `wxWidgets <http://www.wxwidgets.org/>`_
 * `pyotp 2.0.1 <https://pypi.python.org/pypi/pyotp>`_ or higher
 * `cryptography 1.3 <https://pypi.python.org/pypi/cryptography>`_ or higher
-* `pycrypto 2.6.1 <https://pypi/python.org/pypi/pycrypto>`_ or higher, strictly for
-  decrypting older databases
+* `qrcode 5.3 <https://pypi.python.org/pypi/qrcode>`_ or higher
+* `Pillow 3.4 <https://pypi.python.org/pypi/Pillow>`_ or higher
 
 wxPython isn't automatically pulled in by ``pip`` because the version at PyPI is
 still 2.9. Your distribution probably includes a pre-packaged version, or you can
@@ -103,7 +103,7 @@ Command line:
 * ``-n`` forces the program to display in a normal window without using the
   notification icon. This overrides ``-s`` and ``-m`` and any remembered settings
   for the notification icon.
-    
+
 * ``--icons`` selects a set of icons with the named background (default white).
 
 * ``--logfile`` allows you to set a log file for errors and messages logged by

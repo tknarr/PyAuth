@@ -18,11 +18,8 @@
 ## along with this program.  If not, see http://www.gnu.org/licenses/
 
 import wx
-import requests
-import urllib
+import qrcode
 from io import BytesIO
-from AuthenticationStore import AuthenticationEntry
-from Logging import GetLogger
 
 
 class QrCodeImage:
@@ -31,21 +28,12 @@ class QrCodeImage:
     def __init__( self, entry ):
         self.provisioning_uri = entry.GetKeyUri( )
 
-    def GetUrl( self ):
-        return "https://www.google.com/chart?chs=240x240&chld=M|0&cht=qr&chl=" + urllib.quote( self.provisioning_uri )
-
     def GetImage( self ):
-        url = self.GetUrl( )
-        GetLogger( ).debug( "Requesting QR code image from %s", url )
-        resp = requests.get( url )
-        GetLogger( ).debug( "HTTP status: %d", resp.status_code )
-        if resp.status_code == requests.codes.ok:
-            input_strm = BytesIO( resp.content )
-            image = wx.ImageFromStream( input_strm, wx.BITMAP_TYPE_PNG )
-        else:
-            GetLogger( ).error( "HTTP error %d", resp.status_code )
-            GetLogger( ).error( "Error response body:\n%s", resp.text )
-            image = None
+        img = qrcode.make( self.provisioning_uri )
+        strm = BytesIO( )
+        img.save( strm, "PNG" )
+        strm.seek( 0 )
+        image = wx.ImageFromStream( strm, wx.BITMAP_TYPE_PNG )
         return image
 
 
