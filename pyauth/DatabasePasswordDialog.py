@@ -18,73 +18,74 @@
 ## along with this program.  If not, see http://www.gnu.org/licenses/
 
 import wx
+
 from Logging import GetLogger
 
 
-class DatabasePasswordDialog( wx.Dialog ):
+class DatabasePasswordDialog(wx.Dialog):
     """Database password dialog box."""
 
-    def __init__( self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
-                  style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr ):
+    def __init__(self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
+                 style = wx.DEFAULT_DIALOG_STYLE, name = wx.DialogNameStr):
         """Initialize the dialog box."""
-        wx.Dialog.__init__( self, parent, id, title, pos, size, style, name )
+        wx.Dialog.__init__(self, parent, id, title, pos, size, style, name)
 
-        GetLogger( ).debug( "PWD init" )
+        GetLogger().debug("PWD init")
 
         self.password_label = None
         self.password_text = None
 
         self.password_literal = "Enter your password:"
 
-        vbox = wx.BoxSizer( wx.VERTICAL )
-        self.SetSizer( vbox )
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.SetSizer(vbox)
 
-        vbox.AddSpacer( 16, 0 )
+        vbox.AddSpacer(16, 0)
 
         # Password
-        lbl = wx.StaticText( self, wx.ID_ANY, '' )
-        self.MakeLabel( lbl, self.password_literal )
-        vbox.Add( lbl, 0, wx.LEFT | wx.RIGHT, 8 )
+        lbl = wx.StaticText(self, wx.ID_ANY, '')
+        self.MakeLabel(lbl, self.password_literal)
+        vbox.Add(lbl, 0, wx.LEFT | wx.RIGHT, 8)
         self.password_label = lbl
-        txt = wx.TextCtrl( self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP | wx.TE_PASSWORD )
-        te = txt.GetTextExtent( 'M' * 20 )
-        txt.SetMinClientSize( wx.DLG_SZE( self, te ) )
-        vbox.Add( txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8 )
+        txt = wx.TextCtrl(self, wx.ID_ANY, '', style = wx.TE_LEFT | wx.TE_DONTWRAP | wx.TE_PASSWORD)
+        te = txt.GetTextExtent('M' * 20)
+        txt.SetMinClientSize(wx.DLG_SZE(self, te))
+        vbox.Add(txt, 0, wx.LEFT | wx.RIGHT | wx.EXPAND, 8)
         self.password_text = txt
 
-        vbox.AddSpacer( 16, 0 )
+        vbox.AddSpacer(16, 0)
 
-        vbox.AddStretchSpacer( 1 )
+        vbox.AddStretchSpacer(1)
 
-        btnsizer = self.CreateButtonSizer( wx.OK | wx.CANCEL )
+        btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
         if btnsizer != None:
-            vbox.Add( btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8 )
+            vbox.Add(btnsizer, 0, wx.ALL | wx.ALIGN_RIGHT, 8)
 
-        self.GetSizer( ).Fit( self )
+        self.GetSizer().Fit(self)
 
-        self.Bind( wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK )
+        self.Bind(wx.EVT_BUTTON, self.OnOK, id = wx.ID_OK)
 
-        GetLogger( ).debug( "PWD init done" )
+        GetLogger().debug("PWD init done")
 
-    def SetFocus( self ):
-        self.password_text.SetFocus( )
+    def SetFocus(self):
+        self.password_text.SetFocus()
 
-    def OnOK( self, event ):
+    def OnOK(self, event):
         """Handle the OK button event."""
-        GetLogger( ).debug( "PWD OK button" )
-        event.Skip( True )
+        GetLogger().debug("PWD OK button")
+        event.Skip(True)
 
-    def GetPasswordValue( self ):
+    def GetPasswordValue(self):
         """Return the contents of the password field."""
-        return self.password_text.GetValue( )
+        return self.password_text.GetValue()
 
-    def Reset( self ):
+    def Reset(self):
         """Reset the dialog box contents."""
-        GetLogger( ).debug( "PWD reset" )
-        self.password_text.Clear( )
-        self.SetFocus( )
+        GetLogger().debug("PWD reset")
+        self.password_text.Clear()
+        self.SetFocus()
 
-    def MakeLabel( self, ctrl, txt ):
+    def MakeLabel(self, ctrl, txt):
         """Set up a label control's text."""
-        ctrl.SetLabelText( txt )
-        ctrl.SetMinSize( wx.DLG_SZE( self, ctrl.GetTextExtent( ctrl.GetLabelText( ) ) ) )
+        ctrl.SetLabelText(txt)
+        ctrl.SetMinSize(wx.DLG_SZE(self, ctrl.GetTextExtent(ctrl.GetLabelText())))
