@@ -370,7 +370,6 @@ class AuthFrame(wx.Frame):
         if key == wx.WXK_NONE:
             key = event.GetKeyCode()
         GetLogger().debug("AF OnKey code %d", key)
-        print "AF OnKey code " + str( key )
         # The Escape key deselects any selected entry
         if key == wx.WXK_ESCAPE:
             if self.selected_panel != None:
