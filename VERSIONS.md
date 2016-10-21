@@ -2,9 +2,8 @@
 
 * 1.2.1
   - Adjust size of QR code images to be more reasonable to start.
-  - Allow user to adjust size of QR code image by resizing window.
   - Clean up key event handling.
-  - Clean up code formatting.
+  - Clean up source code formatting.
 
 * 1.2.0
   - Rearrange license text display.

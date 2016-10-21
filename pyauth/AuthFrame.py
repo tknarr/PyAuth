@@ -178,13 +178,6 @@ class AuthFrame(wx.Frame):
         self.Bind(wx.EVT_WINDOW_CREATE, self.OnCreate)
         self.Bind(wx.EVT_CLOSE, self.OnCloseWindow)
 
-    def KeyBind(self, event_type, func):
-        """Bind a key event."""
-        self.Bind(event_type, func)
-        self.entries_window.Bind(event_type, func)
-        for panel in self.entry_panels:
-            panel.Bind(event_type, func)
-
     def OnCreate(self, event):
         """
         Finish initialization once the window exists.
@@ -241,18 +234,6 @@ class AuthFrame(wx.Frame):
             self.Close(True)
             return None
 
-        # NOTE Instance check currently not active, handled in PyAuthApp class
-        ## if  wx.GetApp().instance_check.IsAnotherRunning():
-        ##     dlg = wx.MessageDialog( self, "Another instance may be running.", "Error",
-        ##                             style = wx.YES_NO | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
-        ##     dlg.SetExtendedMessage( "Another instance of this application may be running. "
-        ##                             "Do you wish to run this application anyway?" )
-        ##     result = dlg.ShowModal()
-        ##     dlg.Destroy()
-        ##     if result != wx.ID_YES:
-        ##         self.do_not_save = True
-        ##         self.Close( True )
-
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         menu_bar = self.create_menu_bar()
         self.SetMenuBar(menu_bar)
@@ -275,8 +256,6 @@ class AuthFrame(wx.Frame):
         self.Bind(wx.EVT_TIMER, self.OnTimerTick)
         self.Bind(wx.EVT_ICONIZE, self.OnIconize)
         self.Bind(wx.EVT_SHOW, self.OnShow)
-        self.KeyBind(wx.EVT_CHAR_HOOK, self.OnKey)
-        # self.KeyBind( wx.EVT_KEY_DOWN, self.OnKey )
         if self.idle_output:
             self.Bind(wx.EVT_IDLE, self.OnIdle)
         # Menu event handlers
@@ -302,7 +281,6 @@ class AuthFrame(wx.Frame):
         self.iconized = self.IsIconized()
         self.timer.Start(1000)
         self.record_toolbar_height()
-        self.entries_window.SetFocus()
 
     def OnEntryWindowSize(self, event):
         """React to resizing of the entries window."""
@@ -392,6 +370,7 @@ class AuthFrame(wx.Frame):
         if key == wx.WXK_NONE:
             key = event.GetKeyCode()
         GetLogger().debug("AF OnKey code %d", key)
+        print "AF OnKey code " + str( key )
         # The Escape key deselects any selected entry
         if key == wx.WXK_ESCAPE:
             if self.selected_panel != None:
@@ -999,7 +978,7 @@ class AuthFrame(wx.Frame):
     def create_entries_window(self):
         """Create the scrolled window entries will be displayed in."""
         GetLogger().debug("AF create entries window")
-        sw = wx.ScrolledWindow(self, wx.ID_ANY, style = wx.VSCROLL, name = 'entries_window')
+        sw = wx.ScrolledWindow(self, wx.ID_ANY, style = wx.VSCROLL | wx.WANTS_CHARS, name = 'entries_window')
         sw.ShowScrollbars(wx.SHOW_SB_NEVER, wx.SHOW_SB_DEFAULT)
         sw.EnableScrolling(False, True)
         sw.DisableKeyboardScrolling()

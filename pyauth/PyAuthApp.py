@@ -101,6 +101,18 @@ class PyAuthApp(wx.App):
                 logging.critical("Error code %d: %s", e.errno, e.strerror)
                 return False
 
+        # NOTE Improved instance check code with dialog, use in future.
+        # if  wx.GetApp().instance_check.IsAnotherRunning():
+        #     dlg = wx.MessageDialog( self, "Another instance may be running.", "Error",
+        #                             style = wx.YES_NO | wx.ICON_ERROR | wx.STAY_ON_TOP | wx.CENTRE )
+        #     dlg.SetExtendedMessage( "Another instance of this application may be running. "
+        #                             "Do you wish to run this application anyway?" )
+        #     result = dlg.ShowModal()
+        #     dlg.Destroy()
+        #     if result != wx.ID_YES:
+        #         self.do_not_save = True
+        #         self.Close( True )
+
         # Only allow one instance pointed at a given config/database directory to run
         self.instance_check = wx.SingleInstanceChecker('.lock', cfgdir)
         if self.instance_check.IsAnotherRunning():

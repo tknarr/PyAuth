@@ -35,7 +35,7 @@ class AuthEntryPanel(wx.Panel):
         authentication store plus the number of code digits the panel should display.
         Omitting these arguments results in a blank panel.
         """
-        wx.Panel.__init__(self, parent, id, pos, size, style, name)
+        wx.Panel.__init__(self, parent, id, pos, size, style | wx.WANTS_CHARS, name)
 
         self.entry = entry
         self.sort_index = 0
@@ -75,7 +75,7 @@ class AuthEntryPanel(wx.Panel):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(sizer)
 
-        self.label_panel = wx.Panel(self, style = wx.BORDER_NONE, name = 'label_panel')
+        self.label_panel = wx.Panel(self, style = wx.BORDER_NONE | wx.WANTS_CHARS, name = 'label_panel')
         label_sizer = wx.BoxSizer(wx.VERTICAL)
         self.label_panel.SetSizer(label_sizer)
 
@@ -137,6 +137,14 @@ class AuthEntryPanel(wx.Panel):
         self.MouseBind(wx.EVT_LEFT_DCLICK, self.OnDoubleClick)
         self.MouseBind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         self.MouseBind(wx.EVT_LEFT_UP, self.OnLeftUp)
+
+        gp = self.GetGrandParent()
+        self.Bind(wx.EVT_CHAR, gp.OnKey)
+        self.label_panel.Bind(wx.EVT_CHAR, gp.OnKey)
+        self.provider_text.Bind(wx.EVT_CHAR, gp.OnKey)
+        self.account_text.Bind(wx.EVT_CHAR, gp.OnKey)
+        self.code_text.Bind(wx.EVT_CHAR, gp.OnKey)
+        self.timer_gauge.Bind(wx.EVT_CHAR, gp.OnKey)
 
         ## GetLogger().debug( "AEP init done %s", self.GetName() )
 
@@ -327,6 +335,7 @@ class AuthEntryPanel(wx.Panel):
     def Select(self):
         """Select this panel."""
         self.selected = True
+        self.SetFocus()
         bg = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
         fg = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
         for item in [self, self.label_panel, self.provider_text, self.account_text,
