@@ -12,7 +12,6 @@ Future enhancements:
 * HOTP entries and code generation
 * Allow opening of other databases
 * Read QR codes
-* Generate QR codes
 * Import/export databases:
   - CSV file
   - WinAuth

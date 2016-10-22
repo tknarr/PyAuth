@@ -2,6 +2,8 @@
 
 * 1.2.1
   - Adjust size of QR code images to be more reasonable to start.
+  - Allow adjusting size of QR code image window, automatically resize the QR code
+    dots to scale with the window.
   - Clean up key event handling.
   - Clean up source code formatting.
 
