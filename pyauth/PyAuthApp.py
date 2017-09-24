@@ -23,7 +23,7 @@ import os.path
 import wx
 
 import Configuration
-from About import GetProgramName, GetProgramVersionString, GetVendorName
+from About import GetProgramName, GetProgramVersion, GetVendorName
 from AuthFrame import AuthFrame as AuthFrame
 from Logging import ConfigureLogging, GetLogger
 
@@ -63,7 +63,7 @@ class PyAuthApp(wx.App):
                             choices = ['critical', 'error', 'warning', 'info', 'debug'],
                             help = "Set the logging level: %(choices)s")
         parser.add_argument("--version", action = 'version',
-                            version = GetProgramName() + ' ' + GetProgramVersionString())
+                            version = GetProgramName() + ' ' + GetProgramVersion())
         args = parser.parse_args()
         if args.systray:
             initial_systray = True

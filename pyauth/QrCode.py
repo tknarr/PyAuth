@@ -17,11 +17,40 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see http://www.gnu.org/licenses/
 
+import qrtools
+import tempfile
 import wx
 from io import BytesIO
 
 import Configuration
 import qrcode
+
+
+class QrCodeUri:
+    """Represents a provisioning URI decoded from a QR code image."""
+
+    def __init__(self):
+        self.uri = None
+        self.temp_dir = Configuration.GetConfigDirectory()
+        self.qr = qrtools.QR()
+
+    def GetUri(self):
+        return self.uri
+
+    def decode_file(self, filename):
+        # TODO decode file
+        pass
+
+    def decode_url(self, url):
+        # TODO fetch image from url and decode
+        pass
+
+    def decode_image(self, image):
+        temp_file = tempfile.NamedTemporaryFile(dir = self.temp_dir, suffix = ".png")
+        # TODO write image into temp file
+        self.uri = self.decode_file(temp_file.name)
+        temp_file.close()
+        return self.uri
 
 
 class QrCodeImage:
@@ -120,9 +149,9 @@ class QrCodePanel(wx.Panel):
             # size on either axis.
             new_box = self.box_size
             new_size = wx.Size(bitmap_size.GetWidth(), bitmap_size.GetHeight())
-            while new_size.GetWidth() + self.bitmap_width_incr <= new_bitmap_size.GetWidth() and \
-                    new_size.GetHeight() + self.bitmap_height_incr <= new_bitmap_size.GetHeight() and \
-                    new_box < QrCodePanel.MAX_BOX:
+            while new_size.GetWidth() + self.bitmap_width_incr <= new_bitmap_size.GetWidth() \
+                    and new_size.GetHeight() + self.bitmap_height_incr <= new_bitmap_size.GetHeight() \
+                    and new_box < QrCodePanel.MAX_BOX:
                 new_box += 1
                 new_size.SetWidth(new_size.GetWidth() + self.bitmap_width_incr)
                 new_size.SetHeight(new_size.GetHeight() + self.bitmap_height_incr)
@@ -132,9 +161,9 @@ class QrCodePanel(wx.Panel):
             new_box = self.box_size - 1
             new_size = wx.Size(bitmap_size.GetWidth() - self.bitmap_width_incr,
                                bitmap_size.GetHeight() - self.bitmap_height_incr)
-            while new_size.GetWidth() > new_bitmap_size.GetWidth() and \
-                    new_size.GetHeight() > new_bitmap_size.GetHeight() and \
-                    new_box > QrCodePanel.MIN_BOX:
+            while new_size.GetWidth() > new_bitmap_size.GetWidth() \
+                    and new_size.GetHeight() > new_bitmap_size.GetHeight() \
+                    and new_box > QrCodePanel.MIN_BOX:
                 new_box -= 1
                 new_size.SetWidth(new_size.GetWidth() - self.bitmap_width_incr)
                 new_size.SetHeight(new_size.GetHeight() - self.bitmap_height_incr)

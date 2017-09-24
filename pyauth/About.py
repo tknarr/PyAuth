@@ -27,7 +27,6 @@ about_data = {
     'name':           pyauth.__program_name__,
     'version':        pyauth.__version__,
     'version-tag':    pyauth.__version_tag__,
-    'version-status': pyauth.__version_status__,
     'copyright':      "(C) 2016 Todd T Knarr\nLicense: GPL v3.0 or any later version",
     'website':        'https://github.com/tknarr/PyAuth.git',
     'developers':     ['Todd T Knarr'],
@@ -42,14 +41,9 @@ def GetProgramName():
 
 def GetProgramVersion():
     """Standard version number."""
-    return about_data['version'] + about_data['version-tag']
-
-
-def GetProgramVersionString():
-    """Extended version number."""
-    v = GetProgramVersion()
-    if about_data['version-status'] != '':
-        v += ' (' + about_data['version-status'] + ')'
+    v = about_data['version']
+    if about_data['version-tag'] != '':
+        v += '-' + about_data['version-tag']
     return v
 
 
@@ -63,7 +57,7 @@ def GetAboutInfo(dc, desc_width = 600):
 
     about_info = wx.AboutDialogInfo()
     about_info.SetName(about_data['name'])
-    about_info.SetVersion(GetProgramVersionString())
+    about_info.SetVersion(GetProgramVersion())
     about_info.SetCopyright(about_data['copyright'])
     about_info.SetWebSite(about_data['website'])
     about_info.SetDescription(about_data['description'])
