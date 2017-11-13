@@ -1,76 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Generate a QR code image for an entry."""
 
-## PyAuth - Google Authenticator desktop application
-## Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
+# Copyright (C) 2017 Silverglass Technical
+# Author: Todd Knarr (tknarr)
 
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-
-## You should have received a copy of the GNU General Public License
-## along with this program.  If not, see http://www.gnu.org/licenses/
-
-import qrtools
-import tempfile
 import wx
-from io import BytesIO
 
 import Configuration
-import qrcode
-
-
-class QrCodeUri:
-    """Represents a provisioning URI decoded from a QR code image."""
-
-    def __init__(self):
-        self.uri = None
-        self.temp_dir = Configuration.GetConfigDirectory()
-        self.qr = qrtools.QR()
-
-    def GetUri(self):
-        return self.uri
-
-    def decode_file(self, filename):
-        # TODO decode file
-        pass
-
-    def decode_url(self, url):
-        # TODO fetch image from url and decode
-        pass
-
-    def decode_image(self, image):
-        temp_file = tempfile.NamedTemporaryFile(dir = self.temp_dir, suffix = ".png")
-        # TODO write image into temp file
-        self.uri = self.decode_file(temp_file.name)
-        temp_file.close()
-        return self.uri
-
-
-class QrCodeImage:
-    """Represents a QR code image."""
-
-    def __init__(self, uri, box_size):
-        self.uri = uri
-        self.box_size = box_size
-
-    def GetImage(self):
-        qr = qrcode.QRCode(version = None, box_size = self.box_size,
-                           error_correction = qrcode.constants.ERROR_CORRECT_M)
-        qr.add_data(self.uri)
-        qr.make(fit = True)
-        img = qr.make_image()
-        strm = BytesIO()
-        img.save(strm, "PNG")
-        strm.seek(0)
-        image = wx.ImageFromStream(strm, wx.BITMAP_TYPE_PNG)
-        return image
+from QrCodeImage import QrCodeImage
 
 
 class QrCodePanel(wx.Panel):
@@ -192,11 +128,3 @@ class QrCodePanel(wx.Panel):
         frame_size = self.ClientSizeToFrameSize(client_size)
         p = self.GetParent()
         p.SetSize(frame_size)
-
-
-class QrCodeFrame(wx.Frame):
-    def __init__(self, parent, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize,
-                 style = wx.DEFAULT_FRAME_STYLE, name = wx.FrameNameStr, uri = None, border = 0):
-        wx.Frame.__init__(self, parent, id, title, pos, size, style, name)
-        self.panel = QrCodePanel(self, uri = uri, border = border)
-        self.panel.SetFocus()

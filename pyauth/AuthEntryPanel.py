@@ -20,7 +20,7 @@
 import wx
 
 from Logging import GetLogger
-from QrCode import QrCodeFrame
+from QrCodeFrame import QrCodeFrame
 
 
 class AuthEntryPanel(wx.Panel):
