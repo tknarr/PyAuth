@@ -21,4 +21,4 @@ __program_name__ = "PyAuth"
 
 # Version info
 __version__ = '1.2.2'
-__version_tag__ = 'dev'
+__version_tag__ = ''
