@@ -3,9 +3,11 @@
 # Copyright (C) 2017 Silverglass Technical
 # Author: Todd Knarr (tknarr)
 
-import qrtools
+import os
 import tempfile
+import qrcode
 
+import Errors
 import Configuration
 
 
@@ -15,14 +17,18 @@ class QrCodeUri:
     def __init__(self):
         self.uri = None
         self.temp_dir = Configuration.GetConfigDirectory()
-        self.qr = qrtools.QR()
 
     def GetUri(self):
         return self.uri
 
     def decode_file(self, filename):
-        # TODO decode file
-        pass
+        if not os.access(filename, os.F_OK | os.R_OK):
+            raise Errors.QrCodeImageFileAccess("Cannot access image file: " + str(filename))
+        if self.qr.decode(filename):
+            self.uri = self.qr.data_to_string()
+        else:
+            self.uri = None
+        return self.uri
 
     def decode_url(self, url):
         # TODO fetch image from url and decode

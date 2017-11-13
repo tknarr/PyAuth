@@ -24,3 +24,7 @@ class PasswordError(RuntimeError):
 
 class DecryptionError(RuntimeError):
     pass
+
+
+class QrCodeImageFileAccess(RuntimeError):
+    pass

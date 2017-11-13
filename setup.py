@@ -81,8 +81,7 @@ setup(
         'pyotp>=2.0.1',
         'cryptography>=1.3',
         'qrcode>=5.3',
-        'Pillow>=3.4',
-        'qrtools'
+        'Pillow>=3.4'
     ],
 
     package_data = {
