@@ -5,7 +5,8 @@
 
 import os
 import tempfile
-import qrcode
+from PIL import Image
+import zbarlight
 
 import Errors
 import Configuration
@@ -16,7 +17,6 @@ class QrCodeUri:
 
     def __init__(self):
         self.uri = None
-        self.temp_dir = Configuration.GetConfigDirectory()
 
     def GetUri(self):
         return self.uri
@@ -24,8 +24,15 @@ class QrCodeUri:
     def decode_file(self, filename):
         if not os.access(filename, os.F_OK | os.R_OK):
             raise Errors.QrCodeImageFileAccess("Cannot access image file: " + str(filename))
-        if self.qr.decode(filename):
-            self.uri = self.qr.data_to_string()
+        with open(filename, "rb") as image_file:
+            try:
+                image = Image.open(image_file)
+                image.load()
+            except IOError:
+                return None
+        codes = zbarlight.scan_codes('qrcode', image)
+        if len(codes) > 0:
+            self.uri = codes[0]
         else:
             self.uri = None
         return self.uri
@@ -35,8 +42,5 @@ class QrCodeUri:
         pass
 
     def decode_image(self, image):
-        temp_file = tempfile.NamedTemporaryFile(dir = self.temp_dir, suffix = ".png")
-        # TODO write image into temp file
-        self.uri = self.decode_file(temp_file.name)
-        temp_file.close()
-        return self.uri
+        # TODO decode image
+        pass
