@@ -27,7 +27,7 @@ about_data = {
     'name':           pyauth.__program_name__,
     'version':        pyauth.__version__,
     'version-tag':    pyauth.__version_tag__,
-    'copyright':      "(C) 2016 Todd T Knarr\nLicense: GPL v3.0 or any later version",
+    'copyright':      "(C) 2018 Todd T Knarr\nLicense: GPL v3.0 or any later version",
     'website':        'https://github.com/tknarr/PyAuth.git',
     'developers':     ['Todd T Knarr'],
     'description':    "Google Authenticator desktop application",
