@@ -55,10 +55,7 @@ Prerequisites
 * `cryptography 1.3 <https://pypi.python.org/pypi/cryptography>`_ or higher
 * `qrcode 5.3 <https://pypi.python.org/pypi/qrcode>`_ or higher
 * `Pillow 3.4 <https://pypi.python.org/pypi/Pillow>`_ or higher
-
-wxPython isn't automatically pulled in by ``pip`` because the version at PyPI is
-still 2.9. Your distribution probably includes a pre-packaged version, or you can
-download it directly from the wxPython web site.
+* `zbarlight 1.2 <https://pypi.python.org/pypi/zbarlight>`_ or higher
 
 Developers
 ----------

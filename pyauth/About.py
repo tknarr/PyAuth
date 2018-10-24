@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 """Metadata about the program."""
 
-## PyAuth - Google Authenticator desktop application
-## Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
-
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-
-## You should have received a copy of the GNU General Public License
-## along with this program.  If not, see http://www.gnu.org/licenses/
+#-----
+# PyAuth
+# Copyright (C) 2018 Silverglass Technical
+# Author: Todd Knarr <tknarr@silverglass.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#-----
 
 import wx
 
@@ -27,7 +30,7 @@ about_data = {
     'name':           pyauth.__program_name__,
     'version':        pyauth.__version__,
     'version-tag':    pyauth.__version_tag__,
-    'copyright':      "(C) 2016 Todd T Knarr\nLicense: GPL v3.0 or any later version",
+    'copyright':      "(C) 2018 Todd T Knarr\nLicense: GPL v3.0 or any later version",
     'website':        'https://github.com/tknarr/PyAuth.git',
     'developers':     ['Todd T Knarr'],
     'description':    "Google Authenticator desktop application",

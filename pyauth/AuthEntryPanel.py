@@ -1,26 +1,30 @@
 # -*- coding: utf-8 -*-
 """Authentication code entry panel."""
 
-## PyAuth - Google Authenticator desktop application
-## Copyright (C) 2016 Todd T Knarr <tknarr@silverglass.org>
-
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-
-## You should have received a copy of the GNU General Public License
-## along with this program.  If not, see http://www.gnu.org/licenses/
+#-----
+# PyAuth
+# Copyright (C) 2018 Silverglass Technical
+# Author: Todd Knarr <tknarr@silverglass.org>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#-----
 
 import wx
 
 from Logging import GetLogger
 from QrCodeFrame import QrCodeFrame
+
 
 
 class AuthEntryPanel(wx.Panel):
@@ -70,7 +74,7 @@ class AuthEntryPanel(wx.Panel):
 
         self.provider_font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
         self.account_font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        self.code_font = wx.Font(28, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.code_font = wx.Font(24, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(sizer)
@@ -103,9 +107,11 @@ class AuthEntryPanel(wx.Panel):
                                        name = 'code_text')
         self.code_text.Wrap(-1)
         self.code_text.SetFont(self.code_font)
+        size_tuple = self.code_text.GetTextExtent(self.code_mask_char * self.code_max_digits)
+        code_size = wx.Size(size_tuple[0], size_tuple[1])
+        self.code_text.SetInitialSize(code_size)
+        self.code_text.SetMinSize(code_size)
         self.code_text.Fit()
-        self.code_text.SetInitialSize(self.code_text.GetSize())
-        self.code_text.SetMinSize(self.code_text.GetSize())
         sizer.Add(self.code_text, 0,
                   wx.LEFT | wx.RIGHT | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
                   12)

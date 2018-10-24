@@ -77,11 +77,12 @@ setup(
     packages = find_packages(exclude = ['contrib', 'docs', 'tests*']),
 
     install_requires = [
-        # 'wxPython>=3.0',
-        'pyotp>=2.0.1',
-        'cryptography>=1.3',
-        'qrcode>=5.3',
-        'Pillow>=3.4'
+        'wxPython~=3.0',
+        'pyotp~=2.2',
+        'cryptography~=2.3',
+        'qrcode~=6.0',
+        'Pillow~=5.3',
+        'zbarlight~=2.1'
     ],
 
     package_data = {
