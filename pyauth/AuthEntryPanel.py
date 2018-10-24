@@ -26,6 +26,7 @@ from Logging import GetLogger
 from QrCodeFrame import QrCodeFrame
 
 
+
 class AuthEntryPanel(wx.Panel):
     """Authentication code entry panel."""
 
@@ -73,7 +74,7 @@ class AuthEntryPanel(wx.Panel):
 
         self.provider_font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
         self.account_font = wx.Font(10, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-        self.code_font = wx.Font(28, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.code_font = wx.Font(24, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
 
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(sizer)
@@ -106,9 +107,11 @@ class AuthEntryPanel(wx.Panel):
                                        name = 'code_text')
         self.code_text.Wrap(-1)
         self.code_text.SetFont(self.code_font)
+        size_tuple = self.code_text.GetTextExtent(self.code_mask_char * self.code_max_digits)
+        code_size = wx.Size(size_tuple[0], size_tuple[1])
+        self.code_text.SetInitialSize(code_size)
+        self.code_text.SetMinSize(code_size)
         self.code_text.Fit()
-        self.code_text.SetInitialSize(self.code_text.GetSize())
-        self.code_text.SetMinSize(self.code_text.GetSize())
         sizer.Add(self.code_text, 0,
                   wx.LEFT | wx.RIGHT | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
                   12)
