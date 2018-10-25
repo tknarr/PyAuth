@@ -87,6 +87,7 @@ class AuthEntryPanel(wx.Panel):
                                            name = 'provider_text')
         self.provider_text.Wrap(-1)
         self.provider_text.SetFont(self.provider_font)
+        self.provider_text.SetBackgroundColour(wx.BLUE)
         self.provider_text.Fit()
         label_sizer.Add(self.provider_text, 1,
                         wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0)
@@ -95,6 +96,7 @@ class AuthEntryPanel(wx.Panel):
                                           name = 'account_text')
         self.account_text.Wrap(-1)
         self.account_text.SetFont(self.account_font)
+        self.account_text.SetBackgroundColour(wx.RED)
         self.account_text.Fit()
         label_sizer.Add(self.account_text, 1,
                         wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0)
@@ -103,24 +105,23 @@ class AuthEntryPanel(wx.Panel):
         sizer.Add(self.label_panel, 0, wx.EXPAND | wx.LEFT | wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 2)
 
         self.code_text = wx.StaticText(self, wx.ID_ANY, self.code_mask_char * self.code_max_digits,
-                                       style = wx.ALIGN_RIGHT | wx.ST_NO_AUTORESIZE,
+                                       style = wx.ALIGN_CENTER | wx.ST_NO_AUTORESIZE,
                                        name = 'code_text')
         self.code_text.Wrap(-1)
         self.code_text.SetFont(self.code_font)
         size_tuple = self.code_text.GetTextExtent(self.code_mask_char * self.code_max_digits)
         code_size = wx.Size(size_tuple[0], size_tuple[1])
-        self.code_text.SetInitialSize(code_size)
-        self.code_text.SetMinSize(code_size)
+        self.code_text.SetMinClientSize(code_size)
         self.code_text.Fit()
         sizer.Add(self.code_text, 0,
                   wx.LEFT | wx.RIGHT | wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE,
                   12)
 
         self.totp_period = entry.GetPeriod() if self.entry != None else 30
-        self.timer_gauge = wx.Gauge(self, wx.ID_ANY, self.totp_period - 1, size = wx.Size(30, 15),
+        self.timer_gauge = wx.Gauge(self, wx.ID_ANY, self.totp_period - 1, size = wx.Size(40, 8),
                                     style = wx.GA_HORIZONTAL, name = 'timer_gauge')
         self.timer_gauge.SetValue(self.totp_period - 1)
-        self.timer_gauge.SetMinSize(self.timer_gauge.GetSize())
+        self.timer_gauge.Fit()
         sizer.Add(self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2)
 
         # Create our context menu
@@ -311,8 +312,12 @@ class AuthEntryPanel(wx.Panel):
             ## GetLogger().debug( "AEP UC updating %s", self.GetName() )
             self.code_text.SetLabelText(self.GetCodeString(self.selected))
             self.provider_text.SetLabelText(self.entry.GetProvider())
+            text_size = self.provider_text.GetTextExtent(self.entry.GetProvider())
+            self.provider_text.SetMinClientSize(wx.Size(text_size[0], text_size[1]))
             self.provider_text.Fit()
             self.account_text.SetLabelText(self.entry.GetAccount())
+            text_size = self.account_text.GetTextExtent(self.entry.GetAccount())
+            self.account_text.SetMinClientSize(wx.Size(text_size[0], text_size[1]))
             self.account_text.Fit()
 
         if self.label_width == 0:
@@ -394,10 +399,10 @@ class AuthEntryPanel(wx.Panel):
             s = self.code_mask_char * self.code_digits
         else:
             s = self.code
-        if len(s) < self.code_max_digits:
-            pad_len = (self.code_max_digits - len(s)) / 2
-            tail_len = self.code_max_digits - len(s) - pad_len
-            s = (' ' * pad_len) + s + (' ' * tail_len)
+        # if len(s) < self.code_max_digits:
+        #     pad_len = (self.code_max_digits - len(s)) / 2
+        #     tail_len = self.code_max_digits - len(s) - pad_len
+        #     s = (' ' * pad_len) + s + (' ' * tail_len)
         return s
 
     def GetProvisioningUri(self):
