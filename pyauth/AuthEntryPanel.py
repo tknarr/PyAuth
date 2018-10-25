@@ -87,7 +87,6 @@ class AuthEntryPanel(wx.Panel):
                                            name = 'provider_text')
         self.provider_text.Wrap(-1)
         self.provider_text.SetFont(self.provider_font)
-        self.provider_text.SetBackgroundColour(wx.BLUE)
         self.provider_text.Fit()
         label_sizer.Add(self.provider_text, 1,
                         wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0)
@@ -96,7 +95,6 @@ class AuthEntryPanel(wx.Panel):
                                           name = 'account_text')
         self.account_text.Wrap(-1)
         self.account_text.SetFont(self.account_font)
-        self.account_text.SetBackgroundColour(wx.RED)
         self.account_text.Fit()
         label_sizer.Add(self.account_text, 1,
                         wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL, 0)
