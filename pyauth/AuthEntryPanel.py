@@ -51,7 +51,7 @@ class AuthEntryPanel(wx.Panel):
 
         self.left_down = False
         self.selected = False
-        self.totp_cycle = 0
+        self.totp_cycle = 30
         self.totp_period = 30
         self.code_masked = False
         self.timers_shown = True
@@ -68,7 +68,7 @@ class AuthEntryPanel(wx.Panel):
         else:
             self.SetName('entry_panel_X')
             self.code_digits = 6
-        ## GetLogger().debug( "AEP init %s", self.GetName() )
+        GetLogger().debug( "AEP init %s", self.GetName() )
 
         # Create panel child controls
 
@@ -116,11 +116,11 @@ class AuthEntryPanel(wx.Panel):
                   12)
 
         self.totp_period = entry.GetPeriod() if self.entry != None else 30
-        self.timer_gauge = wx.Gauge(self, wx.ID_ANY, self.totp_period - 1, size = wx.Size(40, 8),
-                                    style = wx.GA_HORIZONTAL, name = 'timer_gauge')
+        self.totp_cycle = self.totp_period
+        self.timer_gauge = wx.Gauge(self, wx.ID_ANY, self.totp_period - 1, size = wx.Size(8, 30),
+                                    style = wx.GA_VERTICAL, name = 'timer_gauge')
         self.timer_gauge.SetValue(self.totp_period - 1)
-        self.timer_gauge.Fit()
-        sizer.Add(self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 2)
+        sizer.Add(self.timer_gauge, 0, wx.RIGHT | wx.ALIGN_CENTER, 16)
 
         # Create our context menu
         self.context_menu = wx.Menu()
@@ -130,9 +130,7 @@ class AuthEntryPanel(wx.Panel):
         self.Bind(wx.EVT_MENU, self.OnQrCodeImage, item)
 
         self.UpdateContents()
-
-        if entry != None:
-            self.code = str(self.entry.GenerateNextCode())
+        self.UpdateTimerGauge()
 
         self.Bind(wx.EVT_WINDOW_CREATE, self.OnCreate)
         self.Bind(wx.EVT_TIMER, self.OnTimerTick)
@@ -151,7 +149,7 @@ class AuthEntryPanel(wx.Panel):
         self.code_text.Bind(wx.EVT_CHAR, gp.OnKey)
         self.timer_gauge.Bind(wx.EVT_CHAR, gp.OnKey)
 
-        ## GetLogger().debug( "AEP init done %s", self.GetName() )
+        GetLogger().debug( "AEP init done %s", self.GetName() )
 
     def MouseBind(self, event_type, func):
         """Bind a mouse event."""
@@ -168,8 +166,8 @@ class AuthEntryPanel(wx.Panel):
     def OnCreate(self, event):
         """Handle window creation."""
         self.Unbind(wx.EVT_WINDOW_CREATE)
-        ## GetLogger().debug( "AEP created" )
-        self.ChangeContents()
+        GetLogger().debug( "AEP created" )
+        self.UpdateContents()
 
     def OnTimerTick(self, event):
         """Update the timer countdown bar once per tick."""
@@ -252,8 +250,8 @@ class AuthEntryPanel(wx.Panel):
         self.code_digits = entry.GetDigits()
         self.SetName('entry_panel_{0:d}'.format(self.entry.GetGroup()))
         self.code = str(self.entry.GenerateNextCode())
-        ## GetLogger().debug( "AEP SE on %s", self.GetName() )
-        self.ChangeContents()
+        GetLogger().debug( "AEP SE on %s", self.GetName() )
+        self.UpdateContents()
 
     def GetSortIndex(self):
         "Return the panel's sort index."""
@@ -295,7 +293,7 @@ class AuthEntryPanel(wx.Panel):
 
     def SizeLabels(self, label_width):
         """Resize the labels to the given width to keep columns even."""
-        ## GetLogger().debug( "AEP SL new label width %d", label_width )
+        GetLogger().debug( "AEP SL new label width %d", label_width )
         self.label_width = label_width
 
         s = self.label_panel.GetClientSize()
@@ -307,7 +305,7 @@ class AuthEntryPanel(wx.Panel):
     def UpdateContents(self):
         """Update the panel's displayed contents based on the current state and entry."""
         if self.entry != None:
-            ## GetLogger().debug( "AEP UC updating %s", self.GetName() )
+            GetLogger().debug( "AEP UC updating %s", self.GetName() )
             self.code_text.SetLabelText(self.GetCodeString(self.selected))
             self.provider_text.SetLabelText(self.entry.GetProvider())
             text_size = self.provider_text.GetTextExtent(self.entry.GetProvider())
@@ -327,19 +325,10 @@ class AuthEntryPanel(wx.Panel):
         self.label_panel.SetClientSize(s)
         self.Fit()
 
-        ## GetLogger().debug( "AEP UC provider size: %s", unicode( self.provider_text.GetSize() ) )
-        ## GetLogger().debug( "AEP UC account size:  %s", unicode( self.account_text.GetSize() ) )
-        ## GetLogger().debug( "AEP UC label width:   %d", self.label_width )
-        ## GetLogger().debug( "AEP UC panel size:    %s", unicode( self.GetSize() ) )
-
-    def ChangeContents(self):
-        """Handle a change in contents and signal the change to the frame."""
-        ## GetLogger().debug( "AEP CC" )
-        self.UpdateContents()
-        gp = self.GetGrandParent()
-        if gp != None:
-            ## GetLogger().debug( "AEP CC notifying frame" )
-            gp.UpdatePanelSize()
+        GetLogger().debug( "AEP UC provider size: %s", unicode( self.provider_text.GetSize() ) )
+        GetLogger().debug( "AEP UC account size:  %s", unicode( self.account_text.GetSize() ) )
+        GetLogger().debug( "AEP UC label width:   %d", self.label_width )
+        GetLogger().debug( "AEP UC panel size:    %s", unicode( self.GetSize() ) )
 
     def Select(self):
         """Select this panel."""
@@ -366,7 +355,6 @@ class AuthEntryPanel(wx.Panel):
     def UpdateTimerGauge(self):
         """Update the countdown bar and code based on the current time and cycle."""
         current_time = wx.GetUTCTime()
-        ## GetLogger().debug( "AEP %s timer tick %d", self.GetName(), current_time ) # LOTS of debug output
         last_cycle = self.totp_cycle
         self.totp_cycle = current_time % self.totp_period
         # If we wrapped around the end of a cycle, update the code and reset the countdown timer gauge

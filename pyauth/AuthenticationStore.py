@@ -108,7 +108,7 @@ class AuthenticationStore:
         more, value, index = self.cfg.GetFirstGroup()
         while more:
             entry_group = int(value)
-            ## GetLogger().debug( "AS reading group %d", entry_group )
+            GetLogger().debug( "AS reading group %d", entry_group )
             if entry_group > 0:
                 if entry_group >= self.next_group:
                     self.next_group = entry_group + 1
@@ -119,7 +119,7 @@ class AuthenticationStore:
                 except PasswordError as e:
                     raise PasswordError("Missing password:" + str(e))
                 sort_index = entry.GetSortIndex()
-                ## GetLogger().debug( "AS   sort index %d", sort_index )
+                GetLogger().debug( "AS   sort index %d", sort_index )
                 if sort_index >= self.next_index:
                     self.next_index = sort_index + 1
                 digits = entry.GetDigits()
