@@ -166,26 +166,6 @@ def SetShowAllCodes(state):
     wx.Config.Get().WriteBool('/window/show_all_codes', state)
 
 
-def GetShowToolbar():
-    """Return show-toolbar flag."""
-    return wx.Config.Get().ReadBool('/window/show_toolbar', True)
-
-
-def SetShowToolbar(state):
-    """Set show-toolbar flag state."""
-    wx.Config.Get().WriteBool('/window/show_toolbar', state)
-
-
-def GetToolbarHeight():
-    """Return remembered toolbar height."""
-    return wx.Config.Get().ReadInt('/window/toolbar_height', 0)
-
-
-def SetToolbarHeight(h):
-    """Set remembered toolbar height."""
-    wx.Config.Get().WriteInt('/window/toolbar_height', h)
-
-
 def GetUseTaskbarIcon():
     """Return use-notification-tray flag."""
     return wx.Config.Get().ReadBool('/window/use_taskbar_icon', False)

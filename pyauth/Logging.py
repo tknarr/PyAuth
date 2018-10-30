@@ -42,6 +42,9 @@ def ConfigureLogging(log_filename_args, log_level_args):
     configuration file.
     """
 
+    max_size = 0
+    backup_count = 0
+
     # If we were given a log-level argument, try to use it. If we weren't given
     # one or it isn't valid, use what's in the configuration file.
     if log_level_args == None or log_level_args == '':
